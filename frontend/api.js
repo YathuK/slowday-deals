@@ -1,6 +1,6 @@
 // API Configuration
 const API_CONFIG = {
-    BASE_URL: 'http://localhost:5000/api',
+    BASE_URL: 'https://slowday-deals.onrender.com/api',
     // Change this to your production URL when deploying
     // BASE_URL: 'https://your-api.com/api',
     

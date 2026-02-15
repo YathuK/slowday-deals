@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlowDay Deals - Service Marketplace</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #666;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Provider View Styles */
+        .provider-form {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .photo-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .photo-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .photo-upload input {
+            display: none;
+        }
+
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Customer View Styles */
+        .swipe-container {
+            position: relative;
+            height: calc(100vh - 200px);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .service-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: grab;
+            transition: transform 0.3s, box-shadow 0.3s;
+            user-select: none;
+        }
+
+        .service-card:active {
+            cursor: grabbing;
+        }
+
+        .service-card.swiping-right {
+            border: 3px solid #4ade80;
+        }
+
+        .service-card.swiping-left {
+            border: 3px solid #f87171;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 60%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 20px;
+            height: 40%;
+            overflow-y: auto;
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .service-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .service-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .provider-name {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .service-description {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .price-display {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .price-box {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .price-label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .price-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .swipe-indicator {
+            position: absolute;
+            top: 50%;
+            font-size: 80px;
+            font-weight: 900;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .like-indicator {
+            left: 30px;
+            color: #4ade80;
+            transform: rotate(-20deg);
+        }
+
+        .nope-indicator {
+            right: 30px;
+            color: #f87171;
+            transform: rotate(20deg);
+        }
+
+        .service-card.swiping-right .like-indicator {
+            opacity: 1;
+        }
+
+        .service-card.swiping-left .nope-indicator {
+            opacity: 1;
+        }
+
+        .swipe-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 500px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .swipe-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .swipe-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .nope-btn {
+            background: #fee;
+            color: #f87171;
+        }
+
+        .info-btn {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .like-btn {
+            background: #dcfce7;
+            color: #4ade80;
+        }
+
+        .no-cards {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-cards svg {
+            margin-bottom: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .book-now-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Booking Form */
+        .booking-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Saved Services */
+        .saved-list {
+            padding: 20px;
+        }
+
+        .saved-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+        }
+
+        .saved-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .saved-card-content {
+            flex: 1;
+        }
+
+        .saved-card h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .saved-card p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .saved-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .saved-card-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .book-btn-small {
+            background: #667eea;
+            color: white;
+        }
+
+        .remove-btn {
+            background: #fee;
+            color: #f87171;
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 20px;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .auth-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .user-menu {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .circle-login-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .circle-login-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        .login-prompt {
+            padding: 40px 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        .login-prompt svg {
+            margin-bottom: 20px;
+        }
+
+        .login-prompt button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .swipe-container {
+                height: calc(100vh - 180px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>⚡ SlowDay Deals</h1>
+            <p>Book services at special prices on slow days</p>
+            <div class="user-menu" id="userMenu" style="display: none;">
+                <span class="user-name" id="userName"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            <div class="user-menu" id="guestMenu">
+                <button class="circle-login-btn" onclick="showAuthModal()" title="Login / Sign Up">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="switchMode('customer')">
+                🛍️ Find Services
+            </button>
+            <button class="mode-btn" onclick="switchMode('provider')">
+                💼 I'm a Provider
+            </button>
+        </div>
+
+        <!-- Customer View -->
+        <div id="customerView" class="view active">
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('discover')">Discover</button>
+                <button class="tab-btn" onclick="switchTab('saved')">Saved</button>
+            </div>
+
+            <div id="discoverTab" class="tab-content active">
+                <div class="swipe-container">
+                    <div class="card-stack" id="cardStack">
+                        <!-- Cards will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="swipe-buttons">
+                    <button class="swipe-btn nope-btn" onclick="swipeLeft()">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <button class="swipe-btn info-btn" onclick="showDetails()">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                    <button class="swipe-btn like-btn" onclick="swipeRight()">
+                        <svg width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="savedTab" class="tab-content" style="display: none;">
+                <div class="saved-list" id="savedList">
+                    <!-- Saved services will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider View -->
+        <div id="providerView" class="view">
+            <form class="provider-form" onsubmit="submitProvider(event)">
+                <div class="form-group">
+                    <label>Your Name/Business Name</label>
+                    <input type="text" id="providerName" required placeholder="e.g., Sarah's Hair Studio">
+                </div>
+
+                <div class="form-group">
+                    <label>Service Type</label>
+                    <select id="serviceType" required>
+                        <option value="">Select a service type</option>
+                        <option value="Haircut">Haircut</option>
+                        <option value="Barber">Barber</option>
+                        <option value="Cleaning">Cleaning Service</option>
+                        <option value="Massage">Massage</option>
+                        <option value="Nails">Nail Service</option>
+                        <option value="Spa">Spa Treatment</option>
+                        <option value="Personal Training">Personal Training</option>
+                        <option value="Dog Walking">Dog Walking</option>
+                        <option value="Tutoring">Tutoring</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Car Detailing">Car Detailing</option>
+                        <option value="Laundry Service">Laundry Service</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Service Description</label>
+                    <textarea id="serviceDesc" required placeholder="Describe what you offer..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Location/Area</label>
+                    <input type="text" id="location" required placeholder="e.g., Downtown Brooklyn">
+                </div>
+
+                <div class="form-group">
+                    <label>Contact</label>
+                    <input type="text" id="providerContact" required placeholder="Phone or email">
+                </div>
+
+                <div class="form-group">
+                    <label>Special Offer Pricing</label>
+                    <div class="price-row">
+                        <div>
+                            <label style="font-size: 12px;">Weekday Price</label>
+                            <input type="number" id="weekdayPrice" required placeholder="$" step="0.01">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px;">Weekend Price</label>
+                            <input type="number" id="weekendPrice" required placeholder="$" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Upload Photos of Your Work</label>
+                    <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                        <svg width="48" height="48" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 10px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <p style="color: #667eea; font-weight: 600;">Click to upload photos</p>
+                        <p style="font-size: 12px; color: #999; margin-top: 5px;">Up to 6 photos</p>
+                        <input type="file" id="photoInput" accept="image/*" multiple onchange="previewPhotos(event)">
+                    </div>
+                    <div class="photo-preview" id="photoPreview"></div>
+                </div>
+
+                <button type="submit" class="submit-btn">Create My Profile</button>
+            </form>
+        </div>
+
+        <!-- Detail Modal -->
+        <div class="modal" id="detailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Service Details</h2>
+                    <button class="close-btn" onclick="closeModal()">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Details will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Modal -->
+        <div class="modal" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="authTitle">Welcome to SlowDay Deals</h2>
+                    <button class="close-btn" onclick="closeAuthModal()">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Login Form -->
+                    <form id="loginForm" class="auth-form" onsubmit="login(event)">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Log In</button>
+                        <p style="text-align: center; margin-top: 15px; color: #666;">
+                            Don't have an account? 
+                            <a href="#" onclick="showSignup(); return false;" style="color: #667eea; font-weight: 600;">Sign Up</a>
+                        </p>
+                    </form>
+
+                    <!-- Signup Form -->
+                    <form id="signupForm" class="auth-form" style="display: none;" onsubmit="signup(event)">
+                        <div class="form-group">
+                            <label>Account Type</label>
+                            <select id="signupAccountType" required>
+                                <option value="customer">Customer - I want to book services</option>
+                                <option value="provider">Provider - I offer services</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="signupName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="signupEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="signupPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="signupPhone" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Create Account</button>
+                        <p style="text-align: center; margin-top: 15px; color: #666;">
+                            Already have an account? 
+                            <a href="#" onclick="showLogin(); return false;" style="color: #667eea; font-weight: 600;">Log In</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div class="modal" id="bookingModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Book This Service</h2>
+                    <button class="close-btn" onclick="closeBookingModal()">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="bookingSuccess" class="success-message" style="display: none;">
+                        ✅ Booking request sent! The provider will contact you soon.
+                    </div>
+                    <form class="booking-form" onsubmit="submitBooking(event)">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact (Phone or Email)</label>
+                            <input type="text" id="customerContact" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Date & Time</label>
+                            <input type="datetime-local" id="preferredTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Additional Notes (Optional)</label>
+                            <textarea id="bookingNotes" placeholder="Any special requests or questions..."></textarea>
+                        </div>
+                        <button type="submit" class="book-now-btn">Confirm Booking</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication state
+        let currentUser = null;
+        let services = [];
+        let currentCardIndex = 0;
+        let savedServices = [];
+        let currentBookingService = null;
+        let myBookings = [];
+
+        // Initialize
+        window.onload = function() {
+            checkAuth();
+        };
+
+        async function checkAuth() {
+            const token = API.getToken();
+            
+            if (token) {
+                try {
+                    const response = await API.getCurrentUser();
+                    currentUser = response.user;
+                    showAuthenticatedView();
+                } catch (error) {
+                    console.error('Auth check failed:', error);
+                    API.removeToken();
+                    await loadPublicServices();
+                }
+            } else {
+                await loadPublicServices();
+            }
+        }
+
+        async function loadPublicServices() {
+            try {
+                const response = await API.getServices();
+                services = response.services || [];
+                renderCards();
+            } catch (error) {
+                console.error('Error loading services:', error);
+                services = [];
+                renderCards();
+            }
+        }
+
+        function showAuthModal() {
+            {
+                id: 1,
+                providerName: "Sarah's Hair Studio",
+                serviceType: "Haircut",
+                description: "Professional haircut and styling with 10+ years experience. Specializing in modern cuts and color.",
+                location: "Downtown Brooklyn",
+                weekdayPrice: 35,
+                weekendPrice: 50,
+                photos: ["https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400"],
+                contact: "(555) 123-4567"
+            },
+            {
+                id: 2,
+                providerName: "Mike's Barbershop",
+                serviceType: "Barber",
+                description: "Classic barbershop experience. Fades, beard trims, and hot towel shaves.",
+                location: "Williamsburg",
+                weekdayPrice: 25,
+                weekendPrice: 35,
+                photos: ["https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400"],
+                contact: "(555) 234-5678"
+            },
+            {
+                id: 3,
+                providerName: "Sparkle Clean Co",
+                serviceType: "Cleaning",
+                description: "Deep cleaning service for homes and apartments. Eco-friendly products, thorough and reliable.",
+                location: "Manhattan",
+                weekdayPrice: 80,
+                weekendPrice: 100,
+                photos: ["https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400"],
+                contact: "(555) 345-6789"
+            },
+            {
+                id: 4,
+                providerName: "Zen Massage Therapy",
+                serviceType: "Massage",
+                description: "Relaxing Swedish and deep tissue massage. Licensed therapist with 8 years experience.",
+                location: "East Village",
+                weekdayPrice: 60,
+                weekendPrice: 80,
+                photos: ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400"],
+                contact: "(555) 456-7890"
+            },
+            {
+                id: 5,
+                providerName: "Glam Nails",
+                serviceType: "Nails",
+                description: "Full nail service including manicures, pedicures, gel nails, and nail art.",
+                location: "SoHo",
+                weekdayPrice: 40,
+                weekendPrice: 55,
+                photos: ["https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400"],
+                contact: "(555) 567-8901"
+            },
+            {
+                id: 6,
+                providerName: "Crystal Clear Cleaning",
+                serviceType: "Cleaning",
+                description: "Professional house cleaning with attention to detail. Windows, floors, bathrooms, kitchens - we do it all!",
+                location: "Queens",
+                weekdayPrice: 70,
+                weekendPrice: 90,
+                photos: ["https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400"],
+                contact: "(555) 678-9012"
+            },
+            {
+                id: 7,
+                providerName: "FitLife Personal Training",
+                serviceType: "Other",
+                description: "One-on-one personal training sessions. Weight loss, muscle gain, or general fitness. All levels welcome!",
+                location: "Chelsea",
+                weekdayPrice: 50,
+                weekendPrice: 70,
+                photos: ["https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400"],
+                contact: "(555) 789-0123"
+            },
+            {
+                id: 8,
+                providerName: "Happy Paws Dog Walking",
+                serviceType: "Other",
+                description: "Reliable dog walking service. 30-minute or 1-hour walks. Your pup will love our adventures!",
+                location: "Central Park Area",
+                weekdayPrice: 20,
+                weekendPrice: 30,
+                photos: ["https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400"],
+                contact: "(555) 890-1234"
+            },
+            {
+                id: 9,
+                providerName: "Serenity Spa",
+                serviceType: "Spa",
+                description: "Luxurious spa treatments including facials, body wraps, and aromatherapy. Escape the stress!",
+                location: "Upper East Side",
+                weekdayPrice: 90,
+                weekendPrice: 120,
+                photos: ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400"],
+                contact: "(555) 901-2345"
+            },
+            {
+                id: 10,
+                providerName: "Elite Tutoring Services",
+                serviceType: "Other",
+                description: "Expert tutoring in math, science, and English. SAT/ACT prep available. Improve your grades today!",
+                location: "Brooklyn Heights",
+                weekdayPrice: 45,
+                weekendPrice: 60,
+                photos: ["https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400"],
+                contact: "(555) 012-3456"
+            },
+            {
+                id: 11,
+                providerName: "Fresh & Clean Laundry",
+                serviceType: "Cleaning",
+                description: "Wash, dry, and fold service. Pick up and delivery available. Your laundry done right!",
+                location: "Astoria",
+                weekdayPrice: 25,
+                weekendPrice: 35,
+                photos: ["https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=400"],
+                contact: "(555) 123-4568"
+            },
+            {
+                id: 12,
+                providerName: "Smooth Shave Barbershop",
+                serviceType: "Barber",
+                description: "Traditional barbering with a modern twist. Straight razor shaves and gentleman's cuts.",
+                location: "Harlem",
+                weekdayPrice: 30,
+                weekendPrice: 40,
+                photos: ["https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=400"],
+                contact: "(555) 234-5679"
+            },
+            {
+                id: 13,
+                providerName: "Tranquil Touch Massage",
+                serviceType: "Massage",
+                description: "Hot stone massage, prenatal massage, and sports massage. Feel refreshed and rejuvenated!",
+                location: "West Village",
+                weekdayPrice: 70,
+                weekendPrice: 95,
+                photos: ["https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=400"],
+                contact: "(555) 345-6780"
+            },
+            {
+                id: 14,
+                providerName: "Pixel Perfect Photography",
+                serviceType: "Other",
+                description: "Professional photography for portraits, events, and headshots. Capture your special moments!",
+                location: "DUMBO",
+                weekdayPrice: 150,
+                weekendPrice: 200,
+                photos: ["https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=400"],
+                contact: "(555) 456-7891"
+            },
+            {
+                id: 15,
+                providerName: "Shine Auto Detailing",
+                serviceType: "Other",
+                description: "Full car detailing service. Interior and exterior cleaning. Make your car look brand new!",
+                location: "Long Island City",
+                weekdayPrice: 100,
+                weekendPrice: 130,
+                photos: ["https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=400"],
+                contact: "(555) 567-8902"
+            },
+            {
+                id: 16,
+                providerName: "Radiant Glow Nails",
+                serviceType: "Nails",
+                description: "Premium nail salon with luxury pedicure chairs. Acrylic, gel, and dip powder available.",
+                location: "Midtown",
+                weekdayPrice: 45,
+                weekendPrice: 65,
+                photos: ["https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=400"],
+                contact: "(555) 678-9013"
+            },
+            {
+                id: 17,
+                providerName: "Style Studio Salon",
+                serviceType: "Haircut",
+                description: "Full service salon offering cuts, color, highlights, and keratin treatments. Walk-ins welcome!",
+                location: "Park Slope",
+                weekdayPrice: 40,
+                weekendPrice: 60,
+                photos: ["https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400"],
+                contact: "(555) 789-0124"
+            },
+            {
+                id: 18,
+                providerName: "Green Clean Solutions",
+                serviceType: "Cleaning",
+                description: "100% eco-friendly cleaning products. Commercial and residential. Safe for kids and pets!",
+                location: "Battery Park",
+                weekdayPrice: 85,
+                weekendPrice: 110,
+                photos: ["https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=400"],
+                contact: "(555) 890-1235"
+            },
+            {
+                id: 19,
+                providerName: "Bliss Day Spa",
+                serviceType: "Spa",
+                description: "Couples massage, reflexology, and hydrotherapy. Packages available for ultimate relaxation.",
+                location: "Greenwich Village",
+                weekdayPrice: 100,
+                weekendPrice: 140,
+                photos: ["https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400"],
+                contact: "(555) 901-2346"
+            },
+            {
+                id: 20,
+                providerName: "Sharp Cuts Barber Lounge",
+                serviceType: "Barber",
+                description: "Modern barbershop with craft beer on tap. Cuts, color, and beard grooming in a relaxed atmosphere.",
+                location: "Bushwick",
+                weekdayPrice: 28,
+                weekendPrice: 38,
+                photos: ["https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400"],
+                contact: "(555) 012-3457"
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let savedServices = [];
+        let currentBookingService = null;
+
+        // Load services from localStorage
+        const savedServicesData = localStorage.getItem('services');
+        if (savedServicesData) {
+            services = JSON.parse(savedServicesData);
+        }
+
+        // Load saved services for current user
+        function loadSavedServices() {
+            if (currentUser) {
+                const saved = localStorage.getItem(`savedServices_${currentUser.id}`);
+                if (saved) {
+                    savedServices = JSON.parse(saved);
+                }
+            }
+        }
+
+        // Save services to localStorage
+        function saveSavedServices() {
+            if (currentUser) {
+                localStorage.setItem(`savedServices_${currentUser.id}`, JSON.stringify(savedServices));
+            }
+        }
+
+        // Initialize
+        window.onload = function() {
+            checkAuth();
+        };
+
+        function checkAuth() {
+            // Check if user is logged in (in real app, check session/token)
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showAuthenticatedView();
+            } else {
+                // Allow browsing without login
+                renderCards();
+                renderSavedList();
+            }
+        }
+
+        function showAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+            showLogin();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function showLogin() {
+            document.getElementById('authTitle').textContent = 'Welcome Back!';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+        }
+
+        function showSignup() {
+            document.getElementById('authTitle').textContent = 'Create Your Account';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        }
+
+        function login(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Load users from localStorage
+            const savedUsers = localStorage.getItem('users');
+            if (savedUsers) {
+                users = JSON.parse(savedUsers);
+            }
+
+            // Find user
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showAuthenticatedView();
+                closeAuthModal();
+                e.target.reset();
+            } else {
+                alert('Invalid email or password. Please try again or sign up for a new account.');
+            }
+        }
+
+        function signup(e) {
+            e.preventDefault();
+            
+            const newUser = {
+                id: Date.now(),
+                name: document.getElementById('signupName').value,
+                email: document.getElementById('signupEmail').value,
+                password: document.getElementById('signupPassword').value,
+                phone: document.getElementById('signupPhone').value,
+                accountType: document.getElementById('signupAccountType').value,
+                createdAt: new Date().toISOString()
+            };
+
+            // Load existing users
+            const savedUsers = localStorage.getItem('users');
+            if (savedUsers) {
+                users = JSON.parse(savedUsers);
+            }
+
+            // Check if email already exists
+            if (users.find(u => u.email === newUser.email)) {
+                alert('An account with this email already exists. Please log in.');
+                return;
+            }
+
+            // Add new user
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Log them in
+            currentUser = newUser;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            showAuthenticatedView();
+            closeAuthModal();
+            e.target.reset();
+
+            alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                location.reload();
+            }
+        }
+
+        function showAuthenticatedView() {
+            // Show user menu, hide guest menu
+            document.getElementById('userMenu').style.display = 'flex';
+            document.getElementById('guestMenu').style.display = 'none';
+            document.getElementById('userName').textContent = `👋 ${currentUser.name}`;
+
+            // Load user's saved services
+            loadSavedServices();
+
+            // If provider, show provider view by default
+            if (currentUser.accountType === 'provider') {
+                switchMode('provider');
+            } else {
+                renderCards();
+                renderSavedList();
+            }
+        }
+
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            
+            if (mode === 'customer') {
+                event.target.classList.add('active');
+                document.getElementById('customerView').classList.add('active');
+            } else {
+                if (!currentUser) {
+                    alert('Please log in or create a provider account to access this section.');
+                    showAuthModal();
+                    return;
+                }
+                if (currentUser.accountType !== 'provider') {
+                    alert('Only service providers can access this section. Please create a provider account.');
+                    return;
+                }
+                event.target.classList.add('active');
+                document.getElementById('providerView').classList.add('active');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'discover') {
+                document.getElementById('discoverTab').style.display = 'block';
+                document.getElementById('savedTab').style.display = 'none';
+            } else {
+                document.getElementById('discoverTab').style.display = 'none';
+                document.getElementById('savedTab').style.display = 'block';
+                renderSavedList();
+            }
+        }
+
+        function renderCards() {
+            const stack = document.getElementById('cardStack');
+            stack.innerHTML = '';
+
+            if (currentCardIndex >= services.length) {
+                stack.innerHTML = `
+                    <div class="no-cards">
+                        <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <h3>No more services!</h3>
+                        <p>Check back later for new deals</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show next 3 cards in stack
+            for (let i = currentCardIndex; i < Math.min(currentCardIndex + 3, services.length); i++) {
+                const service = services[i];
+                const card = createCard(service, i - currentCardIndex);
+                stack.appendChild(card);
+            }
+        }
+
+        function createCard(service, stackPosition) {
+            const card = document.createElement('div');
+            card.className = 'service-card';
+            card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
+            card.style.zIndex = 100 - stackPosition;
+            card.dataset.serviceId = service.id;
+
+            const imageContent = service.photos && service.photos[0] 
+                ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
+                : `<div style="font-size: 64px;">${getServiceEmoji(service.serviceType)}</div>`;
+
+            card.innerHTML = `
+                <div class="swipe-indicator like-indicator">LIKE</div>
+                <div class="swipe-indicator nope-indicator">NOPE</div>
+                <div class="card-image">${imageContent}</div>
+                <div class="card-content">
+                    <div class="service-header">
+                        <div>
+                            <div class="service-title">${service.serviceType}</div>
+                            <div class="provider-name">by ${service.providerName}</div>
+                        </div>
+                        <div class="service-type">${service.location}</div>
+                    </div>
+                    <div class="service-description">${service.description}</div>
+                    <div class="price-display">
+                        <div class="price-box">
+                            <div class="price-label">Weekdays</div>
+                            <div class="price-value">$${service.weekdayPrice}</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">Weekends</div>
+                            <div class="price-value">$${service.weekendPrice}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add swipe functionality
+            let startX, currentX;
+            let isDragging = false;
+
+            card.addEventListener('mousedown', startDrag);
+            card.addEventListener('touchstart', startDrag);
+
+            function startDrag(e) {
+                if (stackPosition !== 0) return;
+                isDragging = true;
+                startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+                card.style.transition = 'none';
+            }
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+
+            function drag(e) {
+                if (!isDragging) return;
+                currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+                const diff = currentX - startX;
+                const rotation = diff / 20;
+
+                card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
+
+                if (diff > 50) {
+                    card.classList.add('swiping-right');
+                    card.classList.remove('swiping-left');
+                } else if (diff < -50) {
+                    card.classList.add('swiping-left');
+                    card.classList.remove('swiping-right');
+                } else {
+                    card.classList.remove('swiping-right', 'swiping-left');
+                }
+            }
+
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+
+            function endDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                card.style.transition = 'transform 0.3s';
+
+                const diff = currentX - startX;
+
+                if (diff > 100) {
+                    swipeCard('right');
+                } else if (diff < -100) {
+                    swipeCard('left');
+                } else {
+                    card.style.transform = '';
+                    card.classList.remove('swiping-right', 'swiping-left');
+                }
+            }
+
+            card.addEventListener('click', (e) => {
+                if (!isDragging && stackPosition === 0) {
+                    showDetails();
+                }
+            });
+
+            return card;
+        }
+
+        function swipeLeft() {
+            swipeCard('left');
+        }
+
+        function swipeRight() {
+            if (!currentUser) {
+                alert('Please log in to save services!');
+                showAuthModal();
+                swipeCard('right'); // Still swipe the card
+                return;
+            }
+            
+            const service = services[currentCardIndex];
+            if (!savedServices.find(s => s.id === service.id)) {
+                savedServices.push(service);
+                saveSavedServices();
+            }
+            swipeCard('right');
+        }
+
+        function swipeCard(direction) {
+            const cards = document.querySelectorAll('.service-card');
+            if (cards.length === 0) return;
+
+            const topCard = cards[0];
+            const translateX = direction === 'right' ? 1000 : -1000;
+
+            topCard.style.transform = `translateX(${translateX}px) rotate(${direction === 'right' ? 30 : -30}deg)`;
+            
+            setTimeout(() => {
+                currentCardIndex++;
+                renderCards();
+            }, 300);
+        }
+
+        function showDetails() {
+            if (currentCardIndex >= services.length) return;
+            
+            const service = services[currentCardIndex];
+            const modal = document.getElementById('detailModal');
+            const modalBody = document.getElementById('modalBody');
+
+            const imageContent = service.photos && service.photos[0]
+                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`
+                : `<div class="detail-image" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 80px;">${getServiceEmoji(service.serviceType)}</div>`;
+
+            modalBody.innerHTML = `
+                ${imageContent}
+                <div class="detail-section">
+                    <h3>${service.serviceType}</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">by ${service.providerName}</p>
+                    <p style="color: #555; line-height: 1.6;">${service.description}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>📍 Location</h3>
+                    <p style="color: #555;">${service.location}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>💰 Pricing</h3>
+                    <div class="price-display">
+                        <div class="price-box">
+                            <div class="price-label">Weekdays</div>
+                            <div class="price-value">$${service.weekdayPrice}</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-label">Weekends</div>
+                            <div class="price-value">$${service.weekendPrice}</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="book-now-btn" onclick="openBookingModal(${service.id})">Book Now</button>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function openBookingModal(serviceId) {
+            if (!currentUser) {
+                alert('Please log in to book services');
+                showAuthModal();
+                return;
+            }
+
+            currentBookingService = services.find(s => s.id === serviceId);
+            document.getElementById('detailModal').classList.remove('active');
+            document.getElementById('bookingModal').classList.add('active');
+            document.getElementById('bookingSuccess').style.display = 'none';
+            
+            // Pre-fill customer name
+            document.getElementById('customerName').value = currentUser.name;
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            currentBookingService = null;
+        }
+
+        function submitBooking(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('Please log in to book services');
+                showAuthModal();
+                return;
+            }
+            
+            const booking = {
+                id: Date.now(),
+                customerId: currentUser.id,
+                customerName: currentUser.name,
+                service: currentBookingService,
+                customerContact: document.getElementById('customerContact').value,
+                preferredTime: document.getElementById('preferredTime').value,
+                notes: document.getElementById('bookingNotes').value,
+                createdAt: new Date().toISOString()
+            };
+
+            // Save booking (in real app, send to backend)
+            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            bookings.push(booking);
+            localStorage.setItem('bookings', JSON.stringify(bookings));
+
+            console.log('Booking submitted:', booking);
+            
+            document.getElementById('bookingSuccess').style.display = 'block';
+            e.target.reset();
+
+            setTimeout(() => {
+                closeBookingModal();
+            }, 2000);
+        }
+
+        function renderSavedList() {
+            const savedList = document.getElementById('savedList');
+            
+            if (savedServices.length === 0) {
+                savedList.innerHTML = `
+                    <div class="no-cards">
+                        <svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        <h3>No saved services yet</h3>
+                        <p>Swipe right on services you like!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            savedList.innerHTML = savedServices.map(service => {
+                const imageContent = service.photos && service.photos[0]
+                    ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
+                    : `<div style="width: 80px; height: 80px; border-radius: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 32px;">${getServiceEmoji(service.serviceType)}</div>`;
+
+                return `
+                    <div class="saved-card">
+                        ${imageContent}
+                        <div class="saved-card-content">
+                            <h3>${service.serviceType}</h3>
+                            <p>${service.providerName} • ${service.location}</p>
+                            <p style="color: #667eea; font-weight: 600;">Weekdays: $${service.weekdayPrice} | Weekends: $${service.weekendPrice}</p>
+                            <div class="saved-card-actions">
+                                <button class="book-btn-small" onclick="openBookingModal(${service.id})">Book</button>
+                                <button class="remove-btn" onclick="removeSaved(${service.id})">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeSaved(serviceId) {
+            savedServices = savedServices.filter(s => s.id !== serviceId);
+            saveSavedServices();
+            renderSavedList();
+        }
+
+        function previewPhotos(e) {
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = '';
+            
+            const files = Array.from(e.target.files).slice(0, 6);
+            
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function submitProvider(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('Please log in to create a profile');
+                return;
+            }
+            
+            const newService = {
+                id: services.length + 1,
+                providerId: currentUser.id,
+                providerName: document.getElementById('providerName').value,
+                serviceType: document.getElementById('serviceType').value,
+                description: document.getElementById('serviceDesc').value,
+                location: document.getElementById('location').value,
+                contact: document.getElementById('providerContact').value,
+                weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
+                weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
+                photos: [] // In a real app, handle photo uploads properly
+            };
+
+            services.push(newService);
+            localStorage.setItem('services', JSON.stringify(services));
+            
+            alert('✅ Profile created successfully! Your service is now live for customers to discover.');
+            e.target.reset();
+            document.getElementById('photoPreview').innerHTML = '';
+            
+            // Switch to customer view to see the new listing
+            switchMode('customer');
+            currentCardIndex = 0;
+            renderCards();
+        }
+
+        function getServiceEmoji(serviceType) {
+            const emojis = {
+                'Haircut': '✂️',
+                'Barber': '💈',
+                'Cleaning': '🧹',
+                'Massage': '💆',
+                'Nails': '💅',
+                'Spa': '🧖',
+                'Personal Training': '💪',
+                'Dog Walking': '🐕',
+                'Tutoring': '📚',
+                'Photography': '📸',
+                'Car Detailing': '🚗',
+                'Laundry Service': '🧺',
+                'Other': '⭐'
+            };
+            return emojis[serviceType] || '⭐';
+        }
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>

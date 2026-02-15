@@ -1,0 +1,175 @@
+// API Configuration
+const API_CONFIG = {
+    BASE_URL: 'http://localhost:5000/api',
+    // Change this to your production URL when deploying
+    // BASE_URL: 'https://your-api.com/api',
+    
+    ENDPOINTS: {
+        // Auth
+        SIGNUP: '/auth/signup',
+        LOGIN: '/auth/login',
+        ME: '/auth/me',
+        
+        // Services
+        SERVICES: '/services',
+        MY_SERVICES: '/services/provider/my-services',
+        
+        // Bookings
+        BOOKINGS: '/bookings',
+        CUSTOMER_BOOKINGS: '/bookings/customer',
+        PROVIDER_BOOKINGS: '/bookings/provider',
+        BOOKING_STATUS: '/bookings/:id/status',
+        
+        // Users
+        PROFILE: '/users/profile',
+        SAVED_SERVICES: '/users/saved-services'
+    }
+};
+
+// API Helper Functions
+const API = {
+    // Get auth token from localStorage
+    getToken() {
+        return localStorage.getItem('token');
+    },
+    
+    // Set auth token
+    setToken(token) {
+        localStorage.setItem('token', token);
+    },
+    
+    // Remove auth token
+    removeToken() {
+        localStorage.removeItem('token');
+    },
+    
+    // Get headers with auth token
+    getHeaders(includeAuth = true) {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (includeAuth) {
+            const token = this.getToken();
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+        }
+        
+        return headers;
+    },
+    
+    // Generic API call
+    async call(endpoint, method = 'GET', data = null, includeAuth = true) {
+        const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+        
+        const options = {
+            method,
+            headers: this.getHeaders(includeAuth)
+        };
+        
+        if (data && (method === 'POST' || method === 'PUT')) {
+            options.body = JSON.stringify(data);
+        }
+        
+        try {
+            const response = await fetch(url, options);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'API request failed');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    },
+    
+    // Auth methods
+    async signup(userData) {
+        return await this.call(API_CONFIG.ENDPOINTS.SIGNUP, 'POST', userData, false);
+    },
+    
+    async login(credentials) {
+        return await this.call(API_CONFIG.ENDPOINTS.LOGIN, 'POST', credentials, false);
+    },
+    
+    async getCurrentUser() {
+        return await this.call(API_CONFIG.ENDPOINTS.ME);
+    },
+    
+    // Service methods
+    async getServices(filters = {}) {
+        const queryString = new URLSearchParams(filters).toString();
+        const endpoint = queryString 
+            ? `${API_CONFIG.ENDPOINTS.SERVICES}?${queryString}`
+            : API_CONFIG.ENDPOINTS.SERVICES;
+        return await this.call(endpoint, 'GET', null, false);
+    },
+    
+    async getService(id) {
+        return await this.call(`${API_CONFIG.ENDPOINTS.SERVICES}/${id}`, 'GET', null, false);
+    },
+    
+    async createService(serviceData) {
+        return await this.call(API_CONFIG.ENDPOINTS.SERVICES, 'POST', serviceData);
+    },
+    
+    async updateService(id, serviceData) {
+        return await this.call(`${API_CONFIG.ENDPOINTS.SERVICES}/${id}`, 'PUT', serviceData);
+    },
+    
+    async deleteService(id) {
+        return await this.call(`${API_CONFIG.ENDPOINTS.SERVICES}/${id}`, 'DELETE');
+    },
+    
+    async getMyServices() {
+        return await this.call(API_CONFIG.ENDPOINTS.MY_SERVICES);
+    },
+    
+    // Booking methods
+    async createBooking(bookingData) {
+        return await this.call(API_CONFIG.ENDPOINTS.BOOKINGS, 'POST', bookingData);
+    },
+    
+    async getCustomerBookings(status = null) {
+        const endpoint = status 
+            ? `${API_CONFIG.ENDPOINTS.CUSTOMER_BOOKINGS}?status=${status}`
+            : API_CONFIG.ENDPOINTS.CUSTOMER_BOOKINGS;
+        return await this.call(endpoint);
+    },
+    
+    async getProviderBookings(status = null) {
+        const endpoint = status 
+            ? `${API_CONFIG.ENDPOINTS.PROVIDER_BOOKINGS}?status=${status}`
+            : API_CONFIG.ENDPOINTS.PROVIDER_BOOKINGS;
+        return await this.call(endpoint);
+    },
+    
+    async updateBookingStatus(id, status) {
+        return await this.call(
+            API_CONFIG.ENDPOINTS.BOOKING_STATUS.replace(':id', id),
+            'PUT',
+            { status }
+        );
+    },
+    
+    // User methods
+    async saveService(serviceId) {
+        return await this.call(`${API_CONFIG.ENDPOINTS.SAVED_SERVICES}/${serviceId}`, 'POST');
+    },
+    
+    async removeSavedService(serviceId) {
+        return await this.call(`${API_CONFIG.ENDPOINTS.SAVED_SERVICES}/${serviceId}`, 'DELETE');
+    },
+    
+    async getSavedServices() {
+        return await this.call(API_CONFIG.ENDPOINTS.SAVED_SERVICES);
+    },
+    
+    async updateProfile(profileData) {
+        return await this.call(API_CONFIG.ENDPOINTS.PROFILE, 'PUT', profileData);
+    }
+};

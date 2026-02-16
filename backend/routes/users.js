@@ -155,4 +155,46 @@ router.get('/saved-services', auth, async (req, res) => {
     }
 });
 
+// @route   PUT /api/users/password
+// @desc    Change password
+// @access  Private
+router.put('/password', auth, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Both fields required' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+        }
+        const bcrypt = require('bcryptjs');
+        const user = await User.findById(req.user._id);
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+        }
+        user.password = await bcrypt.hash(newPassword, 12);
+        await user.save();
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error changing password', error: error.message });
+    }
+});
+
+// @route   DELETE /api/users/account
+// @desc    Delete account
+// @access  Private
+router.delete('/account', auth, async (req, res) => {
+    try {
+        const Booking = require('../models/Booking');
+        // Delete all user data
+        await Booking.deleteMany({ customer: req.user._id });
+        await Service.deleteMany({ provider: req.user._id });
+        await User.findByIdAndDelete(req.user._id);
+        res.json({ success: true, message: 'Account deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error deleting account', error: error.message });
+    }
+});
+
 module.exports = router;

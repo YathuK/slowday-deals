@@ -30,6 +30,10 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Contact information is required']
     },
+    email: {
+        type: String,
+        default: ''
+    },
     weekdayPrice: {
         type: Number,
         required: [true, 'Weekday price is required'],

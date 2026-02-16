@@ -45,12 +45,21 @@ router.get('/customer', auth, async (req, res) => {
 router.get('/provider', auth, async (req, res) => {
     try {
         const { status } = req.query;
-        let query = { provider: req.user._id };
-        if (status) query.status = status;
+        const uid = req.user._id;
+
+        // Find all services owned by this user
+        const myServices = await Service.find({ provider: uid }).select('_id');
+        const myServiceIds = myServices.map(s => s._id);
+
+        // Find bookings where provider = user OR service is owned by user
+        let query = { $or: [{ provider: uid }, { service: { $in: myServiceIds } }] };
+        if (status) query = { ...query, status };
+
         const bookings = await Booking.find(query)
             .populate('service', 'serviceType providerName location')
             .populate('customer', 'name phone email')
             .sort({ createdAt: -1 });
+
         res.json({ success: true, count: bookings.length, bookings });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching bookings', error: error.message });
@@ -63,12 +72,18 @@ router.get('/analytics', auth, async (req, res) => {
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const startOfWeek = new Date(startOfDay); startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const pid = req.user._id;
+        const uid = req.user._id;
+
+        // Get all services owned by user
+        const myServices = await Service.find({ provider: uid }).select('_id');
+        const myServiceIds = myServices.map(s => s._id);
+        const providerQuery = { $or: [{ provider: uid }, { service: { $in: myServiceIds } }] };
+
         const [daily, weekly, monthly, allTime] = await Promise.all([
-            Booking.find({ provider: pid, createdAt: { $gte: startOfDay } }),
-            Booking.find({ provider: pid, createdAt: { $gte: startOfWeek } }),
-            Booking.find({ provider: pid, createdAt: { $gte: startOfMonth } }),
-            Booking.find({ provider: pid })
+            Booking.find({ ...providerQuery, createdAt: { $gte: startOfDay } }),
+            Booking.find({ ...providerQuery, createdAt: { $gte: startOfWeek } }),
+            Booking.find({ ...providerQuery, createdAt: { $gte: startOfMonth } }),
+            Booking.find(providerQuery)
         ]);
         const earnings = (b) => b.filter(x => ['confirmed','completed'].includes(x.status)).reduce((s, x) => s + (x.price||0), 0);
         const last7Days = [];
@@ -100,14 +115,27 @@ router.put('/:id/status', auth, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid status' });
         const booking = await Booking.findById(req.params.id);
         if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
-        const isProvider = booking.provider?.toString() === req.user._id.toString();
-        const isCustomer = booking.customer?.toString() === req.user._id.toString();
-        if (!isProvider && !isCustomer) return res.status(403).json({ success: false, message: 'Not authorized' });
-        if (isCustomer && !isProvider && status !== 'cancelled') return res.status(403).json({ success: false, message: 'Customers can only cancel' });
+
+        const uid = req.user._id.toString();
+        const isProvider = booking.provider?.toString() === uid;
+        const isCustomer = booking.customer?.toString() === uid;
+
+        // Also check if user owns the service directly (handles cases where provider field is set to user)
+        const service = await Service.findById(booking.service);
+        const isServiceOwner = service?.provider?.toString() === uid;
+
+        const canActAsProvider = isProvider || isServiceOwner;
+
+        if (!canActAsProvider && !isCustomer)
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        if (isCustomer && !canActAsProvider && status !== 'cancelled')
+            return res.status(403).json({ success: false, message: 'Customers can only cancel bookings' });
+
         booking.status = status;
         if (status === 'rescheduled' && newTime) booking.preferredTime = new Date(newTime);
         await booking.save();
-        const [service, customer] = await Promise.all([Service.findById(booking.service), User.findById(booking.customer)]);
+
+        const customer = await User.findById(booking.customer);
         if (service && customer) {
             if (status === 'confirmed') notifyCustomerConfirmed(booking, service, customer.email, customer.phone).catch(console.error);
             else if (['rejected','cancelled'].includes(status)) notifyCustomerRejected(booking, service, customer.email, customer.phone).catch(console.error);

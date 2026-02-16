@@ -32,24 +32,26 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 0 16px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
             overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 58px;
         }
 
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
+        .header h1 { display: none; }
+        .header p  { display: none; }
 
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
         }
 
         .mode-toggle {
@@ -187,7 +189,7 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100vh - 215px);
+            height: calc(100vh - 185px);
             min-height: 360px;
             padding: 12px 16px 16px;
             overflow: hidden;
@@ -688,7 +690,7 @@
 
         .user-dropdown {
             position: fixed;
-            top: 76px;
+            top: 66px;
             right: calc(50% - 240px);
             background: white;
             border-radius: 16px;
@@ -1136,9 +1138,44 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="header">
-            <h1>⚡ SlowDay Deals</h1>
-            <p>Book services at special prices on slow days</p>
+        <div class="header" id="mainHeader">
+            <!-- Left: Logo -->
+            <div class="header-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48">
+                    <defs>
+                        <filter id="bolt-glow" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Icon: calendar -->
+                    <rect x="2" y="8" width="36" height="32" rx="5" fill="white" opacity="0.22"/>
+                    <rect x="2" y="8" width="36" height="12" rx="5" fill="white" opacity="0.18"/>
+                    <rect x="2" y="15" width="36" height="5" fill="white" opacity="0.18"/>
+                    <!-- Binding pegs -->
+                    <rect x="10" y="4" width="5" height="9" rx="2.5" fill="white" opacity="0.85"/>
+                    <rect x="25" y="4" width="5" height="9" rx="2.5" fill="white" opacity="0.85"/>
+                    <!-- Calendar dots -->
+                    <circle cx="11" cy="28" r="2" fill="white" opacity="0.55"/>
+                    <circle cx="20" cy="28" r="2" fill="white" opacity="0.55"/>
+                    <circle cx="29" cy="28" r="2" fill="white" opacity="0.55"/>
+                    <circle cx="11" cy="35" r="2" fill="white" opacity="0.55"/>
+                    <circle cx="20" cy="35" r="2" fill="white" opacity="0.55"/>
+
+                    <!-- Lightning bolt (glow + solid) -->
+                    <path d="M22,7 L14,24 L20,24 L16,41 L30,21 L23,21 Z" fill="#fbbf24" opacity="0.35" filter="url(#bolt-glow)" transform="scale(1.15) translate(-2,-2)"/>
+                    <path d="M22,7 L14,24 L20,24 L16,41 L30,21 L23,21 Z" fill="#fbbf24"/>
+
+                    <!-- Wordmark -->
+                    <text x="48" y="32" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" font-weight="800" fill="white" letter-spacing="-0.5">SlowDay</text>
+                    <!-- Subtle "DEALS" tag -->
+                    <rect x="154" y="18" width="46" height="16" rx="4" fill="white" opacity="0.2"/>
+                    <text x="177" y="30" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" font-weight="700" fill="white" letter-spacing="1.5" opacity="0.9">DEALS</text>
+                </svg>
+            </div>
+
+            <!-- Right: avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
             </div>

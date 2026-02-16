@@ -17,7 +17,6 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         .app-container {
@@ -27,6 +26,7 @@
             min-height: 100vh;
             position: relative;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            overflow-x: clip;
         }
 
         .header {
@@ -945,13 +945,16 @@
             background: white;
             border: 1.5px solid #e0e0e0;
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 10px 14px 10px 12px;
+            overflow: visible;
         }
 
         .search-bar svg {
+            display: block;
             flex-shrink: 0;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
+            overflow: visible;
         }
 
         .search-bar input {
@@ -989,6 +992,7 @@
             box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
             padding-bottom: env(safe-area-inset-bottom, 0px);
             height: 65px;
+            overflow: visible;
         }
 
         .nav-btn {
@@ -997,7 +1001,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px 4px 6px;
+            padding: 8px 12px 6px;
             border: none;
             background: transparent;
             cursor: pointer;
@@ -1005,14 +1009,16 @@
             font-weight: 600;
             gap: 3px;
             transition: color 0.2s;
-            min-width: 0;
             overflow: visible;
+            min-width: 60px;
         }
 
         .nav-btn svg {
-            width: 22px;
-            height: 22px;
+            display: block;
+            width: 24px;
+            height: 24px;
             flex-shrink: 0;
+            overflow: visible;
         }
 
         .nav-btn.active { color: #667eea; }
@@ -1107,7 +1113,7 @@
         <!-- Search Bar -->
         <div class="search-bar-wrap" id="searchBarWrap">
             <div class="search-bar">
-                <svg width="18" height="18" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" id="searchInput" placeholder="Search services, location..." oninput="searchServices(this.value)">
                 <select id="filterType" onchange="searchServices(document.getElementById('searchInput').value)">
                     <option value="">All types</option>
@@ -1289,15 +1295,15 @@
         <!-- Bottom Nav -->
         <div class="bottom-nav">
             <button class="nav-btn active" id="navDiscover" onclick="showTab('discover')">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <span>Discover</span>
             </button>
             <button class="nav-btn" id="navSaved" onclick="showTab('saved')">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 <span>Saved</span>
             </button>
             <button class="nav-btn" id="navProvider" onclick="showTab('provider')">
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                 <span>My Profile</span>
             </button>
         </div>

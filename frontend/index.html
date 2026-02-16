@@ -1178,7 +1178,8 @@
                     </div>
                     <div class="form-group"><label>Service Description</label><textarea id="serviceDesc" required placeholder="Describe what you offer..."></textarea></div>
                     <div class="form-group"><label>Location/Area</label><input type="text" id="location" required placeholder="e.g., Downtown Brooklyn"></div>
-                    <div class="form-group"><label>Contact</label><input type="text" id="providerContact" required placeholder="Phone or email"></div>
+                    <div class="form-group"><label>Phone Number <span style="color:#888;font-weight:400;font-size:12px;">(for SMS notifications)</span></label><input type="text" id="providerContact" required placeholder="e.g., 6471234567"></div>
+                    <div class="form-group"><label>Email Address <span style="color:#888;font-weight:400;font-size:12px;">(for email notifications)</span></label><input type="email" id="providerEmail" required placeholder="your@email.com"></div>
                     <div class="form-group"><label>Special Offer Pricing</label>
                         <div class="price-row">
                             <div><label style="font-size:12px;">Weekday Price</label><input type="number" id="weekdayPrice" required placeholder="$" step="0.01"></div>
@@ -1640,6 +1641,9 @@
             } else if (tab === 'provider') {
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('providerView').style.display = 'block';
+                // Auto-fill email if empty
+                const emailField = document.getElementById('providerEmail');
+                if (emailField && !emailField.value && currentUser) emailField.value = currentUser.email || '';
             }
         }
 
@@ -1685,13 +1689,18 @@
             const imgHtml = myService.photos && myService.photos.length > 0
                 ? `<img class="profile-card-img" src="${myService.photos[0]}" alt="${myService.serviceType}">`
                 : `<div class="profile-card-img-placeholder">${getServiceEmoji(myService.serviceType)}</div>`;
+            const emailLine = myService.email ? `<span>✉️ ${myService.email}</span>` : '';
             document.getElementById('myProfileCard').innerHTML = `
                 ${imgHtml}
                 <div class="profile-card-body">
                     <h2>${myService.providerName}</h2>
                     <div class="type-badge">${myService.serviceType}</div>
                     <p>${myService.description}</p>
-                    <p style="color:#888;font-size:13px;">📍 ${myService.location} &nbsp;|&nbsp; 📞 ${myService.contact}</p>
+                    <p style="color:#888;font-size:13px;display:flex;flex-wrap:wrap;gap:8px;">
+                        <span>📍 ${myService.location}</span>
+                        <span>📞 ${myService.contact}</span>
+                        ${emailLine}
+                    </p>
                     <div class="profile-price-row">
                         <div class="profile-price-box"><div class="label">Weekdays</div><div class="value">$${myService.weekdayPrice}</div></div>
                         <div class="profile-price-box"><div class="label">Weekends</div><div class="value">$${myService.weekendPrice}</div></div>
@@ -1710,9 +1719,30 @@
                 document.getElementById('serviceType').value = myService.serviceType;
                 document.getElementById('serviceDesc').value = myService.description;
                 document.getElementById('location').value = myService.location;
-                document.getElementById('providerContact').value = myService.contact;
+                document.getElementById('providerContact').value = myService.contact || '';
+                document.getElementById('providerEmail').value = myService.email || currentUser?.email || '';
                 document.getElementById('weekdayPrice').value = myService.weekdayPrice;
                 document.getElementById('weekendPrice').value = myService.weekendPrice;
+
+                // Restore existing photos into preview
+                const preview = document.getElementById('photoPreview');
+                preview.innerHTML = '';
+                if (myService.photos && myService.photos.length > 0) {
+                    myService.photos.forEach(photoSrc => {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'photo-thumb';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;';
+                        const imgEl = document.createElement('img');
+                        imgEl.src = photoSrc;
+                        imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
+                        const xBtn = document.createElement('button');
+                        xBtn.type = 'button'; xBtn.textContent = '×';
+                        xBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.onclick = () => wrap.remove();
+                        wrap.appendChild(imgEl); wrap.appendChild(xBtn);
+                        preview.appendChild(wrap);
+                    });
+                }
             }
         }
 
@@ -1978,7 +2008,16 @@
         function renderSavedList() {
             const savedList = document.getElementById('savedList');
             if (!savedServices.length) {
-                savedList.innerHTML = `<div class="no-cards"><svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><h3>No saved services yet</h3><p>Swipe right on services you like!</p></div>`;
+                savedList.innerHTML = `
+                    <div class="empty-state" style="padding-top:40px;">
+                        <div class="empty-emoji">💝</div>
+                        <h3>Nothing saved yet!</h3>
+                        <p>Swipe right on services you love and they'll appear here</p>
+                        <button onclick="showTab('discover')" style="margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;">
+                            🔍 Browse Services
+                        </button>
+                        <div class="empty-dots" style="margin-top:20px;"><span></span><span></span><span></span></div>
+                    </div>`;
                 return;
             }
             savedList.innerHTML = savedServices.map(service => {
@@ -2005,7 +2044,6 @@
             e.preventDefault();
             if (!currentUser) { alert('Please log in'); return; }
             
-            // Collect photos from preview - get from inside .photo-thumb divs
             const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
             const photos = Array.from(photoImgs).map(img => img.src);
 
@@ -2015,6 +2053,7 @@
                 description: document.getElementById('serviceDesc').value,
                 location: document.getElementById('location').value,
                 contact: document.getElementById('providerContact').value,
+                email: document.getElementById('providerEmail').value || currentUser.email,
                 weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
                 weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
                 photos: photos
@@ -2023,11 +2062,9 @@
             try {
                 let response;
                 if (myService) {
-                    // Update existing
                     response = await API.updateService(myService._id, serviceData);
                     myService = response.service;
                 } else {
-                    // Create new
                     response = await API.createService(serviceData);
                     myService = response.service;
                 }

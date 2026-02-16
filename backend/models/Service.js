@@ -4,7 +4,7 @@ const serviceSchema = new mongoose.Schema({
     provider: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false  // Made optional so manually added services work
     },
     providerName: {
         type: String,
@@ -20,7 +20,7 @@ const serviceSchema = new mongoose.Schema({
     description: {
         type: String,
         required: [true, 'Description is required'],
-        minlength: [20, 'Description must be at least 20 characters']
+        minlength: [10, 'Description must be at least 10 characters']
     },
     location: {
         type: String,
@@ -61,7 +61,6 @@ const serviceSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for searching
 serviceSchema.index({ serviceType: 1, location: 1, isActive: 1 });
 
 module.exports = mongoose.model('Service', serviceSchema);

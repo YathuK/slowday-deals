@@ -688,21 +688,18 @@
 
         .user-dropdown {
             position: fixed;
-            top: 80px;
+            top: 76px;
             right: calc(50% - 240px);
             background: white;
             border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
             padding: 16px;
-            min-width: 220px;
-            z-index: 9999;
-            text-align: left;
+            min-width: 240px;
+            z-index: 10000;
         }
 
         @media (max-width: 520px) {
-            .user-dropdown {
-                right: 10px;
-            }
+            .user-dropdown { right: 8px; }
         }
 
         .user-dropdown-name {
@@ -1075,13 +1072,6 @@
             <p>Book services at special prices on slow days</p>
             <div class="user-menu" id="userMenu" style="display: none;">
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
-                <div class="user-dropdown" id="userDropdown" style="display:none;">
-                    <div class="user-dropdown-name" id="userDropdownName"></div>
-                    <div class="user-dropdown-email" id="userDropdownEmail"></div>
-                    <hr style="margin:8px 0;border:none;border-top:1px solid #eee;">
-                    <button class="dropdown-btn" onclick="switchToProvider()">💼 My Provider Profile</button>
-                    <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
-                </div>
             </div>
             <div class="user-menu" id="guestMenu">
                 <button class="circle-login-btn" onclick="showAuthModal()" title="Login / Sign Up">
@@ -1091,6 +1081,21 @@
                     </svg>
                 </button>
             </div>
+        </div>
+
+        <!-- User Dropdown — outside header so it's never clipped -->
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;cursor:pointer;" onclick="openUserProfile()">
+                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;" id="dropdownAvatar"></div>
+                <div>
+                    <div class="user-dropdown-name" id="userDropdownName"></div>
+                    <div class="user-dropdown-email" id="userDropdownEmail"></div>
+                </div>
+                <svg width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <hr style="margin:4px 0 10px;border:none;border-top:1px solid #f0f0f0;">
+            <button class="dropdown-btn" onclick="switchToProvider(); toggleUserDropdown();">💼 My Provider Profile</button>
+            <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
         </div>
 
 
@@ -1218,6 +1223,47 @@
             <div id="ptabAnalyticsContent" style="display:none;">
                 <div style="padding:16px;" id="analyticsContent">
                     <div class="empty-state"><div class="empty-emoji">📊</div><h3>Loading analytics...</h3></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile Modal -->
+        <div class="modal" id="userProfileModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>👤 My Account</h2>
+                    <button class="close-btn" onclick="document.getElementById('userProfileModal').classList.remove('active')">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding:20px;">
+                    <div id="profileMsg" style="display:none;padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:14px;font-weight:600;"></div>
+
+                    <!-- Change Name -->
+                    <div style="margin-bottom:24px;">
+                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">✏️ Change Name</h3>
+                        <input type="text" id="newName" placeholder="New name" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:10px;">
+                        <button onclick="updateName()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Save Name</button>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin-bottom:24px;">
+
+                    <!-- Change Password -->
+                    <div style="margin-bottom:24px;">
+                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">🔒 Change Password</h3>
+                        <input type="password" id="currentPassword" placeholder="Current password" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:8px;">
+                        <input type="password" id="newPassword" placeholder="New password (min 6 chars)" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:10px;">
+                        <button onclick="updatePassword()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Change Password</button>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin-bottom:24px;">
+
+                    <!-- Delete Account -->
+                    <div>
+                        <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;">⚠️ Delete Account</h3>
+                        <p style="font-size:13px;color:#888;margin-bottom:10px;">This permanently deletes your account and all your data. Cannot be undone.</p>
+                        <button onclick="deleteAccount()" style="width:100%;padding:12px;background:#fee2e2;color:#e53e3e;border:1.5px solid #fca5a5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Delete My Account</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1540,12 +1586,12 @@
             document.getElementById('guestMenu').style.display = 'none';
             const firstLetter = currentUser.name.charAt(0).toUpperCase();
             document.getElementById('userAvatar').textContent = firstLetter;
+            document.getElementById('dropdownAvatar').textContent = firstLetter;
             document.getElementById('userDropdownName').textContent = currentUser.name;
             document.getElementById('userDropdownEmail').textContent = currentUser.email;
             await loadSavedServices();
             await loadPublicServices();
             renderSavedList();
-            // Check if user already has a service profile
             await loadMyProfile();
         }
 
@@ -1895,17 +1941,24 @@
             e.preventDefault();
             if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
             try {
+                const serviceId = currentBookingService._id || currentBookingService.id;
                 const response = await API.createBooking({
-                    serviceId: currentBookingService._id || currentBookingService.id,
+                    serviceId,
                     customerContact: document.getElementById('customerContact').value,
-                    preferredTime: document.getElementById('preferredTime').value,
+                    preferredTime: new Date(document.getElementById('preferredTime').value).toISOString(),
                     notes: document.getElementById('bookingNotes').value
                 });
                 if (response.success) {
                     const successEl = document.getElementById('bookingSuccess');
                     successEl.style.display = 'block';
-                    successEl.textContent = '✅ Booking sent! The provider will contact you soon.';
+                    successEl.textContent = '✅ Booking sent! The provider will confirm soon.';
                     e.target.reset();
+                    // Remove from saved list after booking
+                    try {
+                        await API.removeSavedService(serviceId);
+                        await loadSavedServices();
+                        renderSavedList();
+                    } catch(err) { /* already not saved, no problem */ }
                     setTimeout(closeBookingModal, 2000);
                 }
             } catch (error) { alert(error.message || 'Error creating booking.'); }
@@ -2029,6 +2082,60 @@
             });
             // Reset input so same file can be re-added
             e.target.value = '';
+        }
+
+        function openUserProfile() {
+            document.getElementById('userDropdown').style.display = 'none';
+            document.getElementById('newName').value = currentUser.name || '';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('profileMsg').style.display = 'none';
+            document.getElementById('userProfileModal').classList.add('active');
+        }
+
+        function showProfileMsg(msg, isError) {
+            const el = document.getElementById('profileMsg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            el.style.background = isError ? '#fee2e2' : '#d1fae5';
+            el.style.color = isError ? '#e53e3e' : '#059669';
+        }
+
+        async function updateName() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) { showProfileMsg('Please enter a name', true); return; }
+            try {
+                const res = await API.updateProfile({ name });
+                currentUser.name = name;
+                const firstLetter = name.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = firstLetter;
+                document.getElementById('dropdownAvatar').textContent = firstLetter;
+                document.getElementById('userDropdownName').textContent = name;
+                showProfileMsg('✅ Name updated!', false);
+            } catch(e) { showProfileMsg(e.message || 'Error updating name', true); }
+        }
+
+        async function updatePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const next = document.getElementById('newPassword').value;
+            if (!current || !next) { showProfileMsg('Please fill in both password fields', true); return; }
+            if (next.length < 6) { showProfileMsg('New password must be at least 6 characters', true); return; }
+            try {
+                await API.changePassword(current, next);
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                showProfileMsg('✅ Password changed!', false);
+            } catch(e) { showProfileMsg(e.message || 'Current password incorrect', true); }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('⚠️ Delete your account? This cannot be undone. All your data will be permanently removed.')) return;
+            if (!confirm('Are you absolutely sure? Type OK to confirm.')) return;
+            try {
+                await API.deleteAccount();
+                logout();
+                alert('Your account has been deleted.');
+            } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
         }
 
         // ============================================

@@ -173,5 +173,13 @@ const API = {
     
     async updateProfile(profileData) {
         return await this.call(API_CONFIG.ENDPOINTS.PROFILE, 'PUT', profileData);
+    },
+
+    async deleteAccount() {
+        return await this.call('/users/account', 'DELETE');
+    },
+
+    async changePassword(currentPassword, newPassword) {
+        return await this.call('/users/password', 'PUT', { currentPassword, newPassword });
     }
 };

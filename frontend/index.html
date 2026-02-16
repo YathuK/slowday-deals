@@ -940,7 +940,9 @@
     </div>
 
     <script>
-        // Authentication state
+        // ============================================
+        // STATE
+        // ============================================
         let currentUser = null;
         let services = [];
         let currentCardIndex = 0;
@@ -948,17 +950,42 @@
         let currentBookingService = null;
         let myBookings = [];
 
+        // ============================================
+        // INIT
+        // ============================================
+        window.onload = async function() {
+            const token = API.getToken();
+            if (token) {
+                try {
+                    const response = await API.getCurrentUser();
+                    currentUser = response.user;
+                    showAuthenticatedView();
+                } catch (error) {
+                    API.removeToken();
+                    await loadPublicServices();
+                }
+            } else {
+                await loadPublicServices();
+            }
+        };
+
+        async function loadPublicServices() {
+            try {
+                const response = await API.getServices();
+                services = response.services || [];
+            } catch (error) {
+                services = [];
+            }
+            renderCards();
+        }
+
+        // ============================================
+        // AUTH MODAL
+        // ============================================
         function showAuthModal() {
             document.getElementById('authModal').classList.add('active');
             showLogin();
         }
-
-        // Initialize
-        window.onload = function() {
-            checkAuth();
-        };
-
-        async function checkAuth() {
 
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
@@ -976,113 +1003,89 @@
             document.getElementById('signupForm').style.display = 'block';
         }
 
-        function login(e) {
+        async function login(e) {
             e.preventDefault();
-            
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-
-            // Load users from localStorage
-            const savedUsers = localStorage.getItem('users');
-            if (savedUsers) {
-                users = JSON.parse(savedUsers);
-            }
-
-            // Find user
-            const user = users.find(u => u.email === email && u.password === password);
-
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                showAuthenticatedView();
-                closeAuthModal();
-                e.target.reset();
-            } else {
-                alert('Invalid email or password. Please try again or sign up for a new account.');
+            try {
+                const response = await API.login({ email, password });
+                if (response.success) {
+                    API.setToken(response.token);
+                    currentUser = response.user;
+                    showAuthenticatedView();
+                    closeAuthModal();
+                    e.target.reset();
+                }
+            } catch (error) {
+                alert(error.message || 'Login failed. Please check your credentials.');
             }
         }
 
-        function signup(e) {
+        async function signup(e) {
             e.preventDefault();
-            
-            const newUser = {
-                id: Date.now(),
+            const userData = {
                 name: document.getElementById('signupName').value,
                 email: document.getElementById('signupEmail').value,
                 password: document.getElementById('signupPassword').value,
                 phone: document.getElementById('signupPhone').value,
-                accountType: document.getElementById('signupAccountType').value,
-                createdAt: new Date().toISOString()
+                accountType: document.getElementById('signupAccountType').value
             };
-
-            // Load existing users
-            const savedUsers = localStorage.getItem('users');
-            if (savedUsers) {
-                users = JSON.parse(savedUsers);
+            try {
+                const response = await API.signup(userData);
+                if (response.success) {
+                    API.setToken(response.token);
+                    currentUser = response.user;
+                    showAuthenticatedView();
+                    closeAuthModal();
+                    e.target.reset();
+                    alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
+                }
+            } catch (error) {
+                alert(error.message || 'Signup failed. Please try again.');
             }
-
-            // Check if email already exists
-            if (users.find(u => u.email === newUser.email)) {
-                alert('An account with this email already exists. Please log in.');
-                return;
-            }
-
-            // Add new user
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            // Log them in
-            currentUser = newUser;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-            showAuthenticatedView();
-            closeAuthModal();
-            e.target.reset();
-
-            alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
         }
 
         function logout() {
             if (confirm('Are you sure you want to log out?')) {
                 currentUser = null;
-                localStorage.removeItem('currentUser');
+                API.removeToken();
                 location.reload();
             }
         }
 
-        function showAuthenticatedView() {
-            // Show user menu, hide guest menu
+        async function showAuthenticatedView() {
             document.getElementById('userMenu').style.display = 'flex';
             document.getElementById('guestMenu').style.display = 'none';
             document.getElementById('userName').textContent = `👋 ${currentUser.name}`;
-
-            // Load user's saved services
-            loadSavedServices();
-
-            // If provider, show provider view by default
+            await loadSavedServices();
+            await loadPublicServices();
             if (currentUser.accountType === 'provider') {
-                switchMode('provider');
+                document.querySelectorAll('.mode-btn')[1].classList.add('active');
+                document.querySelectorAll('.mode-btn')[0].classList.remove('active');
+                document.getElementById('customerView').classList.remove('active');
+                document.getElementById('providerView').classList.add('active');
             } else {
-                renderCards();
                 renderSavedList();
             }
         }
 
+        // ============================================
+        // MODE SWITCHING
+        // ============================================
         function switchMode(mode) {
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-            
             if (mode === 'customer') {
                 event.target.classList.add('active');
                 document.getElementById('customerView').classList.add('active');
             } else {
                 if (!currentUser) {
-                    alert('Please log in or create a provider account to access this section.');
+                    alert('Please log in to access provider features.');
                     showAuthModal();
                     return;
                 }
                 if (currentUser.accountType !== 'provider') {
-                    alert('Only service providers can access this section. Please create a provider account.');
+                    alert('Only service providers can access this section.');
                     return;
                 }
                 event.target.classList.add('active');
@@ -1093,7 +1096,6 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
             if (tab === 'discover') {
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
@@ -1104,25 +1106,23 @@
             }
         }
 
+        // ============================================
+        // CARDS & SWIPING
+        // ============================================
         function renderCards() {
             const stack = document.getElementById('cardStack');
             stack.innerHTML = '';
-
             if (currentCardIndex >= services.length) {
                 stack.innerHTML = `
                     <div class="no-cards">
                         <svg width="80" height="80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                         <h3>No more services!</h3>
                         <p>Check back later for new deals</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
-
-            // Show next 3 cards in stack
             for (let i = currentCardIndex; i < Math.min(currentCardIndex + 3, services.length); i++) {
-                const service = services[i];
-                const card = createCard(service, i - currentCardIndex);
+                const card = createCard(services[i], i - currentCardIndex);
                 stack.appendChild(card);
             }
         }
@@ -1132,12 +1132,10 @@
             card.className = 'service-card';
             card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
             card.style.zIndex = 100 - stackPosition;
-            card.dataset.serviceId = service.id;
-
-            const imageContent = service.photos && service.photos[0] 
+            const serviceId = service._id || service.id;
+            const imageContent = service.photos && service.photos[0]
                 ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
-                : `<div style="font-size: 64px;">${getServiceEmoji(service.serviceType)}</div>`;
-
+                : `<div style="font-size:64px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;">${getServiceEmoji(service.serviceType)}</div>`;
             card.innerHTML = `
                 <div class="swipe-indicator like-indicator">LIKE</div>
                 <div class="swipe-indicator nope-indicator">NOPE</div>
@@ -1161,319 +1159,184 @@
                             <div class="price-value">$${service.weekendPrice}</div>
                         </div>
                     </div>
-                </div>
-            `;
+                </div>`;
 
-            // Add swipe functionality
-            let startX, currentX;
-            let isDragging = false;
-
-            card.addEventListener('mousedown', startDrag);
-            card.addEventListener('touchstart', startDrag);
-
-            function startDrag(e) {
-                if (stackPosition !== 0) return;
-                isDragging = true;
-                startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-                card.style.transition = 'none';
-            }
-
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('touchmove', drag);
-
-            function drag(e) {
-                if (!isDragging) return;
-                currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-                const diff = currentX - startX;
-                const rotation = diff / 20;
-
-                card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
-
-                if (diff > 50) {
-                    card.classList.add('swiping-right');
-                    card.classList.remove('swiping-left');
-                } else if (diff < -50) {
-                    card.classList.add('swiping-left');
-                    card.classList.remove('swiping-right');
-                } else {
-                    card.classList.remove('swiping-right', 'swiping-left');
-                }
-            }
-
+            let startX, currentX, isDragging = false;
+            card.addEventListener('mousedown', e => { if (stackPosition !== 0) return; isDragging = true; startX = e.clientX; card.style.transition = 'none'; });
+            card.addEventListener('touchstart', e => { if (stackPosition !== 0) return; isDragging = true; startX = e.touches[0].clientX; card.style.transition = 'none'; });
+            document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
+            document.addEventListener('touchmove', e => { if (!isDragging) return; currentX = e.touches[0].clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
+            const endDrag = () => { if (!isDragging) return; isDragging = false; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = ''; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
-
-            function endDrag() {
-                if (!isDragging) return;
-                isDragging = false;
-                card.style.transition = 'transform 0.3s';
-
-                const diff = currentX - startX;
-
-                if (diff > 100) {
-                    swipeCard('right');
-                } else if (diff < -100) {
-                    swipeCard('left');
-                } else {
-                    card.style.transform = '';
-                    card.classList.remove('swiping-right', 'swiping-left');
-                }
-            }
-
-            card.addEventListener('click', (e) => {
-                if (!isDragging && stackPosition === 0) {
-                    showDetails();
-                }
-            });
-
+            card.addEventListener('click', () => { if (stackPosition === 0) showDetails(); });
             return card;
         }
 
-        function swipeLeft() {
-            swipeCard('left');
-        }
+        function swipeLeft() { swipeCard('left'); }
 
-        function swipeRight() {
+        async function handleSwipeRight() {
             if (!currentUser) {
                 alert('Please log in to save services!');
                 showAuthModal();
-                swipeCard('right'); // Still swipe the card
+                swipeCard('right');
                 return;
             }
-            
             const service = services[currentCardIndex];
-            if (!savedServices.find(s => s.id === service.id)) {
-                savedServices.push(service);
-                saveSavedServices();
-            }
+            const serviceId = service._id || service.id;
+            try {
+                if (!savedServices.find(s => (s._id || s.id) === serviceId)) {
+                    await API.saveService(serviceId);
+                    await loadSavedServices();
+                }
+            } catch (error) { console.error('Error saving:', error); }
             swipeCard('right');
         }
 
+        function swipeRight() { handleSwipeRight(); }
+
         function swipeCard(direction) {
             const cards = document.querySelectorAll('.service-card');
-            if (cards.length === 0) return;
-
+            if (!cards.length) return;
             const topCard = cards[0];
-            const translateX = direction === 'right' ? 1000 : -1000;
-
-            topCard.style.transform = `translateX(${translateX}px) rotate(${direction === 'right' ? 30 : -30}deg)`;
-            
-            setTimeout(() => {
-                currentCardIndex++;
-                renderCards();
-            }, 300);
+            topCard.style.transform = `translateX(${direction === 'right' ? 1000 : -1000}px) rotate(${direction === 'right' ? 30 : -30}deg)`;
+            setTimeout(() => { currentCardIndex++; renderCards(); }, 300);
         }
 
+        // ============================================
+        // DETAILS & BOOKING
+        // ============================================
         function showDetails() {
             if (currentCardIndex >= services.length) return;
-            
             const service = services[currentCardIndex];
+            const serviceId = service._id || service.id;
             const modal = document.getElementById('detailModal');
-            const modalBody = document.getElementById('modalBody');
-
             const imageContent = service.photos && service.photos[0]
                 ? `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`
-                : `<div class="detail-image" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 80px;">${getServiceEmoji(service.serviceType)}</div>`;
-
-            modalBody.innerHTML = `
+                : `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            document.getElementById('modalBody').innerHTML = `
                 ${imageContent}
-                <div class="detail-section">
-                    <h3>${service.serviceType}</h3>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;">by ${service.providerName}</p>
-                    <p style="color: #555; line-height: 1.6;">${service.description}</p>
-                </div>
-                <div class="detail-section">
-                    <h3>📍 Location</h3>
-                    <p style="color: #555;">${service.location}</p>
-                </div>
-                <div class="detail-section">
-                    <h3>💰 Pricing</h3>
+                <div class="detail-section"><h3>${service.serviceType}</h3><p style="color:#666;font-size:14px;margin-bottom:10px;">by ${service.providerName}</p><p style="color:#555;line-height:1.6;">${service.description}</p></div>
+                <div class="detail-section"><h3>📍 Location</h3><p style="color:#555;">${service.location}</p></div>
+                <div class="detail-section"><h3>💰 Pricing</h3>
                     <div class="price-display">
-                        <div class="price-box">
-                            <div class="price-label">Weekdays</div>
-                            <div class="price-value">$${service.weekdayPrice}</div>
-                        </div>
-                        <div class="price-box">
-                            <div class="price-label">Weekends</div>
-                            <div class="price-value">$${service.weekendPrice}</div>
-                        </div>
+                        <div class="price-box"><div class="price-label">Weekdays</div><div class="price-value">$${service.weekdayPrice}</div></div>
+                        <div class="price-box"><div class="price-label">Weekends</div><div class="price-value">$${service.weekendPrice}</div></div>
                     </div>
                 </div>
-                <button class="book-now-btn" onclick="openBookingModal(${service.id})">Book Now</button>
-            `;
-
+                <button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
             modal.classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('detailModal').classList.remove('active');
-        }
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 
-        function openBookingModal(serviceId) {
-            if (!currentUser) {
-                alert('Please log in to book services');
-                showAuthModal();
-                return;
-            }
-
-            currentBookingService = services.find(s => s.id === serviceId);
+        async function openBookingModal(serviceId) {
+            if (!currentUser) { alert('Please log in to book services'); showAuthModal(); return; }
+            currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');
             document.getElementById('bookingSuccess').style.display = 'none';
-            
-            // Pre-fill customer name
             document.getElementById('customerName').value = currentUser.name;
         }
 
-        function closeBookingModal() {
-            document.getElementById('bookingModal').classList.remove('active');
-            currentBookingService = null;
+        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
+
+        async function submitBooking(e) {
+            e.preventDefault();
+            if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
+            try {
+                const response = await API.createBooking({
+                    serviceId: currentBookingService._id || currentBookingService.id,
+                    customerContact: document.getElementById('customerContact').value,
+                    preferredTime: document.getElementById('preferredTime').value,
+                    notes: document.getElementById('bookingNotes').value
+                });
+                if (response.success) {
+                    const successEl = document.getElementById('bookingSuccess');
+                    successEl.style.display = 'block';
+                    successEl.textContent = '✅ Booking sent! The provider will contact you soon.';
+                    e.target.reset();
+                    setTimeout(closeBookingModal, 2000);
+                }
+            } catch (error) { alert(error.message || 'Error creating booking.'); }
         }
 
-        function submitBooking(e) {
-            e.preventDefault();
-
-            if (!currentUser) {
-                alert('Please log in to book services');
-                showAuthModal();
-                return;
-            }
-            
-            const booking = {
-                id: Date.now(),
-                customerId: currentUser.id,
-                customerName: currentUser.name,
-                service: currentBookingService,
-                customerContact: document.getElementById('customerContact').value,
-                preferredTime: document.getElementById('preferredTime').value,
-                notes: document.getElementById('bookingNotes').value,
-                createdAt: new Date().toISOString()
-            };
-
-            // Save booking (in real app, send to backend)
-            let bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-            bookings.push(booking);
-            localStorage.setItem('bookings', JSON.stringify(bookings));
-
-            console.log('Booking submitted:', booking);
-            
-            document.getElementById('bookingSuccess').style.display = 'block';
-            e.target.reset();
-
-            setTimeout(() => {
-                closeBookingModal();
-            }, 2000);
+        // ============================================
+        // SAVED SERVICES
+        // ============================================
+        async function loadSavedServices() {
+            if (!currentUser) { savedServices = []; return; }
+            try {
+                const response = await API.getSavedServices();
+                savedServices = response.services || [];
+            } catch (error) { savedServices = []; }
         }
 
         function renderSavedList() {
             const savedList = document.getElementById('savedList');
-            
-            if (savedServices.length === 0) {
-                savedList.innerHTML = `
-                    <div class="no-cards">
-                        <svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                        <h3>No saved services yet</h3>
-                        <p>Swipe right on services you like!</p>
-                    </div>
-                `;
+            if (!savedServices.length) {
+                savedList.innerHTML = `<div class="no-cards"><svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><h3>No saved services yet</h3><p>Swipe right on services you like!</p></div>`;
                 return;
             }
-
             savedList.innerHTML = savedServices.map(service => {
-                const imageContent = service.photos && service.photos[0]
+                const serviceId = service._id || service.id;
+                const img = service.photos && service.photos[0]
                     ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
-                    : `<div style="width: 80px; height: 80px; border-radius: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 32px;">${getServiceEmoji(service.serviceType)}</div>`;
-
-                return `
-                    <div class="saved-card">
-                        ${imageContent}
-                        <div class="saved-card-content">
-                            <h3>${service.serviceType}</h3>
-                            <p>${service.providerName} • ${service.location}</p>
-                            <p style="color: #667eea; font-weight: 600;">Weekdays: $${service.weekdayPrice} | Weekends: $${service.weekendPrice}</p>
-                            <div class="saved-card-actions">
-                                <button class="book-btn-small" onclick="openBookingModal(${service.id})">Book</button>
-                                <button class="remove-btn" onclick="removeSaved(${service.id})">Remove</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    : `<div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:32px;">${getServiceEmoji(service.serviceType)}</div>`;
+                return `<div class="saved-card">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3><p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">Weekdays: $${service.weekdayPrice} | Weekends: $${service.weekendPrice}</p><div class="saved-card-actions"><button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button><button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
             }).join('');
         }
 
-        function removeSaved(serviceId) {
-            savedServices = savedServices.filter(s => s.id !== serviceId);
-            saveSavedServices();
-            renderSavedList();
+        async function removeSaved(serviceId) {
+            try {
+                await API.removeSavedService(serviceId);
+                await loadSavedServices();
+                renderSavedList();
+            } catch (error) { alert('Error removing service.'); }
+        }
+
+        // ============================================
+        // PROVIDER
+        // ============================================
+        async function submitProvider(e) {
+            e.preventDefault();
+            if (!currentUser) { alert('Please log in'); return; }
+            try {
+                const response = await API.createService({
+                    providerName: document.getElementById('providerName').value,
+                    serviceType: document.getElementById('serviceType').value,
+                    description: document.getElementById('serviceDesc').value,
+                    location: document.getElementById('location').value,
+                    contact: document.getElementById('providerContact').value,
+                    weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
+                    weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
+                    photos: []
+                });
+                if (response.success) {
+                    alert('✅ Service created! Customers can now find you.');
+                    e.target.reset();
+                    document.getElementById('photoPreview').innerHTML = '';
+                    await loadPublicServices();
+                    currentCardIndex = 0;
+                }
+            } catch (error) { alert(error.message || 'Error creating service.'); }
         }
 
         function previewPhotos(e) {
             const preview = document.getElementById('photoPreview');
             preview.innerHTML = '';
-            
-            const files = Array.from(e.target.files).slice(0, 6);
-            
-            files.forEach(file => {
+            Array.from(e.target.files).slice(0, 6).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    preview.appendChild(img);
-                };
+                reader.onload = ev => { const img = document.createElement('img'); img.src = ev.target.result; preview.appendChild(img); };
                 reader.readAsDataURL(file);
             });
         }
 
-        function submitProvider(e) {
-            e.preventDefault();
-
-            if (!currentUser) {
-                alert('Please log in to create a profile');
-                return;
-            }
-            
-            const newService = {
-                id: services.length + 1,
-                providerId: currentUser.id,
-                providerName: document.getElementById('providerName').value,
-                serviceType: document.getElementById('serviceType').value,
-                description: document.getElementById('serviceDesc').value,
-                location: document.getElementById('location').value,
-                contact: document.getElementById('providerContact').value,
-                weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
-                weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
-                photos: [] // In a real app, handle photo uploads properly
-            };
-
-            services.push(newService);
-            localStorage.setItem('services', JSON.stringify(services));
-            
-            alert('✅ Profile created successfully! Your service is now live for customers to discover.');
-            e.target.reset();
-            document.getElementById('photoPreview').innerHTML = '';
-            
-            // Switch to customer view to see the new listing
-            switchMode('customer');
-            currentCardIndex = 0;
-            renderCards();
-        }
-
+        // ============================================
+        // UTILS
+        // ============================================
         function getServiceEmoji(serviceType) {
-            const emojis = {
-                'Haircut': '✂️',
-                'Barber': '💈',
-                'Cleaning': '🧹',
-                'Massage': '💆',
-                'Nails': '💅',
-                'Spa': '🧖',
-                'Personal Training': '💪',
-                'Dog Walking': '🐕',
-                'Tutoring': '📚',
-                'Photography': '📸',
-                'Car Detailing': '🚗',
-                'Laundry Service': '🧺',
-                'Other': '⭐'
-            };
+            const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
             return emojis[serviceType] || '⭐';
         }
     </script>

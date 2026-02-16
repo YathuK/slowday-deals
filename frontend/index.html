@@ -187,7 +187,8 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 340px);
+            min-height: 300px;
             padding: 20px;
             overflow: hidden;
         }
@@ -342,18 +343,12 @@
         }
 
         .swipe-buttons {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 500px;
-            width: 100%;
             display: flex;
             justify-content: center;
             gap: 30px;
-            padding: 20px;
+            padding: 16px 20px;
             background: white;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid #f0f0f0;
         }
 
         .swipe-btn {
@@ -812,7 +807,7 @@
         }
 
         @media (max-width: 600px) {
-            .swipe-container { height: calc(100vh - 280px); }
+            .swipe-container { height: calc(100vh - 360px); min-height: 260px; }
         }
 
         .search-bar-wrap {
@@ -871,6 +866,7 @@
             z-index: 200;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
             padding-bottom: env(safe-area-inset-bottom, 0px);
+            height: 65px;
         }
 
         .nav-btn {
@@ -879,21 +875,26 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px 5px 8px;
+            padding: 8px 4px 6px;
             border: none;
             background: transparent;
             cursor: pointer;
             color: #bbb;
-            font-size: 11px;
             font-weight: 600;
             gap: 3px;
             transition: color 0.2s;
             min-width: 0;
-            overflow: hidden;
+            overflow: visible;
+        }
+
+        .nav-btn svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
         }
 
         .nav-btn.active { color: #667eea; }
-        .nav-btn span { font-size: 11px; white-space: nowrap; }
+        .nav-btn span { font-size: 10px; white-space: nowrap; }
 
         .app-container { padding-bottom: 65px; }
 

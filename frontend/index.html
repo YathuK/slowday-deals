@@ -625,6 +625,68 @@
             font-weight: 600;
         }
 
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.5);
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .user-avatar:hover { transform: scale(1.05); }
+
+        .user-dropdown {
+            position: absolute;
+            top: 75px;
+            right: 15px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            padding: 16px;
+            min-width: 200px;
+            z-index: 999;
+            text-align: left;
+        }
+
+        .user-dropdown-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .user-dropdown-email {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+            margin-bottom: 8px;
+        }
+
+        .dropdown-btn {
+            width: 100%;
+            background: #f5f5f5;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            margin-top: 6px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-btn:hover { background: #ede9fe; color: #667eea; }
+        .logout-red:hover { background: #fee2e2 !important; color: #e53e3e !important; }
+
         .logout-btn {
             background: rgba(255,255,255,0.2);
             color: white;
@@ -697,8 +759,14 @@
             <h1>⚡ SlowDay Deals</h1>
             <p>Book services at special prices on slow days</p>
             <div class="user-menu" id="userMenu" style="display: none;">
-                <span class="user-name" id="userName"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
+                <div class="user-dropdown" id="userDropdown" style="display:none;">
+                    <div class="user-dropdown-name" id="userDropdownName"></div>
+                    <div class="user-dropdown-email" id="userDropdownEmail"></div>
+                    <hr style="margin:8px 0;border:none;border-top:1px solid #eee;">
+                    <button class="dropdown-btn" onclick="switchToProvider()">💼 My Provider Profile</button>
+                    <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
+                </div>
             </div>
             <div class="user-menu" id="guestMenu">
                 <button class="circle-login-btn" onclick="showAuthModal()" title="Login / Sign Up">
@@ -1103,17 +1171,37 @@
         async function showAuthenticatedView() {
             document.getElementById('userMenu').style.display = 'flex';
             document.getElementById('guestMenu').style.display = 'none';
-            document.getElementById('userName').textContent = `👋 ${currentUser.name}`;
+            // Set avatar to first letter of name
+            const firstLetter = currentUser.name.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').textContent = firstLetter;
+            document.getElementById('userDropdownName').textContent = currentUser.name;
+            document.getElementById('userDropdownEmail').textContent = currentUser.email;
             await loadSavedServices();
             await loadPublicServices();
-            if (currentUser.accountType === 'provider') {
-                document.querySelectorAll('.mode-btn')[1].classList.add('active');
-                document.querySelectorAll('.mode-btn')[0].classList.remove('active');
-                document.getElementById('customerView').classList.remove('active');
-                document.getElementById('providerView').classList.add('active');
-            } else {
-                renderSavedList();
+            renderSavedList();
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const avatar = document.getElementById('userAvatar');
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown && avatar && !avatar.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
             }
+        });
+
+        function switchToProvider() {
+            document.getElementById('userDropdown').style.display = 'none';
+            // Switch to provider tab - any logged in user can set up a service
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mode-btn')[1].classList.add('active');
+            document.getElementById('customerView').classList.remove('active');
+            document.getElementById('providerView').classList.add('active');
         }
 
         // ============================================
@@ -1123,19 +1211,18 @@
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
             if (mode === 'customer') {
-                event.target.classList.add('active');
+                document.querySelectorAll('.mode-btn')[0].classList.add('active');
                 document.getElementById('customerView').classList.add('active');
             } else {
                 if (!currentUser) {
                     alert('Please log in to access provider features.');
                     showAuthModal();
+                    document.querySelectorAll('.mode-btn')[0].classList.add('active');
+                    document.getElementById('customerView').classList.add('active');
                     return;
                 }
-                if (currentUser.accountType !== 'provider') {
-                    alert('Only service providers can access this section.');
-                    return;
-                }
-                event.target.classList.add('active');
+                // Any logged-in user can set up a provider profile
+                document.querySelectorAll('.mode-btn')[1].classList.add('active');
                 document.getElementById('providerView').classList.add('active');
             }
         }

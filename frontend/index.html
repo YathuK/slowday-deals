@@ -1634,6 +1634,8 @@
             document.getElementById('bookingModal').classList.add('active');
             document.getElementById('bookingSuccess').style.display = 'none';
             document.getElementById('customerName').value = currentUser.name;
+            // Auto-fill contact with user's email
+            document.getElementById('customerContact').value = currentUser.email || '';
         }
 
         function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
@@ -1699,8 +1701,8 @@
             e.preventDefault();
             if (!currentUser) { alert('Please log in'); return; }
             
-            // Collect photos from preview
-            const photoImgs = document.querySelectorAll('#photoPreview img');
+            // Collect photos from preview - get from inside .photo-thumb divs
+            const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
             const photos = Array.from(photoImgs).map(img => img.src);
 
             const serviceData = {
@@ -1735,12 +1737,47 @@
 
         function previewPhotos(e) {
             const preview = document.getElementById('photoPreview');
-            preview.innerHTML = '';
-            Array.from(e.target.files).slice(0, 6).forEach(file => {
+            const existing = preview.querySelectorAll('.photo-thumb').length;
+            const remaining = 6 - existing;
+            Array.from(e.target.files).slice(0, remaining).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = ev => { const img = document.createElement('img'); img.src = ev.target.result; preview.appendChild(img); };
+                reader.onload = ev => {
+                    // Resize to max 600px to keep size small enough for MongoDB
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX = 600;
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+                        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const resized = canvas.toDataURL('image/jpeg', 0.7);
+
+                        const wrap = document.createElement('div');
+                        wrap.className = 'photo-thumb';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;';
+
+                        const imgEl = document.createElement('img');
+                        imgEl.src = resized;
+                        imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
+
+                        const xBtn = document.createElement('button');
+                        xBtn.type = 'button';
+                        xBtn.textContent = '×';
+                        xBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.onclick = () => wrap.remove();
+
+                        wrap.appendChild(imgEl);
+                        wrap.appendChild(xBtn);
+                        preview.appendChild(wrap);
+                    };
+                    img.src = ev.target.result;
+                };
                 reader.readAsDataURL(file);
             });
+            // Reset input so same file can be re-added
+            e.target.value = '';
         }
 
         // ============================================

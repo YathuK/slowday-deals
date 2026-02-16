@@ -954,6 +954,8 @@
         // INIT
         // ============================================
         window.onload = async function() {
+            showWakingUp();
+            await wakeUpServer();
             const token = API.getToken();
             if (token) {
                 try {
@@ -968,6 +970,43 @@
                 await loadPublicServices();
             }
         };
+
+        function showWakingUp() {
+            const stack = document.getElementById('cardStack');
+            if (stack) {
+                stack.innerHTML = `
+                    <div class="no-cards">
+                        <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+                        <h3>Starting up...</h3>
+                        <p style="color:#888;font-size:13px;">Free server waking up<br>Please wait 30-60 seconds</p>
+                        <div style="margin-top:16px;width:200px;height:6px;background:#eee;border-radius:3px;overflow:hidden;">
+                            <div id="loadingBar" style="width:0%;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:3px;transition:width 0.5s;"></div>
+                        </div>
+                    </div>`;
+                let pct = 0;
+                const interval = setInterval(() => {
+                    pct = Math.min(pct + 2, 90);
+                    const bar = document.getElementById('loadingBar');
+                    if (bar) bar.style.width = pct + '%';
+                    else clearInterval(interval);
+                }, 600);
+            }
+        }
+
+        async function wakeUpServer() {
+            for (let attempt = 1; attempt <= 10; attempt++) {
+                try {
+                    const res = await fetch(`${API_CONFIG.BASE_URL.replace('/api','')}/api/health`, { signal: AbortSignal.timeout(8000) });
+                    if (res.ok) {
+                        const bar = document.getElementById('loadingBar');
+                        if (bar) bar.style.width = '100%';
+                        return true;
+                    }
+                } catch (e) { /* still waking */ }
+                await new Promise(r => setTimeout(r, 3000));
+            }
+            return false;
+        }
 
         async function loadPublicServices() {
             try {
@@ -1017,7 +1056,11 @@
                     e.target.reset();
                 }
             } catch (error) {
-                alert(error.message || 'Login failed. Please check your credentials.');
+                if (error.message === 'Failed to fetch') {
+                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
+                } else {
+                    alert(error.message || 'Login failed. Please check your credentials.');
+                }
             }
         }
 
@@ -1041,7 +1084,11 @@
                     alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
                 }
             } catch (error) {
-                alert(error.message || 'Signup failed. Please try again.');
+                if (error.message === 'Failed to fetch') {
+                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
+                } else {
+                    alert(error.message || 'Signup failed. Please try again.');
+                }
             }
         }
 

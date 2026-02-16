@@ -187,9 +187,9 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100vh - 340px);
-            min-height: 300px;
-            padding: 20px;
+            height: calc(100vh - 215px);
+            min-height: 360px;
+            padding: 12px 16px 16px;
             overflow: hidden;
         }
 
@@ -342,46 +342,34 @@
             opacity: 1;
         }
 
-        .swipe-buttons {
+        .card-action-row {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            padding: 16px 20px;
-            background: white;
+            gap: 24px;
+            padding: 12px 0 4px;
             border-top: 1px solid #f0f0f0;
+            margin-top: 8px;
         }
 
-        .swipe-btn {
-            width: 60px;
-            height: 60px;
+        .card-btn {
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
         }
 
-        .swipe-btn:hover {
-            transform: scale(1.1);
-        }
+        .card-btn:hover { transform: scale(1.1); }
+        .card-btn:active { transform: scale(0.95); }
 
-        .nope-btn {
-            background: #fee;
-            color: #f87171;
-        }
-
-        .info-btn {
-            background: #e0f2fe;
-            color: #0284c7;
-        }
-
-        .like-btn {
-            background: #dcfce7;
-            color: #4ade80;
-        }
+        .card-btn-nope  { background: #fff0f0; color: #f87171; }
+        .card-btn-info  { background: #e0f2fe; color: #0284c7; }
+        .card-btn-like  { background: #f0fdf4; color: #4ade80; }
 
         .no-cards {
             text-align: center;
@@ -944,7 +932,7 @@
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
         @media (max-width: 600px) {
-            .swipe-container { height: calc(100vh - 360px); min-height: 260px; }
+            .swipe-container { height: calc(100vh - 225px); min-height: 320px; }
         }
 
         .search-bar-wrap {
@@ -1139,20 +1127,7 @@
         <div id="customerView" class="view active">
             <div id="discoverTab" class="tab-content active">
                 <div class="swipe-container">
-                    <div class="card-stack" id="cardStack">
-                        <!-- Cards will be inserted here -->
-                    </div>
-                </div>
-                <div class="swipe-buttons">
-                    <button class="swipe-btn nope-btn" onclick="swipeLeft()">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                    <button class="swipe-btn info-btn" onclick="showDetails()">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    </button>
-                    <button class="swipe-btn like-btn" onclick="swipeRight()">
-                        <svg width="24" height="24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    </button>
+                    <div class="card-stack" id="cardStack"></div>
                 </div>
             </div>
             <div id="savedTab" class="tab-content" style="display:none;">
@@ -1789,8 +1764,23 @@
             card.style.zIndex = 100 - stackPosition;
             const serviceId = service._id || service.id;
             const imageContent = service.photos && service.photos[0]
-                ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
-                : `<div style="font-size:64px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;">${getServiceEmoji(service.serviceType)}</div>`;
+                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" style="width:100%;height:100%;object-fit:cover;">`
+                : `<div style="font-size:72px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);">${getServiceEmoji(service.serviceType)}</div>`;
+
+            // Only top card shows action buttons
+            const buttonsHtml = stackPosition === 0 ? `
+                <div class="card-action-row" onclick="event.stopPropagation()">
+                    <button class="card-btn card-btn-nope" onclick="swipeLeft()">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-info" onclick="showDetails()">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-like" onclick="handleSwipeRight()">
+                        <svg width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </button>
+                </div>` : '';
+
             card.innerHTML = `
                 <div class="swipe-indicator like-indicator">LIKE</div>
                 <div class="swipe-indicator nope-indicator">NOPE</div>
@@ -1814,17 +1804,20 @@
                             <div class="price-value">$${service.weekendPrice}</div>
                         </div>
                     </div>
+                    ${buttonsHtml}
                 </div>`;
 
+            if (stackPosition !== 0) return card;
+
             let startX, currentX, isDragging = false;
-            card.addEventListener('mousedown', e => { if (stackPosition !== 0) return; isDragging = true; startX = e.clientX; card.style.transition = 'none'; });
-            card.addEventListener('touchstart', e => { if (stackPosition !== 0) return; isDragging = true; startX = e.touches[0].clientX; card.style.transition = 'none'; });
+            card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.clientX; card.style.transition = 'none'; });
+            card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.touches[0].clientX; card.style.transition = 'none'; });
             document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
             document.addEventListener('touchmove', e => { if (!isDragging) return; currentX = e.touches[0].clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
-            const endDrag = () => { if (!isDragging) return; isDragging = false; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = ''; card.classList.remove('swiping-right', 'swiping-left'); } };
+            const endDrag = () => { if (!isDragging) return; isDragging = false; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
-            card.addEventListener('click', () => { if (stackPosition === 0) showDetails(); });
+            card.addEventListener('click', e => { if (!isDragging && !e.target.closest('.card-action-row')) showDetails(); });
             return card;
         }
 
@@ -2141,14 +2134,19 @@
         }
 
         async function confirmReschedule() {
-            const newTime = document.getElementById('newBookingTime').value;
-            if (!newTime) { alert('Please select a new date and time'); return; }
+            const newTimeLocal = document.getElementById('newBookingTime').value;
+            if (!newTimeLocal) { alert('Please select a new date and time'); return; }
+            // Convert datetime-local string to proper ISO string
+            const newTime = new Date(newTimeLocal).toISOString();
             try {
                 await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
                 document.getElementById('rescheduleModal').classList.remove('active');
                 await loadProviderBookings();
                 alert('✅ Booking rescheduled! Customer has been notified.');
-            } catch(e) { alert('Error rescheduling booking'); }
+            } catch(e) {
+                console.error('Reschedule error:', e);
+                alert('Error rescheduling: ' + (e.message || 'Please try again'));
+            }
         }
 
         // ============================================

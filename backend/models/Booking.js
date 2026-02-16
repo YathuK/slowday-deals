@@ -14,7 +14,7 @@ const bookingSchema = new mongoose.Schema({
     provider: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false  // Optional — matched via service ownership instead
     },
     customerName: {
         type: String,
@@ -34,7 +34,7 @@ const bookingSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'confirmed', 'completed', 'cancelled'],
+        enum: ['pending', 'confirmed', 'rescheduled', 'rejected', 'completed', 'cancelled'],
         default: 'pending'
     },
     price: {
@@ -49,7 +49,6 @@ const bookingSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for faster queries
 bookingSchema.index({ customer: 1, status: 1 });
 bookingSchema.index({ provider: 1, status: 1 });
 bookingSchema.index({ service: 1 });

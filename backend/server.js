@@ -14,9 +14,11 @@ const userRoutes = require('./routes/users');
 
 const app = express();
 
-// Middleware
+// Middleware - Allow all origins (fixes CORS for Vercel)
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: function(origin, callback) {
+        callback(null, true); // Allow all origins
+    },
     credentials: true
 }));
 app.use(express.json());

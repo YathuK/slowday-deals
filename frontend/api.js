@@ -140,17 +140,21 @@ const API = {
     },
     
     async getProviderBookings(status = null) {
-        const endpoint = status 
+        const endpoint = status
             ? `${API_CONFIG.ENDPOINTS.PROVIDER_BOOKINGS}?status=${status}`
             : API_CONFIG.ENDPOINTS.PROVIDER_BOOKINGS;
         return await this.call(endpoint);
     },
+
+    async getAnalytics() {
+        return await this.call('/bookings/analytics');
+    },
     
-    async updateBookingStatus(id, status) {
+    async updateBookingStatus(id, status, newTime = null) {
         return await this.call(
             API_CONFIG.ENDPOINTS.BOOKING_STATUS.replace(':id', id),
             'PUT',
-            { status }
+            { status, newTime }
         );
     },
     

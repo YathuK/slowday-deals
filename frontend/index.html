@@ -806,6 +806,143 @@
             cursor: pointer;
         }
 
+        /* ---- Provider Tabs ---- */
+        .provider-tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .ptab-btn {
+            flex: 1;
+            padding: 14px 4px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+            position: relative;
+        }
+        .ptab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+        .badge {
+            background: #e53e3e;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 1px 6px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* ---- Filter buttons ---- */
+        .filter-btn {
+            padding: 7px 14px;
+            border: 1.5px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .filter-btn.active { background: #667eea; color: white; border-color: #667eea; }
+
+        /* ---- Booking cards ---- */
+        .booking-card {
+            background: white;
+            border-radius: 14px;
+            border: 1.5px solid #f0f0f0;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .booking-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .booking-card-title { font-size: 16px; font-weight: 700; color: #333; }
+        .booking-card-sub { font-size: 13px; color: #888; margin-top: 2px; }
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending   { background: #fef3c7; color: #d97706; }
+        .status-confirmed { background: #d1fae5; color: #059669; }
+        .status-rejected  { background: #fee2e2; color: #dc2626; }
+        .status-cancelled { background: #f3f4f6; color: #6b7280; }
+        .status-rescheduled { background: #dbeafe; color: #2563eb; }
+        .status-completed { background: #ede9fe; color: #7c3aed; }
+        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; }
+        .booking-meta span { color: #888; }
+        .booking-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .action-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 9px 6px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-confirm   { background: #d1fae5; color: #059669; }
+        .btn-reject    { background: #fee2e2; color: #dc2626; }
+        .btn-reschedule{ background: #dbeafe; color: #2563eb; }
+        .btn-cancel    { background: #f3f4f6; color: #6b7280; }
+
+        /* ---- Analytics ---- */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            border: 1.5px solid #f0f0f0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-card .stat-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
+        .stat-card .stat-value { font-size: 26px; font-weight: 800; color: #333; }
+        .stat-card .stat-earn  { font-size: 13px; color: #667eea; font-weight: 600; margin-top: 2px; }
+        .stat-card.highlight   { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; }
+        .stat-card.highlight .stat-label { color: rgba(255,255,255,0.75); }
+        .stat-card.highlight .stat-value { color: white; }
+        .stat-card.highlight .stat-earn  { color: rgba(255,255,255,0.85); }
+        .chart-bar-wrap { margin-bottom: 20px; }
+        .chart-bar-wrap h3 { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 12px; }
+        .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .bar-label { font-size: 11px; color: #888; width: 72px; text-align: right; flex-shrink: 0; }
+        .bar-track { flex: 1; background: #f0f0f0; border-radius: 6px; height: 20px; overflow: hidden; }
+        .bar-fill  { height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; transition: width 0.6s ease; min-width: 2px; }
+        .bar-val   { font-size: 12px; font-weight: 600; color: #555; width: 36px; }
+
+        /* ---- Customer bookings ---- */
+        .my-bookings-section { padding: 16px; }
+        .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
+
+        /* ---- Saved sub-tabs ---- */
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; }
+        .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
+        .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
+
         @media (max-width: 600px) {
             .swipe-container { height: calc(100vh - 360px); min-height: 260px; }
         }
@@ -1019,87 +1156,110 @@
                 </div>
             </div>
             <div id="savedTab" class="tab-content" style="display:none;">
-                <div class="saved-list" id="savedList"></div>
+                <div class="saved-subtabs">
+                    <button class="saved-stab active" id="stabSaved" onclick="switchSavedTab('saved')">❤️ Saved</button>
+                    <button class="saved-stab" id="stabMyBookings" onclick="switchSavedTab('mybookings')">📍 My Bookings</button>
+                </div>
+                <div id="savedListWrap">
+                    <div class="saved-list" id="savedList"></div>
+                </div>
+                <div id="myBookingsWrap" style="display:none;">
+                    <div class="my-bookings-section" id="myBookingsList">
+                        <div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Provider View -->
         <div id="providerView" class="view">
-            <form class="provider-form" onsubmit="submitProvider(event)">
-                <div class="form-group">
-                    <label>Your Name/Business Name</label>
-                    <input type="text" id="providerName" required placeholder="e.g., Sarah's Hair Studio">
-                </div>
+            <!-- Provider Sub-tabs -->
+            <div class="provider-tabs">
+                <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')">👤 Profile</button>
+                <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')">📋 Bookings <span class="badge" id="pendingBadge" style="display:none"></span></button>
+                <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')">📊 Analytics</button>
+            </div>
 
-                <div class="form-group">
-                    <label>Service Type</label>
-                    <select id="serviceType" required>
-                        <option value="">Select a service type</option>
-                        <option value="Haircut">Haircut</option>
-                        <option value="Barber">Barber</option>
-                        <option value="Cleaning">Cleaning Service</option>
-                        <option value="Massage">Massage</option>
-                        <option value="Nails">Nail Service</option>
-                        <option value="Spa">Spa Treatment</option>
-                        <option value="Personal Training">Personal Training</option>
-                        <option value="Dog Walking">Dog Walking</option>
-                        <option value="Tutoring">Tutoring</option>
-                        <option value="Photography">Photography</option>
-                        <option value="Car Detailing">Car Detailing</option>
-                        <option value="Laundry Service">Laundry Service</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Service Description</label>
-                    <textarea id="serviceDesc" required placeholder="Describe what you offer..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Location/Area</label>
-                    <input type="text" id="location" required placeholder="e.g., Downtown Brooklyn">
-                </div>
-
-                <div class="form-group">
-                    <label>Contact</label>
-                    <input type="text" id="providerContact" required placeholder="Phone or email">
-                </div>
-
-                <div class="form-group">
-                    <label>Special Offer Pricing</label>
-                    <div class="price-row">
-                        <div>
-                            <label style="font-size: 12px;">Weekday Price</label>
-                            <input type="number" id="weekdayPrice" required placeholder="$" step="0.01">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px;">Weekend Price</label>
-                            <input type="number" id="weekendPrice" required placeholder="$" step="0.01">
+            <!-- PROFILE TAB -->
+            <div id="ptabProfileContent">
+                <form class="provider-form" onsubmit="submitProvider(event)">
+                    <div class="form-group"><label>Your Name/Business Name</label><input type="text" id="providerName" required placeholder="e.g., Sarah's Hair Studio"></div>
+                    <div class="form-group"><label>Service Type</label>
+                        <select id="serviceType" required>
+                            <option value="">Select a service type</option>
+                            <option value="Haircut">Haircut</option><option value="Barber">Barber</option>
+                            <option value="Cleaning">Cleaning Service</option><option value="Massage">Massage</option>
+                            <option value="Nails">Nail Service</option><option value="Spa">Spa Treatment</option>
+                            <option value="Personal Training">Personal Training</option><option value="Dog Walking">Dog Walking</option>
+                            <option value="Tutoring">Tutoring</option><option value="Photography">Photography</option>
+                            <option value="Car Detailing">Car Detailing</option><option value="Laundry Service">Laundry Service</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Service Description</label><textarea id="serviceDesc" required placeholder="Describe what you offer..."></textarea></div>
+                    <div class="form-group"><label>Location/Area</label><input type="text" id="location" required placeholder="e.g., Downtown Brooklyn"></div>
+                    <div class="form-group"><label>Contact</label><input type="text" id="providerContact" required placeholder="Phone or email"></div>
+                    <div class="form-group"><label>Special Offer Pricing</label>
+                        <div class="price-row">
+                            <div><label style="font-size:12px;">Weekday Price</label><input type="number" id="weekdayPrice" required placeholder="$" step="0.01"></div>
+                            <div><label style="font-size:12px;">Weekend Price</label><input type="number" id="weekendPrice" required placeholder="$" step="0.01"></div>
                         </div>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Upload Photos of Your Work</label>
-                    <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
-                        <svg width="48" height="48" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 10px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                        <p style="color: #667eea; font-weight: 600;">Click to upload photos</p>
-                        <p style="font-size: 12px; color: #999; margin-top: 5px;">Up to 6 photos</p>
-                        <input type="file" id="photoInput" accept="image/*" multiple onchange="previewPhotos(event)">
+                    <div class="form-group"><label>Upload Photos of Your Work</label>
+                        <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                            <svg width="48" height="48" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 10px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            <p style="color:#667eea;font-weight:600;">Click to upload photos</p>
+                            <p style="font-size:12px;color:#999;margin-top:5px;">Up to 6 photos</p>
+                            <input type="file" id="photoInput" accept="image/*" multiple onchange="previewPhotos(event)">
+                        </div>
+                        <div class="photo-preview" id="photoPreview"></div>
                     </div>
-                    <div class="photo-preview" id="photoPreview"></div>
+                    <button type="submit" class="submit-btn" id="providerSubmitBtn">Create My Profile</button>
+                </form>
+                <div id="myProfileView" style="display:none;padding:20px;">
+                    <div id="myProfileCard"></div>
+                    <div style="display:flex;gap:10px;margin-top:16px;">
+                        <button onclick="editMyProfile()" style="flex:1;padding:14px;background:#667eea;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">✏️ Edit</button>
+                        <button onclick="deleteMyProfile()" style="flex:1;padding:14px;background:#fee2e2;color:#e53e3e;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">🗑️ Delete</button>
+                    </div>
                 </div>
+            </div>
 
-                <button type="submit" class="submit-btn" id="providerSubmitBtn">Create My Profile</button>
-            </form>
+            <!-- BOOKINGS TAB -->
+            <div id="ptabBookingsContent" style="display:none;">
+                <div style="padding:16px;">
+                    <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
+                        <button class="filter-btn active" onclick="filterProviderBookings('all', this)">All</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('pending', this)">⏳ Pending</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('confirmed', this)">✅ Confirmed</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('rescheduled', this)">🔄 Rescheduled</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('rejected', this)">❌ Rejected</button>
+                    </div>
+                    <div id="providerBookingsList"><div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings yet</h3><p>Bookings will appear here once customers book your service</p></div></div>
+                </div>
+            </div>
 
-            <!-- My Profile View (shown after creating) -->
-            <div id="myProfileView" style="display:none; padding:20px;">
-                <div id="myProfileCard"></div>
-                <div style="display:flex;gap:10px;margin-top:16px;">
-                    <button onclick="editMyProfile()" style="flex:1;padding:14px;background:#667eea;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">✏️ Edit Profile</button>
-                    <button onclick="deleteMyProfile()" style="flex:1;padding:14px;background:#fee2e2;color:#e53e3e;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">🗑️ Delete</button>
+            <!-- ANALYTICS TAB -->
+            <div id="ptabAnalyticsContent" style="display:none;">
+                <div style="padding:16px;" id="analyticsContent">
+                    <div class="empty-state"><div class="empty-emoji">📊</div><h3>Loading analytics...</h3></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reschedule Modal -->
+        <div class="modal" id="rescheduleModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🔄 Reschedule Booking</h2>
+                    <button class="close-btn" onclick="document.getElementById('rescheduleModal').classList.remove('active')">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding:20px;">
+                    <p style="color:#666;margin-bottom:16px;">Select a new date and time for this booking:</p>
+                    <input type="datetime-local" id="newBookingTime" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:15px;margin-bottom:16px;">
+                    <button onclick="confirmReschedule()" style="width:100%;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">Confirm New Time</button>
                 </div>
             </div>
         </div>
@@ -1876,6 +2036,211 @@
             });
             // Reset input so same file can be re-added
             e.target.value = '';
+        }
+
+        // ============================================
+        // PROVIDER TABS
+        // ============================================
+        function switchProviderTab(tab) {
+            ['profile','bookings','analytics'].forEach(t => {
+                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
+                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`).style.display = t === tab ? 'block' : 'none';
+            });
+            if (tab === 'bookings') loadProviderBookings();
+            if (tab === 'analytics') loadAnalytics();
+        }
+
+        // ============================================
+        // SAVED SUB-TABS
+        // ============================================
+        function switchSavedTab(tab) {
+            document.getElementById('stabSaved').classList.toggle('active', tab === 'saved');
+            document.getElementById('stabMyBookings').classList.toggle('active', tab === 'mybookings');
+            document.getElementById('savedListWrap').style.display = tab === 'saved' ? 'block' : 'none';
+            document.getElementById('myBookingsWrap').style.display = tab === 'mybookings' ? 'block' : 'none';
+            if (tab === 'mybookings') loadMyBookings();
+        }
+
+        // ============================================
+        // PROVIDER BOOKINGS MANAGEMENT
+        // ============================================
+        let allProviderBookings = [];
+        let rescheduleBookingId = null;
+
+        async function loadProviderBookings() {
+            document.getElementById('providerBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
+            try {
+                const res = await API.getProviderBookings();
+                allProviderBookings = res.bookings || [];
+                renderProviderBookings(allProviderBookings);
+                // Update pending badge
+                const pending = allProviderBookings.filter(b => b.status === 'pending').length;
+                const badge = document.getElementById('pendingBadge');
+                if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+                else badge.style.display = 'none';
+            } catch(e) {
+                document.getElementById('providerBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
+            }
+        }
+
+        function filterProviderBookings(status, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b => b.status === status);
+            renderProviderBookings(filtered);
+        }
+
+        function renderProviderBookings(bookings) {
+            const el = document.getElementById('providerBookingsList');
+            if (!bookings.length) {
+                el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings here</h3></div>`;
+                return;
+            }
+            el.innerHTML = bookings.map(b => {
+                const svc = b.service || {};
+                const cust = b.customer || {};
+                const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                const actions = b.status === 'pending' ? `
+                    <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed')">✅ Confirm</button>
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
+                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected')">❌ Reject</button>` :
+                b.status === 'confirmed' ? `
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
+                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','cancelled')">Cancel</button>` : '';
+                return `<div class="booking-card">
+                    <div class="booking-card-header">
+                        <div>
+                            <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
+                            <div class="booking-card-sub">${cust.name || b.customerName}</div>
+                        </div>
+                        <span class="status-pill status-${b.status}">${b.status}</span>
+                    </div>
+                    <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
+                    <div class="booking-meta">📞 <span>Contact:</span> ${b.customerContact}</div>
+                    <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
+                    ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                    ${actions ? `<div class="booking-actions">${actions}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function updateBooking(id, status) {
+            try {
+                await API.updateBookingStatus(id, status);
+                await loadProviderBookings();
+            } catch(e) { alert('Error updating booking'); }
+        }
+
+        function openReschedule(id) {
+            rescheduleBookingId = id;
+            // Set min date to now
+            const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('newBookingTime').min = now.toISOString().slice(0,16);
+            document.getElementById('newBookingTime').value = '';
+            document.getElementById('rescheduleModal').classList.add('active');
+        }
+
+        async function confirmReschedule() {
+            const newTime = document.getElementById('newBookingTime').value;
+            if (!newTime) { alert('Please select a new date and time'); return; }
+            try {
+                await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
+                document.getElementById('rescheduleModal').classList.remove('active');
+                await loadProviderBookings();
+                alert('✅ Booking rescheduled! Customer has been notified.');
+            } catch(e) { alert('Error rescheduling booking'); }
+        }
+
+        // ============================================
+        // ANALYTICS
+        // ============================================
+        async function loadAnalytics() {
+            document.getElementById('analyticsContent').innerHTML = `<div class="empty-state"><div class="empty-emoji">📊</div><h3>Loading analytics...</h3></div>`;
+            try {
+                const res = await API.getAnalytics();
+                const a = res.analytics;
+                const maxBookings = Math.max(...a.last7Days.map(d => d.bookings), 1);
+                const maxEarnings = Math.max(...a.last7Days.map(d => d.earnings), 1);
+
+                document.getElementById('analyticsContent').innerHTML = `
+                    <div class="analytics-grid">
+                        <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${a.daily.count}</div><div class="stat-earn">$${a.daily.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${a.weekly.count}</div><div class="stat-earn">$${a.weekly.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${a.monthly.count}</div><div class="stat-earn">$${a.monthly.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card highlight"><div class="stat-label">All Time</div><div class="stat-value">${a.allTime.count}</div><div class="stat-earn">$${a.allTime.earnings.toFixed(2)}</div></div>
+                    </div>
+                    <div class="stat-card" style="margin-bottom:16px;display:flex;justify-content:space-around;">
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#d97706;">${a.byStatus.pending||0}</div><div style="font-size:11px;color:#888;">Pending</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#059669;">${a.byStatus.confirmed||0}</div><div style="font-size:11px;color:#888;">Confirmed</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#7c3aed;">${a.byStatus.completed||0}</div><div style="font-size:11px;color:#888;">Completed</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#dc2626;">${a.byStatus.rejected||0}</div><div style="font-size:11px;color:#888;">Rejected</div></div>
+                    </div>
+                    <div class="chart-bar-wrap">
+                        <h3>📅 Bookings – Last 7 Days</h3>
+                        ${a.last7Days.map(d => `
+                        <div class="bar-row">
+                            <div class="bar-label">${d.date.split(',')[0]}</div>
+                            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((d.bookings/maxBookings)*100)}%"></div></div>
+                            <div class="bar-val">${d.bookings}</div>
+                        </div>`).join('')}
+                    </div>
+                    <div class="chart-bar-wrap">
+                        <h3>💰 Earnings – Last 7 Days</h3>
+                        ${a.last7Days.map(d => `
+                        <div class="bar-row">
+                            <div class="bar-label">${d.date.split(',')[0]}</div>
+                            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((d.earnings/maxEarnings)*100)}%;background:linear-gradient(135deg,#f093fb,#f5576c)"></div></div>
+                            <div class="bar-val">$${d.earnings.toFixed(0)}</div>
+                        </div>`).join('')}
+                    </div>`;
+            } catch(e) {
+                document.getElementById('analyticsContent').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load analytics</h3></div>`;
+            }
+        }
+
+        // ============================================
+        // CUSTOMER MY BOOKINGS
+        // ============================================
+        async function loadMyBookings() {
+            document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
+            try {
+                const res = await API.getCustomerBookings();
+                const bookings = res.bookings || [];
+                if (!bookings.length) {
+                    document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
+                    return;
+                }
+                document.getElementById('myBookingsList').innerHTML = bookings.map(b => {
+                    const svc = b.service || {};
+                    const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                    const cancelBtn = ['pending','confirmed'].includes(b.status)
+                        ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
+                    return `<div class="booking-card">
+                        <div class="booking-card-header">
+                            <div>
+                                <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
+                                <div class="booking-card-sub">by ${svc.providerName || ''}</div>
+                            </div>
+                            <span class="status-pill status-${b.status}">${b.status}</span>
+                        </div>
+                        <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
+                        <div class="booking-meta">📍 <span>Location:</span> ${svc.location || ''}</div>
+                        <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
+                        ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                        ${cancelBtn}
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
+            }
+        }
+
+        async function cancelMyBooking(id) {
+            if (!confirm('Cancel this booking?')) return;
+            try {
+                await API.updateBookingStatus(id, 'cancelled');
+                loadMyBookings();
+            } catch(e) { alert('Error cancelling booking'); }
         }
 
         // ============================================

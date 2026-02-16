@@ -928,6 +928,43 @@
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
+        /* Custom date/time picker */
+        .custom-dt-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .dt-date-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #333;
+            background: white;
+            box-sizing: border-box;
+        }
+        .dt-date-input:focus { border-color: #667eea; outline: none; }
+        .dt-time-row {
+            display: flex;
+            gap: 8px;
+        }
+        .dt-select {
+            flex: 1;
+            padding: 12px 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .dt-select:focus { border-color: #667eea; outline: none; }
+
         @media (max-width: 600px) {
             .swipe-container { height: calc(100vh - 225px); min-height: 320px; }
         }
@@ -1286,7 +1323,27 @@
                 </div>
                 <div class="modal-body" style="padding:20px;">
                     <p style="color:#666;margin-bottom:16px;">Select a new date and time for this booking:</p>
-                    <input type="datetime-local" id="newBookingTime" step="900" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:15px;margin-bottom:16px;">
+                    <div class="custom-dt-picker" style="margin-bottom:16px;">
+                        <input type="date" id="rescheduleDate" class="dt-date-input">
+                        <div class="dt-time-row">
+                            <select id="rescheduleHour" class="dt-select">
+                                <option value="07">7 AM</option><option value="08">8 AM</option>
+                                <option value="09">9 AM</option><option value="10">10 AM</option>
+                                <option value="11">11 AM</option><option value="12">12 PM</option>
+                                <option value="13">1 PM</option><option value="14">2 PM</option>
+                                <option value="15">3 PM</option><option value="16">4 PM</option>
+                                <option value="17">5 PM</option><option value="18">6 PM</option>
+                                <option value="19">7 PM</option><option value="20">8 PM</option>
+                                <option value="21">9 PM</option>
+                            </select>
+                            <select id="rescheduleMinute" class="dt-select">
+                                <option value="00">:00</option>
+                                <option value="15">:15</option>
+                                <option value="30">:30</option>
+                                <option value="45">:45</option>
+                            </select>
+                        </div>
+                    </div>
                     <button onclick="confirmReschedule()" style="width:100%;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">Confirm New Time</button>
                 </div>
             </div>
@@ -1409,7 +1466,27 @@
                         </div>
                         <div class="form-group">
                             <label>Preferred Date & Time</label>
-                            <input type="datetime-local" id="preferredTime" required step="900">
+                            <div class="custom-dt-picker">
+                                <input type="date" id="preferredDate" required class="dt-date-input">
+                                <div class="dt-time-row">
+                                    <select id="preferredHour" class="dt-select">
+                                        <option value="07">7 AM</option><option value="08">8 AM</option>
+                                        <option value="09">9 AM</option><option value="10">10 AM</option>
+                                        <option value="11">11 AM</option><option value="12">12 PM</option>
+                                        <option value="13">1 PM</option><option value="14">2 PM</option>
+                                        <option value="15">3 PM</option><option value="16">4 PM</option>
+                                        <option value="17">5 PM</option><option value="18">6 PM</option>
+                                        <option value="19">7 PM</option><option value="20">8 PM</option>
+                                        <option value="21">9 PM</option>
+                                    </select>
+                                    <select id="preferredMinute" class="dt-select">
+                                        <option value="00">:00</option>
+                                        <option value="15">:15</option>
+                                        <option value="30">:30</option>
+                                        <option value="45">:45</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Additional Notes (Optional)</label>
@@ -1967,8 +2044,14 @@
             document.getElementById('bookingModal').classList.add('active');
             document.getElementById('bookingSuccess').style.display = 'none';
             document.getElementById('customerName').value = currentUser.name;
-            // Auto-fill contact with user's email
             document.getElementById('customerContact').value = currentUser.email || '';
+            // Set min date to tomorrow, default to 9 AM :00
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            const tStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('preferredDate').min = tStr;
+            document.getElementById('preferredDate').value = tStr;
+            document.getElementById('preferredHour').value = '09';
+            document.getElementById('preferredMinute').value = '00';
         }
 
         function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
@@ -1978,10 +2061,15 @@
             if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
             try {
                 const serviceId = currentBookingService._id || currentBookingService.id;
+                const date = document.getElementById('preferredDate').value;
+                const hour = document.getElementById('preferredHour').value;
+                const minute = document.getElementById('preferredMinute').value;
+                if (!date) { alert('Please select a date'); return; }
+                const preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
                 const response = await API.createBooking({
                     serviceId,
                     customerContact: document.getElementById('customerContact').value,
-                    preferredTime: new Date(document.getElementById('preferredTime').value).toISOString(),
+                    preferredTime,
                     notes: document.getElementById('bookingNotes').value
                 });
                 if (response.success) {
@@ -2276,18 +2364,21 @@
 
         function openReschedule(id) {
             rescheduleBookingId = id;
-            // Set min date to now
-            const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('newBookingTime').min = now.toISOString().slice(0,16);
-            document.getElementById('newBookingTime').value = '';
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            const tStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('rescheduleDate').min = tStr;
+            document.getElementById('rescheduleDate').value = tStr;
+            document.getElementById('rescheduleHour').value = '09';
+            document.getElementById('rescheduleMinute').value = '00';
             document.getElementById('rescheduleModal').classList.add('active');
         }
 
         async function confirmReschedule() {
-            const newTimeLocal = document.getElementById('newBookingTime').value;
-            if (!newTimeLocal) { alert('Please select a new date and time'); return; }
-            // Convert datetime-local string to proper ISO string
-            const newTime = new Date(newTimeLocal).toISOString();
+            const date = document.getElementById('rescheduleDate').value;
+            const hour = document.getElementById('rescheduleHour').value;
+            const minute = document.getElementById('rescheduleMinute').value;
+            if (!date) { alert('Please select a date'); return; }
+            const newTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
             try {
                 await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
                 document.getElementById('rescheduleModal').classList.remove('active');

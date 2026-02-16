@@ -72,7 +72,8 @@ const bookingTable = (rows) => `
 // ============================================
 const notifyProviderNewBooking = async (booking, service, customer) => {
     const dateStr = formatDate(booking.preferredTime);
-    const providerEmail = service.contact?.includes('@') ? service.contact : null;
+    // Use dedicated email field, fall back to contact if it looks like an email
+    const providerEmail = service.email || (service.contact?.includes('@') ? service.contact : null);
 
     const html = baseTemplate(`
         <div style="text-align:center;margin-bottom:16px;">

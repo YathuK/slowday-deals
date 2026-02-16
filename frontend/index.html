@@ -655,12 +655,13 @@
         }
 
         .user-menu {
-            position: absolute;
-            right: 20px;
-            top: 20px;
+            position: relative;
+            right: auto;
+            top: auto;
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .user-name {
@@ -1139,40 +1140,37 @@
 <body>
     <div class="app-container">
         <div class="header" id="mainHeader">
-            <!-- Left: Logo -->
+            <!-- Left: Logo on white pill background -->
             <div class="header-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48">
-                    <defs>
-                        <filter id="bolt-glow" x="-30%" y="-30%" width="160%" height="160%">
-                            <feGaussianBlur stdDeviation="1.5" result="blur"/>
-                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                        </filter>
-                    </defs>
-
-                    <!-- Icon: calendar -->
-                    <rect x="2" y="8" width="36" height="32" rx="5" fill="white" opacity="0.22"/>
-                    <rect x="2" y="8" width="36" height="12" rx="5" fill="white" opacity="0.18"/>
-                    <rect x="2" y="15" width="36" height="5" fill="white" opacity="0.18"/>
-                    <!-- Binding pegs -->
-                    <rect x="10" y="4" width="5" height="9" rx="2.5" fill="white" opacity="0.85"/>
-                    <rect x="25" y="4" width="5" height="9" rx="2.5" fill="white" opacity="0.85"/>
-                    <!-- Calendar dots -->
-                    <circle cx="11" cy="28" r="2" fill="white" opacity="0.55"/>
-                    <circle cx="20" cy="28" r="2" fill="white" opacity="0.55"/>
-                    <circle cx="29" cy="28" r="2" fill="white" opacity="0.55"/>
-                    <circle cx="11" cy="35" r="2" fill="white" opacity="0.55"/>
-                    <circle cx="20" cy="35" r="2" fill="white" opacity="0.55"/>
-
-                    <!-- Lightning bolt (glow + solid) -->
-                    <path d="M22,7 L14,24 L20,24 L16,41 L30,21 L23,21 Z" fill="#fbbf24" opacity="0.35" filter="url(#bolt-glow)" transform="scale(1.15) translate(-2,-2)"/>
-                    <path d="M22,7 L14,24 L20,24 L16,41 L30,21 L23,21 Z" fill="#fbbf24"/>
-
+                <div style="background:white;border-radius:14px;padding:6px 14px 6px 8px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.15);">
+                    <!-- Icon: calendar + bolt -->
+                    <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="38" height="38">
+                            <!-- Calendar body -->
+                            <rect x="5" y="10" width="30" height="24" rx="5" fill="white" opacity="0.22"/>
+                            <rect x="5" y="10" width="30" height="12" rx="5" fill="white" opacity="0.2"/>
+                            <rect x="5" y="17" width="30" height="5" fill="white" opacity="0.2"/>
+                            <!-- Binding pegs -->
+                            <rect x="12" y="6" width="4" height="8" rx="2" fill="white" opacity="0.9"/>
+                            <rect x="24" y="6" width="4" height="8" rx="2" fill="white" opacity="0.9"/>
+                            <!-- Calendar dots -->
+                            <circle cx="11" cy="28" r="1.8" fill="white" opacity="0.6"/>
+                            <circle cx="20" cy="28" r="1.8" fill="white" opacity="0.6"/>
+                            <circle cx="29" cy="28" r="1.8" fill="white" opacity="0.6"/>
+                            <circle cx="11" cy="34" r="1.8" fill="white" opacity="0.6"/>
+                            <circle cx="20" cy="34" r="1.8" fill="white" opacity="0.6"/>
+                            <!-- Lightning bolt glow -->
+                            <path d="M22,8 L13,22 L19,22 L15,37 L28,18 L21,18 Z" fill="#fbbf24" opacity="0.4" transform="scale(1.1) translate(-1.8,-2)"/>
+                            <!-- Lightning bolt solid -->
+                            <path d="M22,8 L13,22 L19,22 L15,37 L28,18 L21,18 Z" fill="#fbbf24"/>
+                        </svg>
+                    </div>
                     <!-- Wordmark -->
-                    <text x="48" y="32" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22" font-weight="800" fill="white" letter-spacing="-0.5">SlowDay</text>
-                    <!-- Subtle "DEALS" tag -->
-                    <rect x="154" y="18" width="46" height="16" rx="4" fill="white" opacity="0.2"/>
-                    <text x="177" y="30" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="9" font-weight="700" fill="white" letter-spacing="1.5" opacity="0.9">DEALS</text>
-                </svg>
+                    <div>
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:17px;font-weight:800;color:#1a1a2e;letter-spacing:-0.3px;line-height:1.1;">SlowDay</div>
+                        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:#667eea;letter-spacing:2px;text-transform:uppercase;">DEALS</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right: avatar / login -->

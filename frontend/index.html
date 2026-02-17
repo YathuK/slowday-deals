@@ -1216,36 +1216,12 @@
         <div class="header" id="mainHeader">
             <!-- Left: Logo directly on gradient -->
             <div class="header-logo" style="display:flex;align-items:center;gap:10px;">
-                <!-- Icon: calendar + bolt on gradient -->
-                <div style="width:40px;height:40px;position:relative;flex-shrink:0;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
-                        <!-- Calendar body -->
-                        <rect x="3" y="8" width="34" height="28" rx="6" fill="white" opacity="0.95"/>
-                        <!-- Header bar -->
-                        <rect x="3" y="8" width="34" height="11" rx="6" fill="white"/>
-                        <rect x="3" y="14" width="34" height="5" fill="white"/>
-                        <!-- Binding pegs -->
-                        <rect x="11" y="4" width="5" height="9" rx="2.5" fill="white"/>
-                        <rect x="24" y="4" width="5" height="9" rx="2.5" fill="white"/>
-                        <!-- Calendar dots -->
-                        <circle cx="11" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <circle cx="20" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <circle cx="29" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <circle cx="11" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <circle cx="20" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <!-- Lightning glow -->
-                        <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24" opacity="0.35" transform="scale(1.12) translate(-2,-1)"/>
-                        <!-- Lightning bolt -->
-                        <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24"/>
-                    </svg>
-                </div>
-                <!-- Wordmark -->
+                <img src="data:image/png;base64,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" alt="SlowDay" style="width:38px;height:38px;border-radius:9px;object-fit:cover;flex-shrink:0;">
                 <div>
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;font-weight:800;color:white;letter-spacing:-0.3px;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,0.15);">SlowDay</div>
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:2.5px;text-transform:uppercase;">DEALS</div>
                 </div>
             </div>
-
             <!-- Right: savings tracker + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
                 <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
@@ -1339,6 +1315,7 @@
             <div class="provider-tabs">
                 <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')">👤 Profile</button>
                 <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')">📋 Bookings <span class="badge" id="pendingBadge" style="display:none"></span></button>
+                <button class="ptab-btn" id="ptabCalendar" onclick="switchProviderTab('calendar')">📅 Calendar</button>
                 <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')">📊 Analytics</button>
             </div>
 
@@ -1437,6 +1414,19 @@
                         <button class="filter-btn" onclick="filterProviderBookings('rejected', this)">❌ Rejected</button>
                     </div>
                     <div id="providerBookingsList"><div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings yet</h3><p>Bookings will appear here once customers book your service</p></div></div>
+                </div>
+            </div>
+
+            <!-- CALENDAR TAB -->
+            <div id="ptabCalendarContent" style="display:none;">
+                <div style="padding:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <button id="calPrevMonth" onclick="changeCalMonth(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+                        <div id="calMonthLabel" style="font-size:17px;font-weight:700;color:#333;"></div>
+                        <button id="calNextMonth" onclick="changeCalMonth(1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+                    </div>
+                    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;"></div>
+                    <div id="calDayBookings" style="margin-top:8px;"></div>
                 </div>
             </div>
 
@@ -2020,6 +2010,8 @@
                 console.log('Loading savings tracker for customer:', currentUser.email);
                 await updateSavingsTracker();
             }
+            // Start real-time polling for providers
+            startRealtimePolling();
         }
 
         function toggleUserDropdown() {
@@ -2437,9 +2429,26 @@
             const service = services[currentCardIndex];
             const serviceId = service._id || service.id;
             const modal = document.getElementById('detailModal');
-            const imageContent = service.photos && service.photos[0]
-                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`
-                : `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            // Build photo slideshow
+            let imageContent;
+            if (service.photos && service.photos.length > 1) {
+                const dots = service.photos.map((_, i) => `<div onclick="event.stopPropagation();goToSlide(${i})" id="dot_${i}" style="width:${i===0?'20px':'8px'};height:8px;border-radius:4px;background:${i===0?'white':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.3s;"></div>`).join('');
+                imageContent = `<div class="detail-image" style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;" id="photoSlider">
+                    <div id="photoSliderTrack" style="display:flex;height:100%;transition:transform 0.35s ease;width:${service.photos.length * 100}%;">
+                        ${service.photos.map(p => `<img src="${p}" alt="" style="width:${100/service.photos.length}%;height:100%;object-fit:cover;flex-shrink:0;">`).join('')}
+                    </div>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">‹</button>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx+1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">›</button>
+                    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;">${dots}</div>
+                    <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;backdrop-filter:blur(4px);" id="slideCounter">1 / ${service.photos.length}</div>
+                </div>`;
+                window._slidePhotos = service.photos;
+                window._slideIdx = 0;
+            } else if (service.photos && service.photos.length === 1) {
+                imageContent = `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`;
+            } else {
+                imageContent = `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            }
             const encodedLocation = encodeURIComponent(service.location);
             const mapsUrl = `https://maps.apple.com/?q=${encodedLocation}`;
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
@@ -3017,14 +3026,173 @@
         }
 
         // ============================================
+        // CALENDAR VIEW
+        // ============================================
+        let calCurrentDate = new Date();
+
+        function changeCalMonth(delta) {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + delta, 1);
+            renderCalendar();
+        }
+
+        function loadCalendar() {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth(), 1);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
+
+            // Map bookings to date strings
+            const bookingsByDate = {};
+            allProviderBookings.forEach(b => {
+                const d = new Date(b.preferredTime);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                if (!bookingsByDate[key]) bookingsByDate[key] = [];
+                bookingsByDate[key].push(b);
+            });
+
+            const grid = document.getElementById('calGrid');
+            const todayStr = new Date().toISOString().split('T')[0];
+            const days = ['S','M','T','W','T','F','S'];
+            let html = days.map(d => `<div style="text-align:center;font-size:11px;font-weight:700;color:#999;padding:4px 0;">${d}</div>`).join('');
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const bks = bookingsByDate[dateStr] || [];
+                const isToday = dateStr === todayStr;
+                const hasPending = bks.some(b => b.status === 'pending');
+                const hasConfirmed = bks.some(b => b.status === 'confirmed');
+                const dotColor = hasPending ? '#f59e0b' : hasConfirmed ? '#22c55e' : bks.length ? '#667eea' : 'transparent';
+                const dotHtml = bks.length ? `<div style="width:5px;height:5px;border-radius:50%;background:${dotColor};margin:1px auto 0;"></div>` : '';
+                html += `<div onclick="showCalDay('${dateStr}')" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:${bks.length?'pointer':'default'};background:${isToday?'linear-gradient(135deg,#667eea,#764ba2)':'bks.length?"rgba(102,126,234,0.08)":"transparent"};transition:background 0.2s;" ${bks.length&&!isToday?'onmouseover="this.style.background='rgba(102,126,234,0.15)'" onmouseout="this.style.background='rgba(102,126,234,0.08)'"':''}>
+                    <div style="font-size:13px;font-weight:${isToday?700:400};color:${isToday?'white':'#333'};line-height:1.2;">${d}</div>
+                    ${dotHtml}
+                </div>`;
+            }
+
+            grid.innerHTML = html;
+            document.getElementById('calDayBookings').innerHTML = '';
+        }
+
+        function showCalDay(dateStr) {
+            const bks = allProviderBookings.filter(b => {
+                const d = new Date(b.preferredTime);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                return key === dateStr;
+            });
+            if (!bks.length) return;
+            const el = document.getElementById('calDayBookings');
+            const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+            el.innerHTML = `<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid #f0f0f0;">📅 ${label}</div>` +
+                bks.sort((a,b) => new Date(a.preferredTime)-new Date(b.preferredTime)).map(b => {
+                    const svc = b.service || {};
+                    const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+                    const actions = b.status === 'pending' ? `
+                        <div style="display:flex;gap:6px;margin-top:8px;">
+                            <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed');setTimeout(()=>{loadProviderBookings();renderCalendar();},500)">✅ Confirm</button>
+                            <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected');setTimeout(()=>{loadProviderBookings();renderCalendar();},500)">❌ Reject</button>
+                        </div>` : '';
+                    return `<div class="booking-card" style="margin-bottom:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-size:15px;font-weight:700;color:#333;">${time} — ${svc.serviceType||'Service'}</div>
+                                <div style="font-size:13px;color:#888;margin-top:2px;">${b.customerName||''} · ${b.customerContact||''}</div>
+                            </div>
+                            <span class="status-pill status-${b.status}">${b.status}</span>
+                        </div>
+                        ${b.notes ? `<div style="font-size:12px;color:#666;margin-top:6px;">📝 ${b.notes}</div>` : ''}
+                        ${actions}
+                    </div>`;
+                }).join('');
+        }
+
+        // ============================================
+        // REAL-TIME POLLING
+        // ============================================
+        let realtimePollingInterval = null;
+
+        function startRealtimePolling() {
+            if (realtimePollingInterval) return;
+            realtimePollingInterval = setInterval(async () => {
+                if (!currentUser) return;
+                const activeProvTab = document.querySelector('.ptab-btn.active');
+                if (activeProvTab) {
+                    const tabId = activeProvTab.id;
+                    if (tabId === 'ptabBookings' || tabId === 'ptabCalendar') {
+                        const prevCount = allProviderBookings.length;
+                        const prevPending = allProviderBookings.filter(b=>b.status==='pending').length;
+                        try {
+                            const res = await API.getProviderBookings();
+                            const newBookings = res.bookings || [];
+                            const newPending = newBookings.filter(b=>b.status==='pending').length;
+                            if (JSON.stringify(newBookings.map(b=>b._id+b.status)) !== JSON.stringify(allProviderBookings.map(b=>b._id+b.status))) {
+                                allProviderBookings = newBookings;
+                                if (tabId === 'ptabBookings') {
+                                    const activeFilter = document.querySelector('.filter-btn.active');
+                                    const status = activeFilter ? activeFilter.textContent.replace(/[^a-z]/gi,'').toLowerCase() : 'all';
+                                    const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b=>b.status===status);
+                                    renderProviderBookings(filtered);
+                                }
+                                if (tabId === 'ptabCalendar') renderCalendar();
+                                // Update badge
+                                const badge = document.getElementById('pendingBadge');
+                                if (newPending > 0) { badge.textContent = newPending; badge.style.display='inline'; }
+                                else badge.style.display='none';
+                                // Flash notification for new pending bookings
+                                if (newPending > prevPending) {
+                                    showRealtimeToast(`🔔 New booking request!`);
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                }
+                // Also poll for customer bookings status changes
+                const savedTab = document.getElementById('myBookingsWrap');
+                if (savedTab && savedTab.style.display !== 'none') {
+                    // handled by user interaction
+                }
+            }, 15000); // poll every 15 seconds
+        }
+
+        function stopRealtimePolling() {
+            if (realtimePollingInterval) {
+                clearInterval(realtimePollingInterval);
+                realtimePollingInterval = null;
+            }
+        }
+
+        function showRealtimeToast(msg) {
+            const existing = document.getElementById('realtimeToast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'realtimeToast';
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 20px;border-radius:25px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(102,126,234,0.5);animation:toastIn 0.3s ease;';
+            document.querySelector('.app-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ============================================
         // PROVIDER TABS
         // ============================================
         function switchProviderTab(tab) {
-            ['profile','bookings','analytics'].forEach(t => {
-                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
-                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`).style.display = t === tab ? 'block' : 'none';
+            ['profile','bookings','calendar','analytics'].forEach(t => {
+                const btn = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`);
+                const cnt = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`);
+                if (btn) btn.classList.toggle('active', t === tab);
+                if (cnt) cnt.style.display = t === tab ? 'block' : 'none';
             });
             if (tab === 'bookings') loadProviderBookings();
+            if (tab === 'calendar') loadCalendar();
             if (tab === 'analytics') loadAnalytics();
         }
 
@@ -3284,6 +3452,26 @@
         // ============================================
         // UTILS
         // ============================================
+        // ============================================
+        // PHOTO SLIDESHOW
+        // ============================================
+        function goToSlide(idx) {
+            const photos = window._slidePhotos;
+            if (!photos) return;
+            window._slideIdx = ((idx % photos.length) + photos.length) % photos.length;
+            const track = document.getElementById('photoSliderTrack');
+            if (track) track.style.transform = `translateX(-${window._slideIdx * (100/photos.length)}%)`;
+            const counter = document.getElementById('slideCounter');
+            if (counter) counter.textContent = `${window._slideIdx+1} / ${photos.length}`;
+            photos.forEach((_, i) => {
+                const dot = document.getElementById(`dot_${i}`);
+                if (dot) {
+                    dot.style.width = i === window._slideIdx ? '20px' : '8px';
+                    dot.style.background = i === window._slideIdx ? 'white' : 'rgba(255,255,255,0.5)';
+                }
+            });
+        }
+
         function getServiceEmoji(serviceType) {
             const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
             return emojis[serviceType] || '⭐';
@@ -3337,6 +3525,10 @@
     </script>
 
     <style>
+        @keyframes toastIn {
+            from { opacity:0; transform:translateX(-50%) translateY(20px); }
+            to { opacity:1; transform:translateX(-50%) translateY(0); }
+        }
         @keyframes confettiFall {
             to {
                 top: 100%;

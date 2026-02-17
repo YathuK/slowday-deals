@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
     <script src="api.js"></script>
@@ -11,12 +11,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            touch-action: pan-y;
+            -webkit-text-size-adjust: 100%;
         }
 
         .app-container {
@@ -1824,7 +1827,13 @@
             try {
                 const response = await API.getServices();
                 allServices = response.services || [];
-                services = [...allServices];
+                
+                // Filter out provider's own service if they're a provider
+                if (myService && myService._id) {
+                    services = allServices.filter(s => (s._id || s.id) !== myService._id);
+                } else {
+                    services = [...allServices];
+                }
             } catch (error) {
                 allServices = [];
                 services = [];
@@ -3276,7 +3285,10 @@
             document.getElementById('celebrationModal').classList.add('active');
             document.getElementById('celebrationAmount').textContent = `$${Math.round(savingsCelebrationData.totalSaved)}`;
             document.getElementById('celebrationRank').textContent = savingsCelebrationData.rank;
-            document.getElementById('celebrationPercentile').textContent = `You're in the top ${100 - savingsCelebrationData.percentile}% of all SlowDay savers!`;
+            
+            // Calculate top percentage (minimum 1%)
+            const topPercent = Math.max(1, 100 - savingsCelebrationData.percentile);
+            document.getElementById('celebrationPercentile').textContent = `You're in the top ${topPercent}% of all SlowDay savers!`;
             
             // Trigger confetti
             createConfetti();

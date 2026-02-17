@@ -3217,15 +3217,21 @@
                 else if (percentile >= 75) rank = 'Top 25% ⭐';
                 else if (percentile >= 50) rank = 'Top 50% ✨';
                 else if (totalSaved > 0) rank = 'Keep saving!';
+                else rank = 'Start saving!';
                 
                 document.getElementById('savingsRank').textContent = rank;
-                document.getElementById('savingsBadge').style.display = totalSaved > 0 ? 'block' : 'none';
+                
+                // Always show badge for customers
+                document.getElementById('savingsBadge').style.display = 'block';
                 
                 // Store for celebration modal
                 savingsCelebrationData = { totalSaved, rank, percentile };
             } catch (err) {
                 console.error('Error loading savings tracker:', err);
-                document.getElementById('savingsBadge').style.display = 'none';
+                // Still show badge even on error, just with $0
+                document.getElementById('savingsAmount').textContent = '$0';
+                document.getElementById('savingsRank').textContent = 'Start saving!';
+                document.getElementById('savingsBadge').style.display = 'block';
             }
         }
 

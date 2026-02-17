@@ -40,7 +40,15 @@ const userSchema = new mongoose.Schema({
     savedServices: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Service'
-    }]
+    }],
+    resetPasswordToken: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null
+    }
 }, {
     timestamps: true
 });

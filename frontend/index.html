@@ -287,14 +287,15 @@
 
         .price-display {
             display: flex;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 10px;
+            margin-top: 12px;
+            align-items: stretch;
         }
 
         .price-box {
             flex: 1;
             background: #f8f9fa;
-            padding: 12px;
+            padding: 10px;
             border-radius: 10px;
             text-align: center;
         }
@@ -304,14 +305,83 @@
             color: #666;
             font-weight: 600;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .price-value {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             color: #667eea;
         }
+
+        /* Deal price badge — animated, eye-catching */
+        .deal-price-badge {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+            animation: dealPulse 2s ease-in-out infinite;
+        }
+        @keyframes dealPulse {
+            0%,100% { box-shadow: 0 4px 15px rgba(102,126,234,0.4); transform: scale(1); }
+            50%      { box-shadow: 0 6px 25px rgba(102,126,234,0.7); transform: scale(1.02); }
+        }
+        .deal-price-badge::before {
+            content:'';
+            position:absolute;
+            top:-50%;left:-60%;
+            width:40%;height:200%;
+            background:rgba(255,255,255,0.15);
+            transform:skewX(-15deg);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%   { left:-60%; }
+            100% { left:120%; }
+        }
+        .deal-price-badge .price-label { color: rgba(255,255,255,0.8); }
+        .deal-price-badge .deal-actual  { font-size:22px; font-weight:800; color:white; line-height:1; }
+        .deal-price-badge .deal-normal  { font-size:12px; color:rgba(255,255,255,0.7); text-decoration:line-through; margin-top:2px; }
+        .deal-price-badge .deal-pct     { position:absolute;top:6px;right:6px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:2px 6px;border-radius:20px;line-height:1.4; }
+
+        /* Slots remaining */
+        .slots-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+        .slots-badge.low  { background:#fee2e2; color:#991b1b; animation: slotBlink 1s ease-in-out infinite; }
+        .slots-badge.gone { background:#e5e7eb; color:#6b7280; }
+        @keyframes slotBlink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+        /* Grayed out deal card */
+        .deal-ended-overlay {
+            position:absolute;
+            inset:0;
+            background:rgba(255,255,255,0.75);
+            backdrop-filter:blur(2px);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            z-index:5;
+            border-radius:inherit;
+        }
+        .deal-ended-overlay .ended-icon { font-size:48px; margin-bottom:8px; filter:grayscale(1); }
+        .deal-ended-overlay .ended-text { font-size:18px; font-weight:800; color:#6b7280; }
+        .deal-ended-overlay .ended-sub  { font-size:13px; color:#9ca3af; margin-top:4px; }
+        .service-card.deal-ended { filter: grayscale(0.5); }
 
         .swipe-indicator {
             position: absolute;
@@ -1283,12 +1353,50 @@
                     <div class="form-group"><label>Location/Area</label><input type="text" id="location" required placeholder="e.g., Downtown Brooklyn"></div>
                     <div class="form-group"><label>Phone Number <span style="color:#888;font-weight:400;font-size:12px;">(for SMS notifications)</span></label><input type="text" id="providerContact" required placeholder="e.g., 6471234567"></div>
                     <div class="form-group"><label>Email Address <span style="color:#888;font-weight:400;font-size:12px;">(for email notifications)</span></label><input type="email" id="providerEmail" required placeholder="your@email.com"></div>
-                    <div class="form-group"><label>Special Offer Pricing</label>
+
+                    <!-- PRICING SECTION -->
+                    <div class="form-group">
+                        <label>Your Normal Price <span style="color:#888;font-weight:400;font-size:12px;">(regular rate, shown as crossed-out)</span></label>
+                        <input type="number" id="normalPrice" placeholder="e.g. 80" step="0.01" min="0">
+                    </div>
+                    <div class="form-group"><label>Special Deal Pricing</label>
                         <div class="price-row">
-                            <div><label style="font-size:12px;">Weekday Price</label><input type="number" id="weekdayPrice" required placeholder="$" step="0.01"></div>
-                            <div><label style="font-size:12px;">Weekend Price</label><input type="number" id="weekendPrice" required placeholder="$" step="0.01"></div>
+                            <div><label style="font-size:12px;">Weekday Deal Price</label><input type="number" id="weekdayPrice" required placeholder="$" step="0.01"></div>
+                            <div><label style="font-size:12px;">Weekend Deal Price</label><input type="number" id="weekendPrice" required placeholder="$" step="0.01"></div>
                         </div>
                     </div>
+
+                    <!-- SLOTS SECTION -->
+                    <div class="form-group">
+                        <label>Deal Slots <span style="color:#888;font-weight:400;font-size:12px;">(leave blank for unlimited)</span></label>
+                        <div class="price-row">
+                            <div><label style="font-size:12px;">Weekday Slots</label><input type="number" id="weekdaySlots" placeholder="Unlimited" min="1" step="1"></div>
+                            <div><label style="font-size:12px;">Weekend Slots</label><input type="number" id="weekendSlots" placeholder="Unlimited" min="1" step="1"></div>
+                        </div>
+                    </div>
+
+                    <!-- DEAL TOGGLE -->
+                    <div class="form-group">
+                        <label>Deal Status</label>
+                        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:#f8f9fa;border-radius:12px;">
+                            <div id="dealToggle" onclick="toggleDeal()" style="width:52px;height:28px;border-radius:14px;background:#22c55e;cursor:pointer;position:relative;transition:background 0.3s;flex-shrink:0;">
+                                <div id="dealToggleKnob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;transition:left 0.3s;left:27px;box-shadow:0 1px 4px rgba(0,0,0,0.2);"></div>
+                            </div>
+                            <div>
+                                <div id="dealToggleLabel" style="font-weight:600;font-size:14px;color:#22c55e;">Deal is LIVE</div>
+                                <div style="font-size:12px;color:#888;">Customers can book this deal</div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="dealActive" value="true">
+
+                    <!-- AVAILABILITY WINDOWS -->
+                    <div class="form-group">
+                        <label>Availability Windows <span style="color:#888;font-weight:400;font-size:12px;">(optional — restrict to specific days/times)</span></label>
+                        <div id="availabilityList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
+                        <button type="button" onclick="addAvailabilityWindow()" style="width:100%;padding:10px;background:#f0f0ff;color:#667eea;border:2px dashed #667eea;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">+ Add Time Window</button>
+                    </div>
+
                     <div class="form-group"><label>Upload Photos of Your Work</label>
                         <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
                             <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 10px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -1561,8 +1669,9 @@
                         </div>
                         <div class="form-group">
                             <label>Preferred Date & Time</label>
-                            <div class="custom-dt-picker">
-                                <input type="date" id="preferredDate" required class="dt-date-input">
+                            <!-- Standard picker (shown when no availability windows) -->
+                            <div id="standardPicker" class="custom-dt-picker">
+                                <input type="date" id="preferredDate" class="dt-date-input">
                                 <div class="dt-time-row">
                                     <select id="preferredHour" class="dt-select">
                                         <option value="07">7 AM</option><option value="08">8 AM</option>
@@ -1581,6 +1690,13 @@
                                         <option value="45">:45</option>
                                     </select>
                                 </div>
+                            </div>
+                            <!-- Slot picker (shown when provider has set availability windows) -->
+                            <div id="slotPicker" style="display:none;">
+                                <p style="font-size:13px;color:#666;margin-bottom:10px;">Select an available time slot:</p>
+                                <div id="slotDayTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
+                                <div id="slotTimeGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+                                <input type="hidden" id="selectedSlotTime">
                             </div>
                         </div>
                         <div class="form-group">
@@ -1972,8 +2088,31 @@
                 document.getElementById('location').value = myService.location;
                 document.getElementById('providerContact').value = myService.contact || '';
                 document.getElementById('providerEmail').value = myService.email || currentUser?.email || '';
+                document.getElementById('normalPrice').value = myService.normalPrice || '';
                 document.getElementById('weekdayPrice').value = myService.weekdayPrice;
                 document.getElementById('weekendPrice').value = myService.weekendPrice;
+                document.getElementById('weekdaySlots').value = myService.weekdaySlots || '';
+                document.getElementById('weekendSlots').value = myService.weekendSlots || '';
+
+                // Restore deal toggle
+                dealActiveState = myService.dealActive !== false;
+                document.getElementById('dealActive').value = dealActiveState;
+                const toggle = document.getElementById('dealToggle');
+                const knob = document.getElementById('dealToggleKnob');
+                const label = document.getElementById('dealToggleLabel');
+                if (dealActiveState) {
+                    toggle.style.background = '#22c55e'; knob.style.left = '27px';
+                    label.style.color = '#22c55e'; label.textContent = 'Deal is LIVE';
+                } else {
+                    toggle.style.background = '#d1d5db'; knob.style.left = '3px';
+                    label.style.color = '#9ca3af'; label.textContent = 'Deal is OFF';
+                }
+
+                // Restore availability windows
+                document.getElementById('availabilityList').innerHTML = '';
+                if (myService.availabilityWindows && myService.availabilityWindows.length > 0) {
+                    myService.availabilityWindows.forEach(w => addAvailabilityWindow(w));
+                }
 
                 // Restore existing photos into preview
                 const preview = document.getElementById('photoPreview');
@@ -2090,12 +2229,64 @@
             card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
             card.style.zIndex = 100 - stackPosition;
             const serviceId = service._id || service.id;
+
+            const today = new Date().getDay();
+            const isWknd = today === 0 || today === 6;
+            const dealPrice = isWknd ? service.weekendPrice : service.weekdayPrice;
+            const dealSlots = isWknd ? service.weekendSlots : service.weekdaySlots;
+            const slotsUsed = isWknd ? service.weekendSlotsUsed : service.weekdaySlotsUsed;
+            const slotsLeft = dealSlots !== null && dealSlots !== undefined ? dealSlots - (slotsUsed || 0) : null;
+
+            const dealEnded = !service.dealActive || (slotsLeft !== null && slotsLeft <= 0);
+
+            if (dealEnded) card.classList.add('deal-ended');
+
             const imageContent = service.photos && service.photos[0]
                 ? `<img src="${service.photos[0]}" alt="${service.serviceType}" style="width:100%;height:100%;object-fit:cover;">`
                 : `<div style="font-size:72px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);">${getServiceEmoji(service.serviceType)}</div>`;
 
-            // Only top card shows action buttons
-            const buttonsHtml = stackPosition === 0 ? `
+            // Deal price badge HTML
+            let priceHTML = '';
+            if (service.normalPrice && service.normalPrice > dealPrice) {
+                const pct = Math.round((1 - dealPrice / service.normalPrice) * 100);
+                priceHTML = `
+                    <div class="deal-price-badge">
+                        <div class="deal-pct">-${pct}%</div>
+                        <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
+                        <div class="deal-actual">$${dealPrice}</div>
+                        <div class="deal-normal">$${service.normalPrice}</div>
+                    </div>`;
+            } else {
+                priceHTML = `
+                    <div class="deal-price-badge">
+                        <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
+                        <div class="deal-actual">$${dealPrice}</div>
+                    </div>`;
+            }
+
+            // Slots badge
+            let slotsBadge = '';
+            if (dealEnded && !service.dealActive) {
+                slotsBadge = `<div class="slots-badge gone">🚫 Deal turned off</div>`;
+            } else if (slotsLeft !== null) {
+                if (slotsLeft <= 0) {
+                    slotsBadge = `<div class="slots-badge gone">😔 All slots taken</div>`;
+                } else if (slotsLeft <= 3) {
+                    slotsBadge = `<div class="slots-badge low">🔥 Only ${slotsLeft} left!</div>`;
+                } else {
+                    slotsBadge = `<div class="slots-badge">🎟️ ${slotsLeft} slots left</div>`;
+                }
+            }
+
+            // Grayed-out overlay
+            const endedOverlay = dealEnded ? `
+                <div class="deal-ended-overlay">
+                    <div class="ended-icon">⏰</div>
+                    <div class="ended-text">Deal Ended</div>
+                    <div class="ended-sub">You missed this one</div>
+                </div>` : '';
+
+            const buttonsHtml = stackPosition === 0 && !dealEnded ? `
                 <div class="card-action-row" onclick="event.stopPropagation()">
                     <button class="card-btn card-btn-nope" onclick="swipeLeft()">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -2109,6 +2300,7 @@
                 </div>` : '';
 
             card.innerHTML = `
+                ${endedOverlay}
                 <div class="swipe-indicator like-indicator">LIKE</div>
                 <div class="swipe-indicator nope-indicator">NOPE</div>
                 <div class="card-image">${imageContent}</div>
@@ -2121,16 +2313,8 @@
                         <div class="service-type">${service.location}</div>
                     </div>
                     <div class="service-description">${service.description}</div>
-                    <div class="price-display">
-                        <div class="price-box">
-                            <div class="price-label">Weekdays</div>
-                            <div class="price-value">$${service.weekdayPrice}</div>
-                        </div>
-                        <div class="price-box">
-                            <div class="price-label">Weekends</div>
-                            <div class="price-value">$${service.weekendPrice}</div>
-                        </div>
-                    </div>
+                    <div class="price-display">${priceHTML}</div>
+                    ${slotsBadge}
                     ${buttonsHtml}
                 </div>`;
 
@@ -2257,13 +2441,108 @@
             document.getElementById('bookingSuccess').style.display = 'none';
             document.getElementById('customerName').value = currentUser.name;
             document.getElementById('customerContact').value = currentUser.email || '';
-            // Set min date to tomorrow, default to 9 AM :00
-            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-            const tStr = tomorrow.toISOString().split('T')[0];
-            document.getElementById('preferredDate').min = tStr;
-            document.getElementById('preferredDate').value = tStr;
-            document.getElementById('preferredHour').value = '09';
-            document.getElementById('preferredMinute').value = '00';
+
+            const windows = currentBookingService.availabilityWindows;
+            if (windows && windows.length > 0) {
+                // Show slot picker
+                document.getElementById('standardPicker').style.display = 'none';
+                document.getElementById('slotPicker').style.display = 'block';
+                document.getElementById('selectedSlotTime').value = '';
+                buildSlotPicker(windows);
+            } else {
+                // Show standard picker
+                document.getElementById('standardPicker').style.display = 'block';
+                document.getElementById('slotPicker').style.display = 'none';
+                const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+                const tStr = tomorrow.toISOString().split('T')[0];
+                document.getElementById('preferredDate').min = tStr;
+                document.getElementById('preferredDate').value = tStr;
+                document.getElementById('preferredHour').value = '09';
+                document.getElementById('preferredMinute').value = '00';
+            }
+        }
+
+        function buildSlotPicker(windows) {
+            const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+            const dayTabsEl = document.getElementById('slotDayTabs');
+            const timeGridEl = document.getElementById('slotTimeGrid');
+            dayTabsEl.innerHTML = ''; timeGridEl.innerHTML = '';
+
+            // Get next 14 days that match any window day
+            const daySlots = {}; // {dateStr: [{time, label}]}
+            const today = new Date();
+            for (let i = 1; i <= 14; i++) {
+                const d = new Date(today); d.setDate(today.getDate() + i);
+                const dayName = DAY_ORDER[d.getDay() === 0 ? 6 : d.getDay() - 1];
+                const matchingWindows = windows.filter(w => w.day === dayName);
+                if (matchingWindows.length === 0) continue;
+                const dateStr = d.toISOString().split('T')[0];
+                daySlots[dateStr] = daySlots[dateStr] || [];
+                matchingWindows.forEach(w => {
+                    // Generate time slots
+                    const [sh, sm] = w.startTime.split(':').map(Number);
+                    const [eh, em] = w.endTime.split(':').map(Number);
+                    let cur = sh * 60 + sm;
+                    const end = eh * 60 + em;
+                    while (cur + w.sessionDuration <= end) {
+                        const hh = Math.floor(cur/60);
+                        const mm = cur % 60;
+                        const ampm = hh >= 12 ? 'PM' : 'AM';
+                        const h12 = hh > 12 ? hh - 12 : hh === 0 ? 12 : hh;
+                        const label = `${h12}:${mm.toString().padStart(2,'0')} ${ampm}`;
+                        const iso = `${dateStr}T${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:00`;
+                        daySlots[dateStr].push({ iso, label });
+                        cur += w.sessionDuration;
+                    }
+                });
+            }
+
+            const dates = Object.keys(daySlots).sort();
+            if (dates.length === 0) {
+                timeGridEl.innerHTML = '<p style="color:#999;font-size:13px;grid-column:1/-1;">No available slots in the next 2 weeks.</p>';
+                return;
+            }
+
+            let selectedDate = dates[0];
+            function renderTabs() {
+                dayTabsEl.innerHTML = '';
+                dates.forEach(dateStr => {
+                    const d = new Date(dateStr + 'T12:00:00');
+                    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = label;
+                    btn.style.cssText = `padding:8px 12px;border-radius:20px;border:2px solid ${dateStr===selectedDate?'#667eea':'#e2e8f0'};background:${dateStr===selectedDate?'#667eea':'white'};color:${dateStr===selectedDate?'white':'#444'};font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;`;
+                    btn.onclick = () => { selectedDate = dateStr; renderTabs(); renderSlots(); };
+                    dayTabsEl.appendChild(btn);
+                });
+            }
+
+            function renderSlots() {
+                timeGridEl.innerHTML = '';
+                document.getElementById('selectedSlotTime').value = '';
+                (daySlots[selectedDate] || []).forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = slot.label;
+                    btn.style.cssText = 'padding:10px 6px;border-radius:10px;border:2px solid #e2e8f0;background:white;color:#444;font-size:13px;font-weight:600;cursor:pointer;text-align:center;';
+                    btn.onclick = () => {
+                        document.querySelectorAll('#slotTimeGrid button').forEach(b => {
+                            b.style.border = '2px solid #e2e8f0';
+                            b.style.background = 'white';
+                            b.style.color = '#444';
+                        });
+                        btn.style.border = '2px solid #667eea';
+                        btn.style.background = '#667eea';
+                        btn.style.color = 'white';
+                        document.getElementById('selectedSlotTime').value = slot.iso;
+                    };
+                    timeGridEl.appendChild(btn);
+                });
+            }
+
+            renderTabs();
+            renderSlots();
         }
 
         function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
@@ -2273,11 +2552,23 @@
             if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
             try {
                 const serviceId = currentBookingService._id || currentBookingService.id;
-                const date = document.getElementById('preferredDate').value;
-                const hour = document.getElementById('preferredHour').value;
-                const minute = document.getElementById('preferredMinute').value;
-                if (!date) { alert('Please select a date'); return; }
-                const preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
+                let preferredTime;
+
+                const windows = currentBookingService.availabilityWindows;
+                if (windows && windows.length > 0) {
+                    // Slot picker mode
+                    preferredTime = document.getElementById('selectedSlotTime').value;
+                    if (!preferredTime) { alert('Please select a time slot'); return; }
+                    preferredTime = new Date(preferredTime).toISOString();
+                } else {
+                    // Standard picker mode
+                    const date = document.getElementById('preferredDate').value;
+                    const hour = document.getElementById('preferredHour').value;
+                    const minute = document.getElementById('preferredMinute').value;
+                    if (!date) { alert('Please select a date'); return; }
+                    preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
+                }
+
                 const response = await API.createBooking({
                     serviceId,
                     customerContact: document.getElementById('customerContact').value,
@@ -2289,7 +2580,6 @@
                     successEl.style.display = 'block';
                     successEl.textContent = '✅ Booking sent! The provider will confirm soon.';
                     e.target.reset();
-                    // Remove from saved list after booking
                     try {
                         await API.removeSavedService(serviceId);
                         await loadSavedServices();
@@ -2331,7 +2621,18 @@
                 const img = service.photos && service.photos[0]
                     ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
                     : `<div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:32px;">${getServiceEmoji(service.serviceType)}</div>`;
-                return `<div class="saved-card">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3><p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">Weekdays: $${service.weekdayPrice} | Weekends: $${service.weekendPrice}</p><div class="saved-card-actions"><button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button><button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
+                const today2 = new Date().getDay();
+                const isWknd2 = today2 === 0 || today2 === 6;
+                const dealPrice2 = isWknd2 ? service.weekendPrice : service.weekdayPrice;
+                const dealSlots2 = isWknd2 ? service.weekendSlots : service.weekdaySlots;
+                const slotsUsed2 = isWknd2 ? service.weekendSlotsUsed : service.weekdaySlotsUsed;
+                const slotsLeft2 = dealSlots2 != null ? dealSlots2 - (slotsUsed2 || 0) : null;
+                const dealEnded2 = !service.dealActive || (slotsLeft2 !== null && slotsLeft2 <= 0);
+                const endedStyle = dealEnded2 ? 'filter:grayscale(1);opacity:0.6;' : '';
+                const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#e5e7eb;color:#6b7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-bottom:4px;">⏰ Deal Ended</div>` : '';
+                const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
+                const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
+                return `<div class="saved-card" style="${endedStyle}">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
             }).join('');
         }
 
@@ -2346,12 +2647,77 @@
         // ============================================
         // PROVIDER
         // ============================================
+        // Deal toggle
+        let dealActiveState = true;
+        function toggleDeal() {
+            dealActiveState = !dealActiveState;
+            const toggle = document.getElementById('dealToggle');
+            const knob = document.getElementById('dealToggleKnob');
+            const label = document.getElementById('dealToggleLabel');
+            document.getElementById('dealActive').value = dealActiveState;
+            if (dealActiveState) {
+                toggle.style.background = '#22c55e';
+                knob.style.left = '27px';
+                label.style.color = '#22c55e';
+                label.textContent = 'Deal is LIVE';
+            } else {
+                toggle.style.background = '#d1d5db';
+                knob.style.left = '3px';
+                label.style.color = '#9ca3af';
+                label.textContent = 'Deal is OFF';
+            }
+        }
+
+        // Availability windows
+        const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const DURATIONS = [{v:15,l:'15 min'},{v:30,l:'30 min'},{v:45,l:'45 min'},{v:60,l:'1 hour'},{v:90,l:'1 hr 30 min'},{v:120,l:'2 hours'}];
+
+        function addAvailabilityWindow(existing) {
+            const list = document.getElementById('availabilityList');
+            const idx = list.children.length;
+            const div = document.createElement('div');
+            div.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;';
+            div.innerHTML = `
+                <button type="button" onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#999;font-size:18px;cursor:pointer;line-height:1;">×</button>
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:12px;font-weight:600;color:#444;">Day</label>
+                    <select class="av-day" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                        ${DAYS.map(d=>`<option value="${d}" ${existing&&existing.day===d?'selected':''}>${d}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;color:#444;">Start Time</label>
+                    <input type="time" class="av-start" value="${existing?existing.startTime:'09:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;color:#444;">End Time</label>
+                    <input type="time" class="av-end" value="${existing?existing.endTime:'17:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:12px;font-weight:600;color:#444;">Session Duration</label>
+                    <select class="av-dur" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                        ${DURATIONS.map(d=>`<option value="${d.v}" ${existing&&existing.sessionDuration===d.v?'selected':''}>${d.l}</option>`).join('')}
+                    </select>
+                </div>`;
+            list.appendChild(div);
+        }
+
+        function getAvailabilityWindows() {
+            return Array.from(document.getElementById('availabilityList').children).map(div => ({
+                day: div.querySelector('.av-day').value,
+                startTime: div.querySelector('.av-start').value,
+                endTime: div.querySelector('.av-end').value,
+                sessionDuration: parseInt(div.querySelector('.av-dur').value)
+            }));
+        }
+
         async function submitProvider(e) {
             e.preventDefault();
             if (!currentUser) { alert('Please log in'); return; }
             
             const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
             const photos = Array.from(photoImgs).map(img => img.src);
+            const normalPriceVal = document.getElementById('normalPrice').value;
 
             const serviceData = {
                 providerName: document.getElementById('providerName').value,
@@ -2360,9 +2726,14 @@
                 location: document.getElementById('location').value,
                 contact: document.getElementById('providerContact').value,
                 email: document.getElementById('providerEmail').value || currentUser.email,
+                normalPrice: normalPriceVal ? parseFloat(normalPriceVal) : null,
                 weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
                 weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
-                photos: photos
+                weekdaySlots: document.getElementById('weekdaySlots').value ? parseInt(document.getElementById('weekdaySlots').value) : null,
+                weekendSlots: document.getElementById('weekendSlots').value ? parseInt(document.getElementById('weekendSlots').value) : null,
+                dealActive: document.getElementById('dealActive').value === 'true',
+                availabilityWindows: getAvailabilityWindows(),
+                photos
             };
 
             try {

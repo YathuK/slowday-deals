@@ -181,5 +181,13 @@ const API = {
 
     async changePassword(currentPassword, newPassword) {
         return await this.call('/users/password', 'PUT', { currentPassword, newPassword });
+    },
+
+    async forgotPassword(email) {
+        return await this.call('/auth/forgot-password', 'POST', { email });
+    },
+
+    async resetPassword(token, password) {
+        return await this.call('/auth/reset-password', 'POST', { token, password });
     }
 };

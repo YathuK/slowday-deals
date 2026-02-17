@@ -1206,6 +1206,7 @@
         .profile-price-box .label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; }
         .profile-price-box .value { font-size: 20px; color: #667eea; font-weight: 700; }
     </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao&libraries=places&callback=initPlaces" async defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -1242,8 +1243,13 @@
                 </div>
             </div>
 
-            <!-- Right: avatar / login -->
+            <!-- Right: savings tracker + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
+                <div id="savingsBadge" style="display:none;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border-radius:20px;padding:6px 12px;margin-right:10px;border:1px solid rgba(255,255,255,0.2);">
+                    <div style="font-size:10px;color:rgba(255,255,255,0.7);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Saved</div>
+                    <div style="font-size:16px;color:white;font-weight:800;line-height:1;margin-top:2px;" id="savingsAmount">$0</div>
+                    <div style="font-size:9px;color:#fbbf24;font-weight:700;margin-top:2px;" id="savingsRank">Top 1%</div>
+                </div>
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
             </div>
             <div class="user-menu" id="guestMenu">
@@ -1475,6 +1481,15 @@
                         <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;">⚠️ Delete Account</h3>
                         <p style="font-size:13px;color:#888;margin-bottom:10px;">This permanently deletes your account and all your data. Cannot be undone.</p>
                         <button onclick="deleteAccount()" style="width:100%;padding:12px;background:#fee2e2;color:#e53e3e;border:1.5px solid #fca5a5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Delete My Account</button>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+
+                    <!-- Legal Links -->
+                    <div style="display:flex;justify-content:center;gap:20px;padding:10px 0;">
+                        <a href="#" onclick="showTerms();return false;" style="font-size:13px;color:#667eea;text-decoration:none;font-weight:600;">Terms of Use</a>
+                        <span style="color:#ddd;">|</span>
+                        <a href="#" onclick="showPrivacy();return false;" style="font-size:13px;color:#667eea;text-decoration:none;font-weight:600;">Privacy Policy</a>
                     </div>
                 </div>
             </div>
@@ -1720,6 +1735,23 @@
         let savedServices = [];
         let currentBookingService = null;
         let myBookings = [];
+
+        // Google Places Autocomplete
+        window.initPlaces = function() {
+            const locationInput = document.getElementById('location');
+            if (locationInput && window.google && google.maps && google.maps.places) {
+                const autocomplete = new google.maps.places.Autocomplete(locationInput, {
+                    types: ['geocode'],
+                    componentRestrictions: {country: ['ca', 'us']}
+                });
+                autocomplete.addListener('place_changed', () => {
+                    const place = autocomplete.getPlace();
+                    if (place.formatted_address) {
+                        locationInput.value = place.formatted_address;
+                    }
+                });
+            }
+        };
 
         // ============================================
         // INIT
@@ -2245,26 +2277,23 @@
                 ? `<img src="${service.photos[0]}" alt="${service.serviceType}" style="width:100%;height:100%;object-fit:cover;">`
                 : `<div style="font-size:72px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);">${getServiceEmoji(service.serviceType)}</div>`;
 
-            // Deal price badge HTML with slots badge inside top-right
+            // Deal price badge HTML
             let priceHTML = '';
-            let slotsBadge = '';
+            let slotsText = '';
+            
             if (dealEnded && !service.dealActive) {
-                slotsBadge = `<div style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.9);color:#6b7280;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;line-height:1.3;">🚫 OFF</div>`;
+                slotsText = 'Deal Off';
             } else if (slotsLeft !== null) {
-                if (slotsLeft <= 0) {
-                    slotsBadge = `<div style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.95);color:#ef4444;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;line-height:1.3;">😔 0 left</div>`;
-                } else if (slotsLeft <= 3) {
-                    slotsBadge = `<div style="position:absolute;top:6px;right:6px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;line-height:1.3;animation:slotBlink 1s ease-in-out infinite;">🔥 ${slotsLeft} left</div>`;
-                } else {
-                    slotsBadge = `<div style="position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.85);color:#667eea;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;line-height:1.3;">🎟️ ${slotsLeft}</div>`;
-                }
+                if (slotsLeft <= 0) slotsText = '0 left';
+                else slotsText = `${slotsLeft} left`;
+            } else {
+                slotsText = '∞'; // Unlimited
             }
 
             if (service.normalPrice && service.normalPrice > dealPrice) {
                 const pct = Math.round((1 - dealPrice / service.normalPrice) * 100);
                 priceHTML = `
                     <div class="deal-price-badge">
-                        ${slotsBadge}
                         <div class="deal-pct">-${pct}%</div>
                         <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
                         <div class="deal-actual">$${dealPrice}</div>
@@ -2273,7 +2302,6 @@
             } else {
                 priceHTML = `
                     <div class="deal-price-badge">
-                        ${slotsBadge}
                         <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
                         <div class="deal-actual">$${dealPrice}</div>
                     </div>`;
@@ -2298,7 +2326,9 @@
                     <button class="card-btn card-btn-like" onclick="handleSwipeRight()">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     </button>
-                </div>` : '';
+                </div>
+                <button class="book-now-btn" onclick="openBookingModal('${serviceId}')" style="margin-top:12px;width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(102,126,234,0.4);">Book Now • ${slotsText}</button>
+                ` : '';
 
             card.innerHTML = `
                 ${endedOverlay}
@@ -2425,7 +2455,7 @@
 
                         function slotBadge(left) {
                             if (dealOff) return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;backdrop-filter:blur(4px);">🚫 OFF</div>`;
-                            if (left === null) return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;backdrop-filter:blur(4px);">∞ UNLIMITED</div>`;
+                            if (left === null) return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;backdrop-filter:blur(4px);">∞</div>`;
                             if (left <= 0)  return `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;box-shadow:0 2px 8px rgba(239,68,68,0.4);">SOLD OUT</div>`;
                             if (left <= 3)  return `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;animation:slotBlink 1s ease-in-out infinite;box-shadow:0 2px 8px rgba(239,68,68,0.4);">🔥 ${left} LEFT</div>`;
                             return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;backdrop-filter:blur(4px);">🎟️ ${left}</div>`;
@@ -2662,7 +2692,13 @@
                         await loadSavedServices();
                         renderSavedList();
                     } catch(err) { /* already not saved, no problem */ }
-                    setTimeout(closeBookingModal, 2000);
+                    
+                    // Auto-advance to next card and reload services to reflect updated slots
+                    setTimeout(async () => {
+                        closeBookingModal();
+                        await loadPublicServices(); // Reload to get updated slot counts
+                        swipeCard('right'); // Move to next card
+                    }, 1500);
                 }
             } catch (error) { alert(error.message || 'Error creating booking.'); }
         }
@@ -2755,7 +2791,10 @@
             const div = document.createElement('div');
             div.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;';
             div.innerHTML = `
-                <button type="button" onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#999;font-size:18px;cursor:pointer;line-height:1;">×</button>
+                <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">
+                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">⎘</button>
+                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:none;border:none;color:#999;font-size:18px;cursor:pointer;line-height:1;">×</button>
+                </div>
                 <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Day</label>
                     <select class="av-day" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
@@ -2777,6 +2816,17 @@
                     </select>
                 </div>`;
             list.appendChild(div);
+        }
+
+        function duplicateAvWindow(btn) {
+            const parent = btn.closest('[style*="grid"]');
+            const data = {
+                day: parent.querySelector('.av-day').value,
+                startTime: parent.querySelector('.av-start').value,
+                endTime: parent.querySelector('.av-end').value,
+                sessionDuration: parseInt(parent.querySelector('.av-dur').value)
+            };
+            addAvailabilityWindow(data);
         }
 
         function getAvailabilityWindows() {
@@ -3058,10 +3108,25 @@
             try {
                 const res = await API.getAnalytics();
                 const a = res.analytics;
+
+                // Calculate potential earnings from unsold slots
+                let potentialEarnings = 0;
+                if (myService) {
+                    const wdLeft = myService.weekdaySlots != null ? Math.max(0, myService.weekdaySlots - (myService.weekdaySlotsUsed || 0)) : 0;
+                    const weLeft = myService.weekendSlots != null ? Math.max(0, myService.weekendSlots - (myService.weekendSlotsUsed || 0)) : 0;
+                    potentialEarnings = (wdLeft * myService.weekdayPrice) + (weLeft * myService.weekendPrice);
+                }
+
                 const maxBookings = Math.max(...a.last7Days.map(d => d.bookings), 1);
                 const maxEarnings = Math.max(...a.last7Days.map(d => d.earnings), 1);
 
                 document.getElementById('analyticsContent').innerHTML = `
+                    ${potentialEarnings > 0 ? `
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:16px;margin-bottom:16px;color:white;text-align:center;">
+                        <div style="font-size:12px;font-weight:700;opacity:0.85;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">💰 Potential Revenue</div>
+                        <div style="font-size:32px;font-weight:900;line-height:1;margin-bottom:4px;">$${potentialEarnings.toFixed(2)}</div>
+                        <div style="font-size:13px;opacity:0.75;">If all remaining slots sell</div>
+                    </div>` : ''}
                     <div class="analytics-grid">
                         <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${a.daily.count}</div><div class="stat-earn">$${a.daily.earnings.toFixed(2)}</div></div>
                         <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${a.weekly.count}</div><div class="stat-earn">$${a.weekly.earnings.toFixed(2)}</div></div>
@@ -3100,11 +3165,32 @@
         // ============================================
         // CUSTOMER MY BOOKINGS
         // ============================================
+        function updateSavingsTracker(bookings) {
+            const confirmedBookings = (bookings || []).filter(b => b.status === 'confirmed');
+            const totalSaved = confirmedBookings.reduce((sum, b) => sum + (b.savedAmount || 0), 0);
+            
+            document.getElementById('savingsAmount').textContent = `$${Math.round(totalSaved)}`;
+            
+            // Calculate percentile (top 1% if saved >= $100, top 5% if >= $50, top 10% if >= $20, etc.)
+            let rank = '';
+            if (totalSaved >= 100) rank = 'Top 1% 🏆';
+            else if (totalSaved >= 50) rank = 'Top 5% 🌟';
+            else if (totalSaved >= 20) rank = 'Top 10% ⭐';
+            else if (totalSaved > 0) rank = 'Keep saving!';
+            
+            document.getElementById('savingsRank').textContent = rank;
+            document.getElementById('savingsBadge').style.display = totalSaved > 0 ? 'block' : 'none';
+        }
+
         async function loadMyBookings() {
             document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
             try {
                 const res = await API.getCustomerBookings();
                 const bookings = res.bookings || [];
+                
+                // Update savings tracker
+                updateSavingsTracker(bookings);
+                
                 if (!bookings.length) {
                     document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
                     return;
@@ -3149,7 +3235,79 @@
             const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
             return emojis[serviceType] || '⭐';
         }
+
+        function showTerms() {
+            document.getElementById('userProfileModal').classList.remove('active');
+            document.getElementById('termsModal').classList.add('active');
+        }
+        function showPrivacy() {
+            document.getElementById('userProfileModal').classList.remove('active');
+            document.getElementById('privacyModal').classList.add('active');
+        }
     </script>
+
+    <!-- Terms of Use Modal -->
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 Terms of Use</h2>
+                <button class="close-btn" onclick="document.getElementById('termsModal').classList.remove('active')">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;max-height:60vh;overflow-y:auto;">
+                <p style="color:#666;margin-bottom:16px;font-size:14px;line-height:1.6;">Effective Date: February 17, 2026</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">1. Acceptance of Terms</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">By accessing and using SlowDay Deals ("the Service"), you agree to be bound by these Terms of Use. If you do not agree, please discontinue use immediately.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">2. Service Description</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">SlowDay Deals is a marketplace connecting customers with service providers offering time-limited deals. We facilitate bookings but are not a party to agreements between customers and providers.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">3. User Accounts</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">4. Provider Obligations</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">Service providers must accurately represent their services, honor confirmed bookings, and comply with all applicable laws.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">5. Customer Obligations</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">Customers must provide accurate booking information and honor confirmed appointments.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">6. Limitation of Liability</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">SlowDay Deals is not liable for the quality, safety, or legality of services provided. Disputes are between customers and providers.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Termination</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We reserve the right to suspend or terminate accounts that violate these terms or engage in fraudulent activity.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Changes to Terms</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We may update these terms at any time. Continued use constitutes acceptance of modified terms.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔒 Privacy Policy</h2>
+                <button class="close-btn" onclick="document.getElementById('privacyModal').classList.remove('active')">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;max-height:60vh;overflow-y:auto;">
+                <p style="color:#666;margin-bottom:16px;font-size:14px;line-height:1.6;">Effective Date: February 17, 2026</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">1. Information We Collect</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We collect: account information (name, email, phone), booking details, service listings, and usage analytics.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">2. How We Use Your Information</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">To facilitate bookings, send notifications, improve the Service, and communicate updates.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">3. Information Sharing</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We share booking information between customers and providers. We do not sell personal data to third parties.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">4. Data Security</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We implement industry-standard security measures to protect your data, but cannot guarantee absolute security.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">5. Your Rights</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">You may access, update, or delete your personal information through your account settings.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">6. Cookies and Tracking</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We use cookies and similar technologies to enhance user experience and analyze usage patterns.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Third-Party Services</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We use SendGrid for email and Twilio for SMS. These services have their own privacy policies.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Contact Us</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at hello@slowdaydeals.com.</p>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

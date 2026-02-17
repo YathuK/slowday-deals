@@ -189,5 +189,9 @@ const API = {
 
     async resetPassword(token, password) {
         return await this.call('/auth/reset-password', 'POST', { token, password });
+    },
+
+    async getSavingsLeaderboard() {
+        return await this.call('/leaderboard/savings');
     }
 };

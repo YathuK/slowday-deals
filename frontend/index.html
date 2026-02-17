@@ -1993,6 +1993,10 @@
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
+            // Load savings tracker for customers
+            if (currentUser.accountType === 'customer') {
+                await updateSavingsTracker();
+            }
         }
 
         function toggleUserDropdown() {
@@ -2277,23 +2281,30 @@
                 ? `<img src="${service.photos[0]}" alt="${service.serviceType}" style="width:100%;height:100%;object-fit:cover;">`
                 : `<div style="font-size:72px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);">${getServiceEmoji(service.serviceType)}</div>`;
 
-            // Deal price badge HTML
+            // Deal price badge HTML with slots overlaid
             let priceHTML = '';
-            let slotsText = '';
+            let slotsBadge = '';
             
+            // Slots badge — overlaid on bottom-right of price card
             if (dealEnded && !service.dealActive) {
-                slotsText = 'Deal Off';
+                slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.95);color:#6b7280;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🚫 OFF</div>`;
             } else if (slotsLeft !== null) {
-                if (slotsLeft <= 0) slotsText = '0 left';
-                else slotsText = `${slotsLeft} left`;
+                if (slotsLeft <= 0) {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:#ef4444;color:white;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 8px rgba(239,68,68,0.4);">0 left</div>`;
+                } else if (slotsLeft <= 3) {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;animation:slotBlink 1s ease-in-out infinite;box-shadow:0 2px 8px rgba(251,191,36,0.5);">🔥 ${slotsLeft} left</div>`;
+                } else {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.95);color:#667eea;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🎟️ ${slotsLeft} left</div>`;
+                }
             } else {
-                slotsText = '∞'; // Unlimited
+                slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.9);color:#667eea;font-size:12px;font-weight:800;padding:4px 10px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">∞</div>`;
             }
 
             if (service.normalPrice && service.normalPrice > dealPrice) {
                 const pct = Math.round((1 - dealPrice / service.normalPrice) * 100);
                 priceHTML = `
                     <div class="deal-price-badge">
+                        ${slotsBadge}
                         <div class="deal-pct">-${pct}%</div>
                         <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
                         <div class="deal-actual">$${dealPrice}</div>
@@ -2302,6 +2313,7 @@
             } else {
                 priceHTML = `
                     <div class="deal-price-badge">
+                        ${slotsBadge}
                         <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
                         <div class="deal-actual">$${dealPrice}</div>
                     </div>`;
@@ -2326,9 +2338,7 @@
                     <button class="card-btn card-btn-like" onclick="handleSwipeRight()">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     </button>
-                </div>
-                <button class="book-now-btn" onclick="openBookingModal('${serviceId}')" style="margin-top:12px;width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(102,126,234,0.4);">Book Now • ${slotsText}</button>
-                ` : '';
+                </div>` : '';
 
             card.innerHTML = `
                 ${endedOverlay}
@@ -2793,7 +2803,7 @@
             div.innerHTML = `
                 <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">
                     <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">⎘</button>
-                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:none;border:none;color:#999;font-size:18px;cursor:pointer;line-height:1;">×</button>
+                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:16px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">🗑️</button>
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Day</label>
@@ -3165,21 +3175,28 @@
         // ============================================
         // CUSTOMER MY BOOKINGS
         // ============================================
-        function updateSavingsTracker(bookings) {
-            const confirmedBookings = (bookings || []).filter(b => b.status === 'confirmed');
-            const totalSaved = confirmedBookings.reduce((sum, b) => sum + (b.savedAmount || 0), 0);
-            
-            document.getElementById('savingsAmount').textContent = `$${Math.round(totalSaved)}`;
-            
-            // Calculate percentile (top 1% if saved >= $100, top 5% if >= $50, top 10% if >= $20, etc.)
-            let rank = '';
-            if (totalSaved >= 100) rank = 'Top 1% 🏆';
-            else if (totalSaved >= 50) rank = 'Top 5% 🌟';
-            else if (totalSaved >= 20) rank = 'Top 10% ⭐';
-            else if (totalSaved > 0) rank = 'Keep saving!';
-            
-            document.getElementById('savingsRank').textContent = rank;
-            document.getElementById('savingsBadge').style.display = totalSaved > 0 ? 'block' : 'none';
+        async function updateSavingsTracker() {
+            try {
+                const res = await API.getSavingsLeaderboard();
+                const totalSaved = res.totalSaved || 0;
+                const percentile = res.percentile || 0;
+                
+                document.getElementById('savingsAmount').textContent = `$${Math.round(totalSaved)}`;
+                
+                // Show rank based on actual percentile among all customers
+                let rank = '';
+                if (percentile >= 99) rank = 'Top 1% 🏆';
+                else if (percentile >= 90) rank = 'Top 10% 🌟';
+                else if (percentile >= 75) rank = 'Top 25% ⭐';
+                else if (percentile >= 50) rank = 'Top 50% ✨';
+                else if (totalSaved > 0) rank = 'Keep saving!';
+                
+                document.getElementById('savingsRank').textContent = rank;
+                document.getElementById('savingsBadge').style.display = totalSaved > 0 ? 'block' : 'none';
+            } catch (err) {
+                console.error('Error loading savings:', err);
+                document.getElementById('savingsBadge').style.display = 'none';
+            }
         }
 
         async function loadMyBookings() {
@@ -3189,7 +3206,7 @@
                 const bookings = res.bookings || [];
                 
                 // Update savings tracker
-                updateSavingsTracker(bookings);
+                await updateSavingsTracker();
                 
                 if (!bookings.length) {
                     document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
@@ -3303,11 +3320,4 @@
                 <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Third-Party Services</h3>
                 <p style="color:#555;font-size:14px;line-height:1.7;">We use SendGrid for email and Twilio for SMS. These services have their own privacy policies.</p>
                 <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Contact Us</h3>
-                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at hello@slowdaydeals.com.</p>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>
+                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660e030a0a0926150a091102071f0203070a154805090b">[ema

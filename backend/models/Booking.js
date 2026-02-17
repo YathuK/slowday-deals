@@ -41,6 +41,10 @@ const bookingSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    savedAmount: {
+        type: Number,
+        default: 0
+    },
     isWeekend: {
         type: Boolean,
         required: true

@@ -2404,10 +2404,55 @@
                     </div>
                 </div>
                 <div class="detail-section"><h3>💰 Pricing</h3>
-                    <div class="price-display">
-                        <div class="price-box"><div class="price-label">Weekdays</div><div class="price-value">$${service.weekdayPrice}</div></div>
-                        <div class="price-box"><div class="price-label">Weekends</div><div class="price-value">$${service.weekendPrice}</div></div>
-                    </div>
+                    ${(() => {
+                        const wdSlots = service.weekdaySlots;
+                        const weSlots = service.weekendSlots;
+                        const wdUsed  = service.weekdaySlotsUsed || 0;
+                        const weUsed  = service.weekendSlotsUsed || 0;
+                        const wdLeft  = wdSlots != null ? wdSlots - wdUsed : null;
+                        const weLeft  = weSlots != null ? weSlots - weUsed : null;
+                        const dealOff = !service.dealActive;
+
+                        function pctBadge(normal, deal) {
+                            if (!normal || normal <= deal) return '';
+                            const pct = Math.round((1 - deal/normal)*100);
+                            return `<span style="background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;">-${pct}%</span>`;
+                        }
+
+                        function slotLine(left) {
+                            if (dealOff) return `<div style="margin-top:6px;font-size:12px;color:#9ca3af;">🚫 Deal turned off</div>`;
+                            if (left === null) return `<div style="margin-top:6px;font-size:12px;color:#6b7280;">🎟️ Unlimited slots</div>`;
+                            if (left <= 0)  return `<div style="margin-top:6px;font-size:12px;color:#ef4444;font-weight:700;">😔 No slots left</div>`;
+                            if (left <= 3)  return `<div style="margin-top:6px;font-size:12px;color:#ef4444;font-weight:700;">🔥 Only ${left} slot${left>1?'s':''} left!</div>`;
+                            return `<div style="margin-top:6px;font-size:12px;color:#f59e0b;font-weight:600;">🎟️ ${left} slots remaining</div>`;
+                        }
+
+                        function normalLine(normal, deal) {
+                            if (!normal || normal <= deal) return '';
+                            return `<div style="font-size:12px;color:#aaa;text-decoration:line-through;margin-top:2px;">was $${normal}</div>`;
+                        }
+
+                        const dealStatusBanner = dealOff
+                            ? `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:10px 14px;margin-bottom:14px;color:#991b1b;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;">🚫 This deal is currently turned off</div>`
+                            : '';
+
+                        return `
+                        ${dealStatusBanner}
+                        <div style="display:flex;gap:10px;">
+                            <div style="flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#667eea,#764ba2)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(102,126,234,0.3);'}">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKDAYS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}</div>
+                                ${normalLine(service.normalPrice, service.weekdayPrice).replace('color:#aaa','color:rgba(255,255,255,0.6)')}
+                                ${slotLine(wdLeft)}
+                            </div>
+                            <div style="flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#764ba2,#f093fb)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(118,75,162,0.3);'}">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKENDS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}</div>
+                                ${normalLine(service.normalPrice, service.weekendPrice).replace('color:#aaa','color:rgba(255,255,255,0.6)')}
+                                ${slotLine(weLeft)}
+                            </div>
+                        </div>`;
+                    })()}
                 </div>
                 <button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
             modal.classList.add('active');

@@ -20,9 +20,51 @@ router.post('/', auth, [
         const { serviceId, customerContact, preferredTime, notes } = req.body;
         const service = await Service.findById(serviceId);
         if (!service) return res.status(404).json({ success: false, message: 'Service not found' });
-        const price = isWeekend(preferredTime) ? service.weekendPrice : service.weekdayPrice;
-        const booking = new Booking({ customer: req.user._id, service: serviceId, provider: service.provider, customerName: req.user.name, customerContact, preferredTime, notes: notes || '', price, isWeekend: isWeekend(preferredTime), status: 'pending' });
+
+        // Check deal is still active
+        if (!service.dealActive) {
+            return res.status(400).json({ success: false, message: 'Sorry, this deal is no longer available.' });
+        }
+
+        const weekend = isWeekend(preferredTime);
+        const price = weekend ? service.weekendPrice : service.weekdayPrice;
+
+        // Check slots availability
+        if (weekend) {
+            if (service.weekendSlots !== null && service.weekendSlotsUsed >= service.weekendSlots) {
+                return res.status(400).json({ success: false, message: 'Sorry, all weekend slots for this deal are taken.' });
+            }
+        } else {
+            if (service.weekdaySlots !== null && service.weekdaySlotsUsed >= service.weekdaySlots) {
+                return res.status(400).json({ success: false, message: 'Sorry, all weekday slots for this deal are taken.' });
+            }
+        }
+
+        const booking = new Booking({
+            customer: req.user._id,
+            service: serviceId,
+            provider: service.provider,
+            customerName: req.user.name,
+            customerContact,
+            preferredTime,
+            notes: notes || '',
+            price,
+            isWeekend: weekend,
+            status: 'pending'
+        });
         await booking.save();
+
+        // Decrement slot count
+        if (weekend) {
+            if (service.weekendSlots !== null) {
+                await Service.findByIdAndUpdate(serviceId, { $inc: { weekendSlotsUsed: 1 } });
+            }
+        } else {
+            if (service.weekdaySlots !== null) {
+                await Service.findByIdAndUpdate(serviceId, { $inc: { weekdaySlotsUsed: 1 } });
+            }
+        }
+
         notifyProviderNewBooking(booking, service, req.user).catch(console.error);
         res.status(201).json({ success: true, message: 'Booking sent! The provider will confirm soon.', booking });
     } catch (error) {

@@ -40,6 +40,8 @@ router.post('/', auth, [
             }
         }
 
+        const savedAmount = service.normalPrice && service.normalPrice > price ? service.normalPrice - price : 0;
+
         const booking = new Booking({
             customer: req.user._id,
             service: serviceId,
@@ -49,6 +51,7 @@ router.post('/', auth, [
             preferredTime,
             notes: notes || '',
             price,
+            savedAmount,
             isWeekend: weekend,
             status: 'pending'
         });

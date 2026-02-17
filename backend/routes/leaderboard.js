@@ -26,7 +26,9 @@ router.get('/savings', auth, async (req, res) => {
 
         let percentile = 0;
         if (userRank > 0 && totalCustomers > 0) {
-            percentile = Math.round((1 - (userRank - 1) / totalCustomers) * 100);
+            // If rank 1 out of 10 → (10-1+1)/10 = 100th percentile → top 0% (but we show "top 1%")
+            // If rank 5 out of 10 → (10-5+1)/10 = 60th percentile → top 40%
+            percentile = Math.round((totalCustomers - userRank + 1) / totalCustomers * 100);
         }
 
         res.json({

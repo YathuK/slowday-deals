@@ -2015,8 +2015,9 @@
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
-            // Load savings tracker for customers
-            if (currentUser.accountType === 'customer') {
+            // Load savings tracker for customers only
+            if (currentUser && currentUser.accountType === 'customer') {
+                console.log('Loading savings tracker for customer:', currentUser.email);
                 await updateSavingsTracker();
             }
         }
@@ -2239,6 +2240,10 @@
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
                 renderSavedList();
+                // Update savings tracker when viewing saved tab
+                if (currentUser && currentUser.accountType === 'customer') {
+                    updateSavingsTracker();
+                }
             }
         }
 
@@ -3219,7 +3224,7 @@
                 // Store for celebration modal
                 savingsCelebrationData = { totalSaved, rank, percentile };
             } catch (err) {
-                console.error('Error loading savings:', err);
+                console.error('Error loading savings tracker:', err);
                 document.getElementById('savingsBadge').style.display = 'none';
             }
         }

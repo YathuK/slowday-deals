@@ -1246,13 +1246,15 @@
                 </div>
             </div>
 
-            <!-- Right: savings tracker + avatar / login -->
+            <!-- Savings badge: lives independently so show/hide of userMenu can't affect it -->
+            <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
+                <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
+                <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
+            </div>
+
+            <!-- Right: avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
-                <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:block;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                    <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
-                    <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
-                    <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
-                </div>
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
             </div>
             <div class="user-menu" id="guestMenu">

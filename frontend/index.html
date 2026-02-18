@@ -1248,7 +1248,7 @@
 
             <!-- Right: savings tracker + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
-                <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:block;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
                     <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
                     <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
@@ -2038,11 +2038,13 @@
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
-            // Show savings badge immediately for customers, then load data
+            // Show savings badge for customers, hide for providers
             if (currentUser && currentUser.accountType === 'customer') {
                 document.getElementById('savingsBadge').style.display = 'block';
                 console.log('Loading savings tracker for customer:', currentUser.email);
                 await updateSavingsTracker();
+            } else {
+                document.getElementById('savingsBadge').style.display = 'none';
             }
             // Start real-time polling
             startRealtimePolling();
@@ -2206,13 +2208,13 @@
                     myService.photos.forEach(photoSrc => {
                         const wrap = document.createElement('div');
                         wrap.className = 'photo-thumb';
-                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;overflow:hidden;border-radius:8px;';
                         const imgEl = document.createElement('img');
                         imgEl.src = photoSrc;
                         imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
                         const xBtn = document.createElement('button');
                         xBtn.type = 'button'; xBtn.textContent = '×';
-                        xBtn.style.cssText = 'position:absolute;top:4px;right:4px;width:18px;height:18px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.3);';
+                        xBtn.style.cssText = 'position:absolute;top:0;right:0;width:22px;height:22px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:0 0 0 8px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
                         xBtn.onclick = () => wrap.remove();
                         wrap.appendChild(imgEl); wrap.appendChild(xBtn);
                         preview.appendChild(wrap);

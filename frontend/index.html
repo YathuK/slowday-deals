@@ -3109,7 +3109,7 @@
                 const bgStyle = isToday ? 'background:linear-gradient(135deg,#667eea,#764ba2);' : bks.length ? 'background:rgba(102,126,234,0.1);' : '';
                 const textColor = isToday ? 'color:white;' : 'color:#333;';
                 const dot = bks.length ? '<div style="width:5px;height:5px;border-radius:50%;background:' + dotColor + ';margin:1px auto 0;"></div>' : '';
-                html += '<div onclick="showCalDay('' + dateStr + '')" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:' + (bks.length?'pointer':'default') + ';' + bgStyle + '">' +
+                html += '<div onclick="showCalDay(&quot;' + dateStr + '&quot;)" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:' + (bks.length?'pointer':'default') + ';' + bgStyle + '">' +
                     '<div style="font-size:13px;font-weight:' + (isToday?700:400) + ';' + textColor + 'line-height:1.2;">' + d + '</div>' + dot + '</div>';
             }
 
@@ -3118,7 +3118,7 @@
         }
 
         function showCalDay(dateStr) {
-            const bks = allProviderBookings.filter(b => {
+            const bks = allProviderBookings.filter(function(b) {
                 const d = new Date(b.preferredTime);
                 const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
                 return key === dateStr;
@@ -3126,15 +3126,35 @@
             if (!bks.length) return;
             const el = document.getElementById('calDayBookings');
             const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
-            el.innerHTML = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;">📅 ' + label + '</div>' +
-                bks.sort((a,b) => new Date(a.preferredTime)-new Date(b.preferredTime)).map(b => {
-                    const svc = b.service || {};
-                    const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-                    const actions = b.status === 'pending'
-                        ? '<div style="display:flex;gap:6px;margin-top:8px;"><button class="action-btn btn-confirm" onclick="updateBooking('' + b._id + '','confirmed')">✅ Confirm</button><button class="action-btn btn-reject" onclick="updateBooking('' + b._id + '','rejected')">❌ Reject</button></div>'
-                        : '';
-                    return '<div class="booking-card" style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:15px;font-weight:700;color:#333;">' + time + ' — ' + (svc.serviceType||'Service') + '</div><div style="font-size:13px;color:#888;margin-top:2px;">' + (b.customerName||'') + ' · ' + (b.customerContact||'') + '</div></div><span class="status-pill status-' + b.status + '">' + b.status + '</span></div>' + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;">📝 ' + b.notes + '</div>' : '') + actions + '</div>';
-                }).join('');
+            let html = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;">📅 ' + label + '</div>';
+            bks.sort(function(a,b){ return new Date(a.preferredTime)-new Date(b.preferredTime); }).forEach(function(b) {
+                const svc = b.service || {};
+                const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+                const bid = b._id;
+                let actions = '';
+                if (b.status === 'pending') {
+                    actions = '<div style="display:flex;gap:6px;margin-top:8px;">'
+                        + '<button class="action-btn btn-confirm" onclick="updateBooking(\''+bid+'\',\'confirmed\')">✅ Confirm</button>'
+                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'rejected\')">❌ Reject</button>'
+                        + '</div>';
+                } else if (b.status === 'confirmed') {
+                    actions = '<div style="margin-top:8px;">'
+                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'cancelled\')">Cancel</button>'
+                        + '</div>';
+                }
+                html += '<div class="booking-card" style="margin-bottom:8px;">'
+                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div>'
+                    + '<div style="font-size:15px;font-weight:700;color:#333;">' + time + ' — ' + (svc.serviceType||'Service') + '</div>'
+                    + '<div style="font-size:13px;color:#888;margin-top:2px;">' + (b.customerName||'') + ' · ' + (b.customerContact||'') + '</div>'
+                    + '</div>'
+                    + '<span class="status-pill status-' + b.status + '">' + b.status + '</span>'
+                    + '</div>'
+                    + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;">📝 ' + b.notes + '</div>' : '')
+                    + actions
+                    + '</div>';
+            });
+            el.innerHTML = html;
         }
 
         // ============================================

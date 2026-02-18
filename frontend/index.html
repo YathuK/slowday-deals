@@ -971,7 +971,7 @@
         .status-cancelled { background: #f3f4f6; color: #6b7280; }
         .status-rescheduled { background: #dbeafe; color: #2563eb; }
         .status-completed { background: #ede9fe; color: #7c3aed; }
-        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; }
+        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; } .booking-meta a { text-decoration: none; color: inherit; }
         .booking-meta span { color: #888; }
         .booking-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .action-btn {
@@ -1031,7 +1031,7 @@
         .location-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             cursor: pointer;
             padding: 4px 0;
             border-radius: 8px;
@@ -1069,11 +1069,14 @@
             color: #333;
             background: white;
             box-sizing: border-box;
+            margin-bottom: 8px;
+            display: block;
         }
         .dt-date-input:focus { border-color: #667eea; outline: none; }
         .dt-time-row {
             display: flex;
             gap: 8px;
+            margin-top: 0;
         }
         .dt-select {
             flex: 1;
@@ -1315,22 +1318,27 @@
             <div class="search-bar">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" id="searchInput" placeholder="Search services, location..." oninput="searchServices(this.value)">
-                <select id="filterType" onchange="searchServices(document.getElementById('searchInput').value)">
-                    <option value="">All types</option>
-                    <option value="Haircut">Haircut</option>
-                    <option value="Barber">Barber</option>
-                    <option value="Cleaning">Cleaning</option>
-                    <option value="Massage">Massage</option>
-                    <option value="Nails">Nails</option>
-                    <option value="Spa">Spa</option>
-                    <option value="Personal Training">Personal Training</option>
-                    <option value="Dog Walking">Dog Walking</option>
-                    <option value="Tutoring">Tutoring</option>
-                    <option value="Photography">Photography</option>
-                    <option value="Car Detailing">Car Detailing</option>
-                    <option value="Laundry Service">Laundry Service</option>
-                    <option value="Other">Other</option>
-                </select>
+                <input type="hidden" id="filterType" value="">
+                <div class="custom-select-box filter-select-box" id="filterTypeBox" onclick="toggleCustomSelect('filterTypeBox')">
+                    <span id="filterTypeLabel">All types</span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="custom-select-dropdown" id="filterTypeDropdown" style="display:none;min-width:160px;right:0;left:auto;">
+                    <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
+                </div>
             </div>
         </div>
 
@@ -1679,10 +1687,15 @@
                     <form id="signupForm" class="auth-form" style="display: none;" onsubmit="signup(event)">
                         <div class="form-group">
                             <label>Account Type</label>
-                            <select id="signupAccountType" required>
-                                <option value="customer">Customer - I want to book services</option>
-                                <option value="provider">Provider - I offer services</option>
-                            </select>
+                            <input type="hidden" id="signupAccountType" value="customer" required>
+                            <div class="custom-select-box" id="accountTypeBox" onclick="toggleCustomSelect('accountTypeBox')">
+                                <span id="accountTypeLabel">🛍️ Customer — I want to book services</span>
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                            <div class="custom-select-dropdown" id="accountTypeDropdown" style="display:none;">
+                                <div class="custom-select-opt" onclick="pickAccountType('customer','🛍️ Customer — I want to book services')">🛍️ Customer — I want to book services</div>
+                                <div class="custom-select-opt" onclick="pickAccountType('provider','🔧 Provider — I offer services')">🔧 Provider — I offer services</div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Full Name</label>
@@ -1961,7 +1974,9 @@
                 errorEl.style.display = 'block';
                 return;
             }
-            const token = new URLSearchParams(window.location.search).get('resetToken');
+            // Read token from sessionStorage (set by checkResetToken, works on Safari)
+            const token = sessionStorage.getItem('pendingResetToken')
+                || new URLSearchParams(window.location.search).get('resetToken');
             if (!token) {
                 errorEl.textContent = 'Invalid or expired reset link. Please request a new one.';
                 errorEl.style.display = 'block';
@@ -1971,6 +1986,7 @@
                 await API.resetPassword(token, password);
                 showToast('✅ Password reset successfully! Please log in with your new password.', true);
                 // Clear token from URL
+                sessionStorage.removeItem('pendingResetToken');
                 window.history.replaceState({}, '', window.location.pathname);
                 showLogin();
             } catch (err) {
@@ -1981,8 +1997,26 @@
 
         // Check for reset token in URL on page load
         function checkResetToken() {
-            const token = new URLSearchParams(window.location.search).get('resetToken');
+            // Robust token extraction - handles Safari URL quirks and Cloudflare rewrites
+            let token = null;
+            try {
+                token = new URLSearchParams(window.location.search).get('resetToken');
+            } catch(e) {}
+            // Fallback: manual parse
+            if (!token) {
+                const match = window.location.search.match(/[?&]resetToken=([^&]+)/);
+                if (match) token = decodeURIComponent(match[1]);
+            }
+            // Fallback: check hash (some email clients rewrite ? to #)
+            if (!token) {
+                const hashMatch = window.location.hash.match(/resetToken=([^&]+)/);
+                if (hashMatch) token = decodeURIComponent(hashMatch[1]);
+            }
             if (token) {
+                // Store in sessionStorage so it survives modal open
+                sessionStorage.setItem('pendingResetToken', token);
+                // Clean URL immediately (Safari sometimes re-reads it)
+                window.history.replaceState({}, '', window.location.pathname);
                 showAuthModal();
                 document.getElementById('authTitle').textContent = 'Set New Password';
                 document.getElementById('loginForm').style.display = 'none';
@@ -2043,11 +2077,39 @@
         }
 
         function logout() {
-            if (confirm('Are you sure you want to log out?')) {
+            showConfirmModal('Log out of SlowDay?', 'Log Out', function() {
                 currentUser = null;
                 API.removeToken();
                 location.reload();
-            }
+            });
+        }
+
+        function cancelMyBookingConfirm(id) {
+            showConfirmModal('Cancel this booking?', 'Cancel Booking', function() {
+                API.updateBookingStatus(id, 'cancelled')
+                    .then(() => loadMyBookings())
+                    .catch(() => showToast('Error cancelling booking', true));
+            });
+        }
+
+        function showConfirmModal(message, confirmLabel, onConfirm) {
+            const old = document.getElementById('confirmModal');
+            if (old) old.remove();
+            const overlay = document.createElement('div');
+            overlay.id = 'confirmModal';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+            overlay.innerHTML = `<div style="background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <p style="font-size:17px;font-weight:600;color:#1a1a2e;margin:0 0 24px;">${message}</p>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="document.getElementById('confirmModal').remove()" style="flex:1;padding:13px;border:1.5px solid #e0e0e0;border-radius:12px;background:white;font-size:15px;font-weight:600;color:#555;cursor:pointer;">Cancel</button>
+                    <button id="confirmModalOk" style="flex:1;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:15px;font-weight:600;cursor:pointer;">${confirmLabel}</button>
+                </div>
+            </div>`;
+            document.querySelector('.app-container').appendChild(overlay);
+            document.getElementById('confirmModalOk').onclick = function() {
+                overlay.remove();
+                onConfirm();
+            };
         }
 
         async function showAuthenticatedView() {
@@ -2516,7 +2578,7 @@
                 <div class="detail-section"><h3>${service.serviceType}</h3><p style="color:#666;font-size:14px;margin-bottom:10px;">by ${service.providerName}</p><p style="color:#555;line-height:1.6;">${service.description}</p></div>
                 <div class="detail-section">
                     <div class="location-header" onclick="toggleMap('${encodedLocation}')">
-                        <h3 style="margin:0;">📍 Location</h3>
+                        <h3 style="margin:0;white-space:nowrap;flex-shrink:0;">📍 Location</h3>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="color:#555;font-size:14px;">${service.location}</span>
                             <svg viewBox="0 0 24 24" width="18" height="18" id="mapChevron" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -2583,13 +2645,13 @@
                         <div style="display:flex;gap:10px;">
                             <div onclick="${wdDisabled ? '' : `openBookingModal('${serviceId}', 'weekday')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#667eea,#764ba2)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(102,126,234,0.3);animation:dealPulse 2s ease-in-out infinite;'}${wdDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${wdDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(102,126,234,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(102,126,234,0.3)\';"'}>
                                 ${slotBadge(wdLeft)}
-                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKDAYS</div>
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKDAYS</div>
                                 <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}</div>
                                 ${normalLine(service.normalPrice, service.weekdayPrice)}
                             </div>
                             <div onclick="${weDisabled ? '' : `openBookingModal('${serviceId}', 'weekend')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#764ba2,#f093fb)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(118,75,162,0.3);animation:dealPulse 2s ease-in-out infinite;'}${weDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${weDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(118,75,162,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(118,75,162,0.3)\';"'}>
                                 ${slotBadge(weLeft)}
-                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKENDS</div>
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKENDS</div>
                                 <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}</div>
                                 ${normalLine(service.normalPrice, service.weekendPrice)}
                             </div>
@@ -2850,7 +2912,7 @@
                 const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#e5e7eb;color:#6b7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-bottom:4px;">⏰ Deal Ended</div>` : '';
                 const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
                 const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
-                return `<div class="saved-card" style="${endedStyle}">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
+                return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
             }).join('');
         }
 
@@ -3471,7 +3533,7 @@
                 document.getElementById('myBookingsList').innerHTML = bookings.map(b => {
                     const svc = b.service || {};
                     const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    const cancelBtn = ['pending','confirmed'].includes(b.status)
+                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
                         ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
                     return `<div class="booking-card">
                         <div class="booking-card-header">
@@ -3494,11 +3556,7 @@
         }
 
         async function cancelMyBooking(id) {
-            if (!confirm('Cancel this booking?')) return;
-            try {
-                await API.updateBookingStatus(id, 'cancelled');
-                loadMyBookings();
-            } catch(e) { showToast('Error cancelling booking', true); }
+            cancelMyBookingConfirm(id);
         }
 
         // ============================================
@@ -3519,6 +3577,64 @@
             t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + bg + ';color:white;padding:13px 22px;border-radius:25px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);max-width:320px;text-align:center;line-height:1.4;';
             document.querySelector('.app-container').appendChild(t);
             setTimeout(() => { if (t.parentNode) t.remove(); }, 3500);
+        }
+
+
+        // ============================================
+        // CUSTOM SELECT DROPDOWNS
+        // ============================================
+        function toggleCustomSelect(boxId) {
+            const dropId = boxId.replace('Box', 'Dropdown');
+            const drop = document.getElementById(dropId);
+            const box = document.getElementById(boxId);
+            const isOpen = drop.style.display !== 'none';
+            // Close all other dropdowns first
+            document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            if (!isOpen) {
+                drop.style.display = 'block';
+                const rect = box.getBoundingClientRect();
+                drop.style.top = (box.offsetTop + box.offsetHeight + 2) + 'px';
+                drop.style.left = box.offsetLeft + 'px';
+                drop.style.width = box.offsetWidth + 'px';
+            }
+        }
+
+        function pickAccountType(value, label) {
+            document.getElementById('signupAccountType').value = value;
+            document.getElementById('accountTypeLabel').textContent = label;
+            document.getElementById('accountTypeDropdown').style.display = 'none';
+        }
+
+        function pickFilterType(value, label) {
+            document.getElementById('filterType').value = value;
+            document.getElementById('filterTypeLabel').textContent = label || 'All types';
+            document.getElementById('filterTypeDropdown').style.display = 'none';
+            searchServices(document.getElementById('searchInput').value);
+        }
+
+        // Close custom dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select-box') && !e.target.closest('.custom-select-dropdown')) {
+                document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
+        // ============================================
+        // SHOW DETAIL FROM SAVED LIST
+        // ============================================
+        function showDetailFromSaved(serviceId) {
+            const service = allServices.find(s => (s._id || s.id) === serviceId)
+                || savedServices.find(s => (s._id || s.id) === serviceId);
+            if (!service) return;
+            // Temporarily set as current service for showDetails
+            const prevIdx = currentCardIndex;
+            const prevServices = services;
+            services = [service];
+            currentCardIndex = 0;
+            showDetails();
+            // Restore after modal is shown
+            services = prevServices;
+            currentCardIndex = prevIdx;
         }
 
         function goToSlide(idx) {
@@ -3590,6 +3706,52 @@
     </script>
 
     <style>
+
+        /* Custom Select Dropdowns */
+        .custom-select-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            user-select: none;
+            position: relative;
+        }
+        .custom-select-box:active { background: #f8f9ff; }
+        .filter-select-box {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            border: none;
+            background: transparent;
+        }
+        .custom-select-dropdown {
+            position: absolute;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            z-index: 9999;
+            overflow: hidden;
+            min-width: 100%;
+        }
+        .custom-select-opt {
+            padding: 13px 16px;
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .custom-select-opt:last-child { border-bottom: none; }
+        .custom-select-opt:active, .custom-select-opt:hover { background: #f0f4ff; color: #667eea; }
+        .form-group { position: relative; }
+        .search-bar { position: relative; }
         @keyframes confettiFall {
             to {
                 top: 100%;

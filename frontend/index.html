@@ -1804,7 +1804,7 @@
                 try {
                     const response = await API.getCurrentUser();
                     currentUser = response.user;
-                    showAuthenticatedView();
+                    await showAuthenticatedView();
                 } catch (error) {
                     API.removeToken();
                     await loadPublicServices();
@@ -2039,11 +2039,15 @@
             document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
             await loadSavedServices();
             await loadPublicServices();
+            // Re-assert badge after loadPublicServices (renderCards can't hide it but be safe)
+            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
             renderSavedList();
             await loadMyProfile();
             if (isCustomer) {
                 await updateSavingsTracker();
             }
+            // Final guarantee: badge stays visible for customers
+            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
             // Start real-time polling
             startRealtimePolling();
         }

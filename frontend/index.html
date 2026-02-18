@@ -1216,36 +1216,27 @@
         <div class="header" id="mainHeader">
             <!-- Left: Logo directly on gradient -->
             <div class="header-logo" style="display:flex;align-items:center;gap:10px;">
-                <!-- Icon: calendar + bolt on gradient -->
                 <div style="width:40px;height:40px;position:relative;flex-shrink:0;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
-                        <!-- Calendar body -->
                         <rect x="3" y="8" width="34" height="28" rx="6" fill="white" opacity="0.95"/>
-                        <!-- Header bar -->
                         <rect x="3" y="8" width="34" height="11" rx="6" fill="white"/>
                         <rect x="3" y="14" width="34" height="5" fill="white"/>
-                        <!-- Binding pegs -->
                         <rect x="11" y="4" width="5" height="9" rx="2.5" fill="white"/>
                         <rect x="24" y="4" width="5" height="9" rx="2.5" fill="white"/>
-                        <!-- Calendar dots -->
                         <circle cx="11" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
                         <circle cx="20" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
                         <circle cx="29" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
                         <circle cx="11" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
                         <circle cx="20" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
-                        <!-- Lightning glow -->
                         <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24" opacity="0.35" transform="scale(1.12) translate(-2,-1)"/>
-                        <!-- Lightning bolt -->
                         <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24"/>
                     </svg>
                 </div>
-                <!-- Wordmark -->
                 <div>
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;font-weight:800;color:white;letter-spacing:-0.3px;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,0.15);">SlowDay</div>
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:2.5px;text-transform:uppercase;">DEALS</div>
                 </div>
             </div>
-
             <!-- Right: savings tracker + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
                 <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
@@ -1339,6 +1330,7 @@
             <div class="provider-tabs">
                 <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')">👤 Profile</button>
                 <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')">📋 Bookings <span class="badge" id="pendingBadge" style="display:none"></span></button>
+                <button class="ptab-btn" id="ptabCalendar" onclick="switchProviderTab('calendar')">📅 Calendar</button>
                 <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')">📊 Analytics</button>
             </div>
 
@@ -1437,6 +1429,19 @@
                         <button class="filter-btn" onclick="filterProviderBookings('rejected', this)">❌ Rejected</button>
                     </div>
                     <div id="providerBookingsList"><div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings yet</h3><p>Bookings will appear here once customers book your service</p></div></div>
+                </div>
+            </div>
+
+            <!-- CALENDAR TAB -->
+            <div id="ptabCalendarContent" style="display:none;">
+                <div style="padding:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <button id="calPrevMonth" onclick="changeCalMonth(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
+                        <div id="calMonthLabel" style="font-size:17px;font-weight:700;color:#333;"></div>
+                        <button id="calNextMonth" onclick="changeCalMonth(1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
+                    </div>
+                    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px;"></div>
+                    <div id="calDayBookings" style="margin-top:8px;"></div>
                 </div>
             </div>
 
@@ -2020,6 +2025,8 @@
                 console.log('Loading savings tracker for customer:', currentUser.email);
                 await updateSavingsTracker();
             }
+            // Start real-time polling for providers
+            startRealtimePolling();
         }
 
         function toggleUserDropdown() {
@@ -2437,9 +2444,26 @@
             const service = services[currentCardIndex];
             const serviceId = service._id || service.id;
             const modal = document.getElementById('detailModal');
-            const imageContent = service.photos && service.photos[0]
-                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`
-                : `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            // Build photo slideshow
+            let imageContent;
+            if (service.photos && service.photos.length > 1) {
+                const dots = service.photos.map((_, i) => `<div onclick="event.stopPropagation();goToSlide(${i})" id="dot_${i}" style="width:${i===0?'20px':'8px'};height:8px;border-radius:4px;background:${i===0?'white':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.3s;"></div>`).join('');
+                imageContent = `<div class="detail-image" style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;" id="photoSlider">
+                    <div id="photoSliderTrack" style="display:flex;height:100%;transition:transform 0.35s ease;width:${service.photos.length * 100}%;">
+                        ${service.photos.map(p => `<img src="${p}" alt="" style="width:${100/service.photos.length}%;height:100%;object-fit:cover;flex-shrink:0;">`).join('')}
+                    </div>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">‹</button>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx+1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);">›</button>
+                    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;">${dots}</div>
+                    <div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;backdrop-filter:blur(4px);" id="slideCounter">1 / ${service.photos.length}</div>
+                </div>`;
+                window._slidePhotos = service.photos;
+                window._slideIdx = 0;
+            } else if (service.photos && service.photos.length === 1) {
+                imageContent = `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`;
+            } else {
+                imageContent = `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            }
             const encodedLocation = encodeURIComponent(service.location);
             const mapsUrl = `https://maps.apple.com/?q=${encodedLocation}`;
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
@@ -3017,14 +3041,173 @@
         }
 
         // ============================================
+        // CALENDAR VIEW
+        // ============================================
+        let calCurrentDate = new Date();
+
+        function changeCalMonth(delta) {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + delta, 1);
+            renderCalendar();
+        }
+
+        function loadCalendar() {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth(), 1);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('calMonthLabel').textContent = `${monthNames[month]} ${year}`;
+
+            // Map bookings to date strings
+            const bookingsByDate = {};
+            allProviderBookings.forEach(b => {
+                const d = new Date(b.preferredTime);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                if (!bookingsByDate[key]) bookingsByDate[key] = [];
+                bookingsByDate[key].push(b);
+            });
+
+            const grid = document.getElementById('calGrid');
+            const todayStr = new Date().toISOString().split('T')[0];
+            const days = ['S','M','T','W','T','F','S'];
+            let html = days.map(d => `<div style="text-align:center;font-size:11px;font-weight:700;color:#999;padding:4px 0;">${d}</div>`).join('');
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const bks = bookingsByDate[dateStr] || [];
+                const isToday = dateStr === todayStr;
+                const hasPending = bks.some(b => b.status === 'pending');
+                const hasConfirmed = bks.some(b => b.status === 'confirmed');
+                const dotColor = hasPending ? '#f59e0b' : hasConfirmed ? '#22c55e' : bks.length ? '#667eea' : 'transparent';
+                const dotHtml = bks.length ? `<div style="width:5px;height:5px;border-radius:50%;background:${dotColor};margin:1px auto 0;"></div>` : '';
+                html += `<div onclick="showCalDay('${dateStr}')" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:${bks.length?'pointer':'default'};background:${isToday?'linear-gradient(135deg,#667eea,#764ba2)':'bks.length?"rgba(102,126,234,0.08)":"transparent"};transition:background 0.2s;" ${bks.length&&!isToday?'onmouseover="this.style.background='rgba(102,126,234,0.15)'" onmouseout="this.style.background='rgba(102,126,234,0.08)'"':''}>
+                    <div style="font-size:13px;font-weight:${isToday?700:400};color:${isToday?'white':'#333'};line-height:1.2;">${d}</div>
+                    ${dotHtml}
+                </div>`;
+            }
+
+            grid.innerHTML = html;
+            document.getElementById('calDayBookings').innerHTML = '';
+        }
+
+        function showCalDay(dateStr) {
+            const bks = allProviderBookings.filter(b => {
+                const d = new Date(b.preferredTime);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                return key === dateStr;
+            });
+            if (!bks.length) return;
+            const el = document.getElementById('calDayBookings');
+            const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+            el.innerHTML = `<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid #f0f0f0;">📅 ${label}</div>` +
+                bks.sort((a,b) => new Date(a.preferredTime)-new Date(b.preferredTime)).map(b => {
+                    const svc = b.service || {};
+                    const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+                    const actions = b.status === 'pending' ? `
+                        <div style="display:flex;gap:6px;margin-top:8px;">
+                            <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed');setTimeout(()=>{loadProviderBookings();renderCalendar();},500)">✅ Confirm</button>
+                            <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected');setTimeout(()=>{loadProviderBookings();renderCalendar();},500)">❌ Reject</button>
+                        </div>` : '';
+                    return `<div class="booking-card" style="margin-bottom:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="font-size:15px;font-weight:700;color:#333;">${time} — ${svc.serviceType||'Service'}</div>
+                                <div style="font-size:13px;color:#888;margin-top:2px;">${b.customerName||''} · ${b.customerContact||''}</div>
+                            </div>
+                            <span class="status-pill status-${b.status}">${b.status}</span>
+                        </div>
+                        ${b.notes ? `<div style="font-size:12px;color:#666;margin-top:6px;">📝 ${b.notes}</div>` : ''}
+                        ${actions}
+                    </div>`;
+                }).join('');
+        }
+
+        // ============================================
+        // REAL-TIME POLLING
+        // ============================================
+        let realtimePollingInterval = null;
+
+        function startRealtimePolling() {
+            if (realtimePollingInterval) return;
+            realtimePollingInterval = setInterval(async () => {
+                if (!currentUser) return;
+                const activeProvTab = document.querySelector('.ptab-btn.active');
+                if (activeProvTab) {
+                    const tabId = activeProvTab.id;
+                    if (tabId === 'ptabBookings' || tabId === 'ptabCalendar') {
+                        const prevCount = allProviderBookings.length;
+                        const prevPending = allProviderBookings.filter(b=>b.status==='pending').length;
+                        try {
+                            const res = await API.getProviderBookings();
+                            const newBookings = res.bookings || [];
+                            const newPending = newBookings.filter(b=>b.status==='pending').length;
+                            if (JSON.stringify(newBookings.map(b=>b._id+b.status)) !== JSON.stringify(allProviderBookings.map(b=>b._id+b.status))) {
+                                allProviderBookings = newBookings;
+                                if (tabId === 'ptabBookings') {
+                                    const activeFilter = document.querySelector('.filter-btn.active');
+                                    const status = activeFilter ? activeFilter.textContent.replace(/[^a-z]/gi,'').toLowerCase() : 'all';
+                                    const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b=>b.status===status);
+                                    renderProviderBookings(filtered);
+                                }
+                                if (tabId === 'ptabCalendar') renderCalendar();
+                                // Update badge
+                                const badge = document.getElementById('pendingBadge');
+                                if (newPending > 0) { badge.textContent = newPending; badge.style.display='inline'; }
+                                else badge.style.display='none';
+                                // Flash notification for new pending bookings
+                                if (newPending > prevPending) {
+                                    showRealtimeToast(`🔔 New booking request!`);
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                }
+                // Also poll for customer bookings status changes
+                const savedTab = document.getElementById('myBookingsWrap');
+                if (savedTab && savedTab.style.display !== 'none') {
+                    // handled by user interaction
+                }
+            }, 15000); // poll every 15 seconds
+        }
+
+        function stopRealtimePolling() {
+            if (realtimePollingInterval) {
+                clearInterval(realtimePollingInterval);
+                realtimePollingInterval = null;
+            }
+        }
+
+        function showRealtimeToast(msg) {
+            const existing = document.getElementById('realtimeToast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'realtimeToast';
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 20px;border-radius:25px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(102,126,234,0.5);animation:toastIn 0.3s ease;';
+            document.querySelector('.app-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ============================================
         // PROVIDER TABS
         // ============================================
         function switchProviderTab(tab) {
-            ['profile','bookings','analytics'].forEach(t => {
-                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
-                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`).style.display = t === tab ? 'block' : 'none';
+            ['profile','bookings','calendar','analytics'].forEach(t => {
+                const btn = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`);
+                const cnt = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`);
+                if (btn) btn.classList.toggle('active', t === tab);
+                if (cnt) cnt.style.display = t === tab ? 'block' : 'none';
             });
             if (tab === 'bookings') loadProviderBookings();
+            if (tab === 'calendar') loadCalendar();
             if (tab === 'analytics') loadAnalytics();
         }
 
@@ -3284,6 +3467,26 @@
         // ============================================
         // UTILS
         // ============================================
+        // ============================================
+        // PHOTO SLIDESHOW
+        // ============================================
+        function goToSlide(idx) {
+            const photos = window._slidePhotos;
+            if (!photos) return;
+            window._slideIdx = ((idx % photos.length) + photos.length) % photos.length;
+            const track = document.getElementById('photoSliderTrack');
+            if (track) track.style.transform = `translateX(-${window._slideIdx * (100/photos.length)}%)`;
+            const counter = document.getElementById('slideCounter');
+            if (counter) counter.textContent = `${window._slideIdx+1} / ${photos.length}`;
+            photos.forEach((_, i) => {
+                const dot = document.getElementById(`dot_${i}`);
+                if (dot) {
+                    dot.style.width = i === window._slideIdx ? '20px' : '8px';
+                    dot.style.background = i === window._slideIdx ? 'white' : 'rgba(255,255,255,0.5)';
+                }
+            });
+        }
+
         function getServiceEmoji(serviceType) {
             const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
             return emojis[serviceType] || '⭐';
@@ -3337,6 +3540,10 @@
     </script>
 
     <style>
+        @keyframes toastIn {
+            from { opacity:0; transform:translateX(-50%) translateY(20px); }
+            to { opacity:1; transform:translateX(-50%) translateY(0); }
+        }
         @keyframes confettiFall {
             to {
                 top: 100%;

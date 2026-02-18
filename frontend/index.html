@@ -2038,8 +2038,9 @@
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
-            // Load savings tracker for customers only
+            // Show savings badge immediately for customers, then load data
             if (currentUser && currentUser.accountType === 'customer') {
+                document.getElementById('savingsBadge').style.display = 'block';
                 console.log('Loading savings tracker for customer:', currentUser.email);
                 await updateSavingsTracker();
             }
@@ -2211,7 +2212,7 @@
                         imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
                         const xBtn = document.createElement('button');
                         xBtn.type = 'button'; xBtn.textContent = '×';
-                        xBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.style.cssText = 'position:absolute;top:4px;right:4px;width:18px;height:18px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.3);';
                         xBtn.onclick = () => wrap.remove();
                         wrap.appendChild(imgEl); wrap.appendChild(xBtn);
                         preview.appendChild(wrap);
@@ -2875,8 +2876,12 @@
             div.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;';
             div.innerHTML = `
                 <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">
-                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">⎘</button>
-                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:16px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">🗑️</button>
+                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Day</label>

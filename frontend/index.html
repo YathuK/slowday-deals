@@ -1945,7 +1945,7 @@
             }
             try {
                 await API.resetPassword(token, password);
-                alert('✅ Password reset successfully! Please log in with your new password.');
+                showToast('✅ Password reset successfully! Please log in with your new password.', true);
                 // Clear token from URL
                 window.history.replaceState({}, '', window.location.pathname);
                 showLogin();
@@ -1983,9 +1983,9 @@
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
+                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
                 } else {
-                    alert(error.message || 'Login failed. Please check your credentials.');
+                    showToast(error.message || 'Login failed. Please check your credentials.', true);
                 }
             }
         }
@@ -2007,13 +2007,13 @@
                     showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
-                    alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
+                    showToast(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`, false);
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
+                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
                 } else {
-                    alert(error.message || 'Signup failed. Please try again.');
+                    showToast(error.message || 'Signup failed. Please try again.', true);
                 }
             }
         }
@@ -2225,8 +2225,8 @@
                 document.getElementById('myProfileView').style.display = 'none';
                 document.querySelector('.provider-form').style.display = 'block';
                 document.getElementById('providerSubmitBtn').textContent = 'Create My Profile';
-                alert('Profile deleted.');
-            } catch (e) { alert('Error deleting profile.'); }
+                showToast('Profile deleted.', false);
+            } catch (e) { showToast('Error deleting profile.', true); }
         }
 
         // ============================================
@@ -2240,7 +2240,7 @@
                 document.getElementById('customerView').classList.add('active');
             } else {
                 if (!currentUser) {
-                    alert('Please log in to access provider features.');
+                    showToast('Please log in to access provider features.', true);
                     showAuthModal();
                     document.querySelectorAll('.mode-btn')[0].classList.add('active');
                     document.getElementById('customerView').classList.add('active');
@@ -2425,7 +2425,7 @@
 
         async function handleSwipeRight() {
             if (!currentUser) {
-                alert('Please log in to save services!');
+                showToast('Please log in to save services!', true);
                 showAuthModal();
                 swipeCard('right');
                 return;
@@ -2596,7 +2596,7 @@
         function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 
         async function openBookingModal(serviceId, dayType) {
-            if (!currentUser) { alert('Please log in to book services'); showAuthModal(); return; }
+            if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
             currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');
@@ -2736,7 +2736,7 @@
 
         async function submitBooking(e) {
             e.preventDefault();
-            if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
+            if (!currentUser) { showToast('Please log in', true); showAuthModal(); return; }
             try {
                 const serviceId = currentBookingService._id || currentBookingService.id;
                 let preferredTime;
@@ -2745,14 +2745,14 @@
                 if (windows && windows.length > 0) {
                     // Slot picker mode
                     preferredTime = document.getElementById('selectedSlotTime').value;
-                    if (!preferredTime) { alert('Please select a time slot'); return; }
+                    if (!preferredTime) { showToast('Please select a time slot', true); return; }
                     preferredTime = new Date(preferredTime).toISOString();
                 } else {
                     // Standard picker mode
                     const date = document.getElementById('preferredDate').value;
                     const hour = document.getElementById('preferredHour').value;
                     const minute = document.getElementById('preferredMinute').value;
-                    if (!date) { alert('Please select a date'); return; }
+                    if (!date) { showToast('Please select a date', true); return; }
                     preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
                 }
 
@@ -2780,7 +2780,7 @@
                         swipeCard('right'); // Move to next card
                     }, 1500);
                 }
-            } catch (error) { alert(error.message || 'Error creating booking.'); }
+            } catch (error) { showToast(error.message || 'Error creating booking.', true); }
         }
 
         // ============================================
@@ -2834,7 +2834,7 @@
                 await API.removeSavedService(serviceId);
                 await loadSavedServices();
                 renderSavedList();
-            } catch (error) { alert('Error removing service.'); }
+            } catch (error) { showToast('Error removing service.', true); }
         }
 
         // ============================================
@@ -2924,7 +2924,7 @@
 
         async function submitProvider(e) {
             e.preventDefault();
-            if (!currentUser) { alert('Please log in'); return; }
+            if (!currentUser) { showToast('Please log in', true); return; }
             
             const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
             const photos = Array.from(photoImgs).map(img => img.src);
@@ -2960,8 +2960,8 @@
                 renderMyProfile();
                 await loadPublicServices();
                 currentCardIndex = 0;
-                alert('✅ Profile saved successfully!');
-            } catch (error) { alert(error.message || 'Error saving profile.'); }
+                showToast('✅ Profile saved successfully!', false);
+            } catch (error) { showToast(error.message || 'Error saving profile.', true); }
         }
 
         function previewPhotos(e) {
@@ -3059,7 +3059,7 @@
             try {
                 await API.deleteAccount();
                 logout();
-                alert('Your account has been deleted.');
+                showToast('Your account has been deleted.', false);
             } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
         }
 
@@ -3301,7 +3301,7 @@
             try {
                 await API.updateBookingStatus(id, status);
                 await loadProviderBookings();
-            } catch(e) { alert('Error updating booking'); }
+            } catch(e) { showToast('Error updating booking', true); }
         }
 
         function openReschedule(id) {
@@ -3319,16 +3319,16 @@
             const date = document.getElementById('rescheduleDate').value;
             const hour = document.getElementById('rescheduleHour').value;
             const minute = document.getElementById('rescheduleMinute').value;
-            if (!date) { alert('Please select a date'); return; }
+            if (!date) { showToast('Please select a date', true); return; }
             const newTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
             try {
                 await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
                 document.getElementById('rescheduleModal').classList.remove('active');
                 await loadProviderBookings();
-                alert('✅ Booking rescheduled! Customer has been notified.');
+                showToast('✅ Booking rescheduled! Customer has been notified.', false);
             } catch(e) {
                 console.error('Reschedule error:', e);
-                alert('Error rescheduling: ' + (e.message || 'Please try again'));
+                showToast('Error rescheduling: ' + (e.message || 'Please try again'), true);
             }
         }
 
@@ -3473,12 +3473,29 @@
             try {
                 await API.updateBookingStatus(id, 'cancelled');
                 loadMyBookings();
-            } catch(e) { alert('Error cancelling booking'); }
+            } catch(e) { showToast('Error cancelling booking', true); }
         }
 
         // ============================================
         // UTILS
         // ============================================
+        // ============================================
+        // TOAST — replaces all alert() calls
+        // ============================================
+        function showToast(msg, isError) {
+            const old = document.getElementById('appToast');
+            if (old) old.remove();
+            const t = document.createElement('div');
+            t.id = 'appToast';
+            t.textContent = msg;
+            const bg = isError
+                ? 'linear-gradient(135deg,#ef4444,#dc2626)'
+                : 'linear-gradient(135deg,#667eea,#764ba2)';
+            t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + bg + ';color:white;padding:13px 22px;border-radius:25px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);max-width:320px;text-align:center;line-height:1.4;';
+            document.querySelector('.app-container').appendChild(t);
+            setTimeout(() => { if (t.parentNode) t.remove(); }, 3500);
+        }
+
         function goToSlide(idx) {
             const photos = window._slidePhotos;
             if (!photos) return;

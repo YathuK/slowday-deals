@@ -1248,7 +1248,7 @@
 
             <!-- Right: savings badge + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
-                <div id="savingsBadge" onclick="showSavingsCelebration()" style="visibility:hidden;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:4px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <div id="savingsBadge" onclick="showSavingsCelebration()" style="visibility:visible;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:4px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
                     <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
                     <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
@@ -2034,20 +2034,15 @@
             document.getElementById('dropdownAvatar').textContent = firstLetter;
             document.getElementById('userDropdownName').textContent = currentUser.name;
             document.getElementById('userDropdownEmail').textContent = currentUser.email;
-            // Set badge visibility immediately before any async work
-            const isCustomer = currentUser.accountType === 'customer';
-            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
+            // Always show savings badge for any logged-in user
+            document.getElementById('savingsBadge').style.visibility = 'visible';
             await loadSavedServices();
             await loadPublicServices();
-            // Re-assert badge after loadPublicServices (renderCards can't hide it but be safe)
-            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
             renderSavedList();
             await loadMyProfile();
-            if (isCustomer) {
+            if (currentUser.accountType === 'customer') {
                 await updateSavingsTracker();
             }
-            // Final guarantee: badge stays visible for customers
-            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
             // Start real-time polling
             startRealtimePolling();
         }

@@ -1246,15 +1246,13 @@
                 </div>
             </div>
 
-            <!-- Savings badge: lives independently so show/hide of userMenu can't affect it -->
-            <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
-                <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
-                <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
-            </div>
-
-            <!-- Right: avatar / login -->
+            <!-- Right: savings badge + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
+                <div id="savingsBadge" onclick="showSavingsCelebration()" style="visibility:hidden;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:4px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
+                    <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
+                    <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
+                </div>
                 <div class="user-avatar" id="userAvatar" onclick="toggleUserDropdown()"></div>
             </div>
             <div class="user-menu" id="guestMenu">
@@ -2038,18 +2036,18 @@
             document.getElementById('userDropdownEmail').textContent = currentUser.email;
             // Set badge visibility immediately before any async work
             const isCustomer = currentUser.accountType === 'customer';
-            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
+            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
             await loadSavedServices();
             await loadPublicServices();
             // Re-assert badge after loadPublicServices (renderCards can't hide it but be safe)
-            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
+            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
             renderSavedList();
             await loadMyProfile();
             if (isCustomer) {
                 await updateSavingsTracker();
             }
             // Final guarantee: badge stays visible for customers
-            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
+            document.getElementById('savingsBadge').style.visibility = isCustomer ? 'visible' : 'hidden';
             // Start real-time polling
             startRealtimePolling();
         }
@@ -3427,7 +3425,7 @@
                 document.getElementById('savingsRank').textContent = rank;
                 
                 // Always show badge for customers
-                document.getElementById('savingsBadge').style.display = 'block';
+                document.getElementById('savingsBadge').style.visibility = 'visible';
                 
                 // Store for celebration modal
                 savingsCelebrationData = { totalSaved, rank, percentile };
@@ -3436,7 +3434,7 @@
                 // Still show badge even on error, just with $0
                 document.getElementById('savingsAmount').textContent = '$0';
                 document.getElementById('savingsRank').textContent = 'Start saving!';
-                document.getElementById('savingsBadge').style.display = 'block';
+                document.getElementById('savingsBadge').style.visibility = 'visible';
             }
         }
 

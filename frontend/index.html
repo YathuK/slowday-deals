@@ -21,7 +21,6 @@
             min-height: 100dvh;
             touch-action: pan-y;
             -webkit-text-size-adjust: 100%;
-            overflow: hidden;
         }
 
         .app-container {
@@ -33,7 +32,7 @@
             position: relative;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
             overflow-x: hidden;
-            overflow-y: hidden;
+            overflow-y: auto;
         }
 
         .header {
@@ -885,6 +884,22 @@
             top: 0;
             z-index: 50;
         }
+        #providerView .tab-content,
+        #ptabBookingsContent,
+        #ptabCalendarContent,
+        #ptabAnalyticsContent,
+        #ptabProfileContent {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 80px;
+        }
+
+        #customerView .tab-content {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 80px;
+        }
+
         .ptab-btn {
             flex: 1;
             padding: 14px 4px;

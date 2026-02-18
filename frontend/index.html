@@ -3267,6 +3267,7 @@
         }
 
         function renderProviderBookings(bookings) {
+            bookings = [...bookings].sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
             const el = document.getElementById('providerBookingsList');
             if (!bookings.length) {
                 el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings here</h3></div>`;
@@ -3437,7 +3438,7 @@
             document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
             try {
                 const res = await API.getCustomerBookings();
-                const bookings = res.bookings || [];
+                const bookings = (res.bookings || []).sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
                 
                 // Update savings tracker
                 await updateSavingsTracker();

@@ -5,7 +5,7 @@ const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
-const { notifyProviderNewBooking, notifyCustomerConfirmed, notifyCustomerRejected, notifyCustomerRescheduled } = require('../services/notifications');
+const { notifyProviderNewBooking, notifyCustomerConfirmed, notifyCustomerRejected, notifyCustomerRescheduled, notifyProviderCancelled } = require('../services/notifications');
 
 const isWeekend = (date) => { const d = new Date(date).getDay(); return d === 0 || d === 6; };
 
@@ -183,7 +183,13 @@ router.put('/:id/status', auth, async (req, res) => {
         const customer = await User.findById(booking.customer);
         if (service && customer) {
             if (status === 'confirmed') notifyCustomerConfirmed(booking, service, customer.email, customer.phone).catch(console.error);
-            else if (['rejected','cancelled'].includes(status)) notifyCustomerRejected(booking, service, customer.email, customer.phone).catch(console.error);
+            else if (['rejected','cancelled'].includes(status)) {
+                notifyCustomerRejected(booking, service, customer.email, customer.phone).catch(console.error);
+                // Also notify provider if customer cancelled
+                if (status === 'cancelled' && booking.customer?.toString() === req.user._id.toString()) {
+                    notifyProviderCancelled(booking, service, customer).catch(console.error);
+                }
+            }
             else if (status === 'rescheduled' && newTime) notifyCustomerRescheduled(booking, service, customer.email, customer.phone, newTime).catch(console.error);
         }
         await booking.populate([{ path: 'service', select: 'serviceType providerName location' }, { path: 'customer', select: 'name email phone' }]);

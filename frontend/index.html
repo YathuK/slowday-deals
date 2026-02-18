@@ -2034,17 +2034,15 @@
             document.getElementById('dropdownAvatar').textContent = firstLetter;
             document.getElementById('userDropdownName').textContent = currentUser.name;
             document.getElementById('userDropdownEmail').textContent = currentUser.email;
+            // Set badge visibility immediately before any async work
+            const isCustomer = currentUser.accountType === 'customer';
+            document.getElementById('savingsBadge').style.display = isCustomer ? 'block' : 'none';
             await loadSavedServices();
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
-            // Show savings badge for customers, hide for providers
-            if (currentUser && currentUser.accountType === 'customer') {
-                document.getElementById('savingsBadge').style.display = 'block';
-                console.log('Loading savings tracker for customer:', currentUser.email);
+            if (isCustomer) {
                 await updateSavingsTracker();
-            } else {
-                document.getElementById('savingsBadge').style.display = 'none';
             }
             // Start real-time polling
             startRealtimePolling();

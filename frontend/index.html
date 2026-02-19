@@ -885,9 +885,14 @@
             display: flex;
             border-bottom: 2px solid #f0f0f0;
             background: white;
-            position: sticky;
+            position: fixed;
             top: 58px;
-            z-index: 50;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            z-index: 90;
+            box-sizing: border-box;
         }
         #providerView .tab-content,
         #ptabBookingsContent,
@@ -905,11 +910,24 @@
             padding-top: 58px;
             padding-bottom: 80px;
         }
+        #savedTab {
+            padding-top: 103px;
+        }
+        #ptabProfileContent,
+        #ptabBookingsContent,
+        #ptabCalendarContent,
+        #ptabAnalyticsContent {
+            padding-top: 103px;
+            padding-bottom: 80px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         #customerView #discoverTab {
             overflow: hidden;
             height: calc(100dvh - 195px);
             height: calc(100vh - 195px);
-            margin-top: 115px;
+            margin-top: 57px;
+            padding-top: 0 !important;
             padding-bottom: 0 !important;
         }
 
@@ -1037,7 +1055,7 @@
         .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         /* ---- Saved sub-tabs ---- */
-        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: sticky; top: 58px; background: white; z-index: 50; }
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: fixed; top: 58px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; z-index: 90; box-sizing: border-box; }
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 

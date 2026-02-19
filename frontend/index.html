@@ -1367,24 +1367,7 @@
                         <div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>
                     </div>
                 </div>
-                <div id="supportWrap" style="display:none;padding:16px;">
-                    <!-- Open tickets -->
-                    <div id="openTicketsList"></div>
-                    <!-- New ticket form -->
-                    <div id="newTicketForm" style="background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-top:4px;">
-                        <h3 style="margin:0 0 4px;font-size:17px;color:#1a1a2e;">🎫 Open a Support Ticket</h3>
-                        <p style="margin:0 0 16px;font-size:13px;color:#888;">We'll get back to you as soon as possible.</p>
-                        <div class="form-group" style="margin-bottom:12px;">
-                            <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Subject</label>
-                            <input type="text" id="ticketSubject" placeholder="What do you need help with?" style="width:100%;padding:12px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;">
-                        </div>
-                        <div class="form-group" style="margin-bottom:16px;">
-                            <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Message</label>
-                            <textarea id="ticketMessage" placeholder="Describe your issue in detail..." style="width:100%;padding:12px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;height:120px;resize:vertical;font-family:inherit;"></textarea>
-                        </div>
-                        <button onclick="submitSupportTicket()" style="width:100%;padding:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">Submit Ticket</button>
-                    </div>
-                </div>
+                
             </div>
         </div>
 
@@ -1562,6 +1545,17 @@
                         <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;">⚠️ Delete Account</h3>
                         <p style="font-size:13px;color:#888;margin-bottom:10px;">This permanently deletes your account and all your data. Cannot be undone.</p>
                         <button onclick="deleteAccount()" style="width:100%;padding:12px;background:#fee2e2;color:#e53e3e;border:1.5px solid #fca5a5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Delete My Account</button>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+
+                    <!-- Support Tickets -->
+                    <div>
+                        <h3 style="margin:0 0 12px;font-size:15px;color:#1a1a2e;">🎫 Support</h3>
+                        <div id="accountOpenTickets" style="margin-bottom:12px;"></div>
+                        <input type="text" id="ticketSubject" placeholder="Subject" style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
+                        <textarea id="ticketMessage" placeholder="Describe your issue..." style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;height:90px;resize:none;font-family:inherit;margin-bottom:8px;"></textarea>
+                        <button onclick="submitSupportTicket()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Submit Ticket</button>
                     </div>
 
                     <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
@@ -3186,6 +3180,7 @@
             document.getElementById('newPassword').value = '';
             document.getElementById('profileMsg').style.display = 'none';
             document.getElementById('userProfileModal').classList.add('active');
+            loadMyTickets();
         }
 
         function showProfileMsg(msg, isError) {
@@ -3398,12 +3393,9 @@
         function switchSavedTab(tab) {
             document.getElementById('stabSaved').classList.toggle('active', tab === 'saved');
             document.getElementById('stabMyBookings').classList.toggle('active', tab === 'mybookings');
-            document.getElementById('stabSupport').classList.toggle('active', tab === 'support');
             document.getElementById('savedListWrap').style.display = tab === 'saved' ? 'block' : 'none';
             document.getElementById('myBookingsWrap').style.display = tab === 'mybookings' ? 'block' : 'none';
-            document.getElementById('supportWrap').style.display = tab === 'support' ? 'block' : 'none';
             if (tab === 'mybookings') loadMyBookings();
-            if (tab === 'support') loadMyTickets();
         }
 
         // ============================================
@@ -3837,7 +3829,8 @@
         // SUPPORT TICKETS
         // ============================================
         async function loadMyTickets() {
-            const list = document.getElementById('openTicketsList');
+            const list = document.getElementById('accountOpenTickets');
+            if (!list) return;
             try {
                 const res = await API.call('/support/my');
                 if (!res.tickets || res.tickets.length === 0) {

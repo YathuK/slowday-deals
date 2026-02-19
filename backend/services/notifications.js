@@ -103,7 +103,7 @@ const notifyProviderNewBooking = async (booking, service, customer) => {
     if (service.contact?.match(/^\+?[\d\s\-()+]{7,}$/)) {
         const smsDate = new Date(booking.preferredTime).toLocaleDateString('en-US', {month:'short',day:'numeric'});
         await sendSMS(service.contact,
-            `⚡ New booking! ${customer.name} → ${service.serviceType} on ${smsDate}. $${booking.price}. Confirm: ${APP_URL}`);
+            `SlowDay Deals: New booking! ${customer.name} wants ${service.serviceType} on ${smsDate}. $${booking.price}. ${APP_URL}?tab=provider`);
     }
 };
 
@@ -131,7 +131,7 @@ const notifyCustomerConfirmed = async (booking, service, customerEmail, customer
     if (customerPhone) {
         const confDate = new Date(booking.preferredTime).toLocaleDateString('en-US', {month:'short',day:'numeric'});
         await sendSMS(customerPhone,
-            `✅ Confirmed! ${service.serviceType} with ${service.providerName} on ${confDate}. View: ${APP_URL}`);
+            `SlowDay Deals: Confirmed! ${service.serviceType} on ${confDate}. ${APP_URL}?tab=bookings`);
     }
 };
 
@@ -152,7 +152,7 @@ const notifyCustomerRejected = async (booking, service, customerEmail, customerP
     await sendEmail(customerEmail, `Booking Update – ${service.serviceType}`, html);
     if (customerPhone) {
         await sendSMS(customerPhone,
-            `SlowDay: Your ${service.serviceType} booking was not available. Browse others: ${APP_URL}`);
+            `SlowDay Deals: Your ${service.serviceType} booking was not available. Browse: ${APP_URL}`);
     }
 };
 
@@ -174,7 +174,7 @@ const notifyCustomerRescheduled = async (booking, service, customerEmail, custom
     await sendEmail(customerEmail, `🔄 Rescheduled – ${service.serviceType}`, html);
     if (customerPhone) {
         await sendSMS(customerPhone,
-            `🔄 Rescheduled: ${service.serviceType} → ${dateStr}. View: ${APP_URL}`);
+            `SlowDay Deals: ${service.serviceType} rescheduled to ${dateStr}. ${APP_URL}?tab=bookings`);
     }
 };
 
@@ -195,7 +195,7 @@ const notifyProviderCancelled = async (booking, service, customer) => {
     await sendEmail(providerEmail, `❌ Booking Cancelled – ${service.serviceType}`, html);
     if (service.contact?.match(/^\+?[\d\s\-()+]{7,}$/)) {
         await sendSMS(service.contact,
-            `❌ SlowDay: ${customer.name} cancelled their ${service.serviceType} for ${new Date(booking.preferredTime).toLocaleDateString()}. View: ${bookingLink}`);
+            `SlowDay Deals: ${customer.name} cancelled ${service.serviceType} for ${new Date(booking.preferredTime).toLocaleDateString('en-US',{month:'short',day:'numeric'})}. ${APP_URL}?tab=provider`);
     }
 };
 

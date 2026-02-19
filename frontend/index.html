@@ -1839,6 +1839,14 @@
         // ============================================
         window.onload = async function() {
             checkResetToken();
+            // Check for deep-link tab param from email/SMS
+            const urlParams = new URLSearchParams(window.location.search);
+            const deepTab = urlParams.get('tab');
+            if (deepTab) {
+                sessionStorage.setItem('deepLinkTab', deepTab);
+                // Clean URL
+                window.history.replaceState({}, '', window.location.pathname);
+            }
             showWakingUp();
             await wakeUpServer();
             const token = API.getToken();
@@ -1847,12 +1855,23 @@
                     const response = await API.getCurrentUser();
                     currentUser = response.user;
                     await showAuthenticatedView();
+                    // Handle deep link after login
+                    handleDeepLink();
                 } catch (error) {
                     API.removeToken();
                     await loadPublicServices();
+                    // If deep link present but not logged in, prompt login
+                    if (deepTab || sessionStorage.getItem('deepLinkTab')) {
+                        showToast('Please log in to view your bookings', false);
+                        showAuthModal();
+                    }
                 }
             } else {
                 await loadPublicServices();
+                if (deepTab || sessionStorage.getItem('deepLinkTab')) {
+                    showToast('Please log in to view your bookings', false);
+                    showAuthModal();
+                }
             }
         };
 
@@ -2040,9 +2059,10 @@
                 if (response.success) {
                     API.setToken(response.token);
                     currentUser = response.user;
-                    showAuthenticatedView();
+                    await showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
+                    handleDeepLink();
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
@@ -3681,6 +3701,30 @@
             // Restore after modal is shown
             services = prevServices;
             currentCardIndex = prevIdx;
+        }
+
+        // ============================================
+        // DEEP LINK HANDLER — email/SMS redirect to tab
+        // ============================================
+        function handleDeepLink() {
+            const tab = sessionStorage.getItem('deepLinkTab');
+            if (!tab || !currentUser) return;
+            sessionStorage.removeItem('deepLinkTab');
+            if (tab === 'bookings') {
+                showTab('saved');
+                // Switch to My Bookings subtab
+                setTimeout(() => {
+                    const mybookingsBtn = document.getElementById('stabMyBookings');
+                    if (mybookingsBtn) mybookingsBtn.click();
+                }, 200);
+            } else if (tab === 'provider') {
+                showTab('provider');
+                // Switch to Bookings subtab inside provider view
+                setTimeout(() => {
+                    const provBookingsBtn = document.querySelector('.ptab-btn[onclick*="bookings"]');
+                    if (provBookingsBtn) provBookingsBtn.click();
+                }, 200);
+            }
         }
 
         function goToSlide(idx) {

@@ -4026,10 +4026,21 @@
         }
 
         // Prevent iOS overscroll/bounce on discover tab only
+        // But allow scrolling inside card-detail panels
         document.addEventListener('DOMContentLoaded', function() {
             const discoverTab = document.getElementById('discoverTab');
             if (discoverTab) {
                 discoverTab.addEventListener('touchmove', function(e) {
+                    // Allow scroll if touch is inside a scrollable element (card details)
+                    let el = e.target;
+                    while (el && el !== discoverTab) {
+                        if (el.scrollHeight > el.clientHeight && 
+                            (getComputedStyle(el).overflowY === 'auto' || 
+                             getComputedStyle(el).overflowY === 'scroll')) {
+                            return; // let it scroll
+                        }
+                        el = el.parentElement;
+                    }
                     e.preventDefault();
                 }, { passive: false });
             }

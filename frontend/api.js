@@ -183,8 +183,8 @@ const API = {
         return await this.call('/users/password', 'PUT', { currentPassword, newPassword });
     },
 
-    async forgotPassword(email) {
-        return await this.call('/auth/forgot-password', 'POST', { email });
+    async forgotPassword(emailOrPhone) {
+        return await this.call('/auth/forgot-password', 'POST', { emailOrPhone });
     },
 
     async resetPassword(token, password) {

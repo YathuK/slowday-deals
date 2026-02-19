@@ -193,5 +193,17 @@ const API = {
 
     async getSavingsLeaderboard() {
         return await this.call('/leaderboard/savings');
+    },
+
+    async getSubscriptionStatus() {
+        return await this.call('/subscription/status');
+    },
+
+    async startSubscription() {
+        return await this.call('/subscription/checkout', 'POST');
+    },
+
+    async cancelSubscription() {
+        return await this.call('/subscription/cancel', 'POST');
     }
 };

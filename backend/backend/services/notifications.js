@@ -12,6 +12,7 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_T
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@slowdaydeals.com';
 const FROM_PHONE = process.env.TWILIO_PHONE_NUMBER;
 const APP_URL = process.env.FRONTEND_URL || 'https://www.slowdaydeals.com';
+const SITE_NAME = 'www.slowdaydeals.com';
 
 const formatDate = (date) => new Date(date).toLocaleString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long',
@@ -61,7 +62,7 @@ const baseTemplate = (content) => `
         <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">Book services at special prices</p>
     </div>
     <div style="background:white;padding:24px;border-radius:12px;">${content}</div>
-    <p style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">SlowDay Deals • <a href="${APP_URL}" style="color:#667eea;text-decoration:none;">${APP_URL}</a></p>
+    <p style="text-align:center;color:#aaa;font-size:12px;margin-top:16px;">SlowDay Deals • <a href="https://www.slowdaydeals.com" style="color:#667eea;text-decoration:none;">www.slowdaydeals.com</a></p>
 </div>`;
 
 const bookingTable = (rows) => `
@@ -100,8 +101,9 @@ const notifyProviderNewBooking = async (booking, service, customer) => {
 
     await sendEmail(providerEmail, `📬 New Booking – ${service.serviceType}`, html);
     if (service.contact?.match(/^\+?[\d\s\-()+]{7,}$/)) {
+        const smsDate = new Date(booking.preferredTime).toLocaleDateString('en-US', {month:'short',day:'numeric'});
         await sendSMS(service.contact,
-            `⚡ SlowDay: New booking! ${customer.name} wants ${service.serviceType} on ${new Date(booking.preferredTime).toLocaleDateString()}. $${booking.price}. View: ${bookingLink}`);
+            `⚡ SlowDay: New booking! ${customer.name} wants ${service.serviceType} on ${smsDate}. $${booking.price}. ${APP_URL}?tab=provider`);
     }
 };
 
@@ -127,8 +129,9 @@ const notifyCustomerConfirmed = async (booking, service, customerEmail, customer
     `);
     await sendEmail(customerEmail, `✅ Booking Confirmed – ${service.serviceType}`, html);
     if (customerPhone) {
+        const confDate = new Date(booking.preferredTime).toLocaleDateString('en-US', {month:'short',day:'numeric'});
         await sendSMS(customerPhone,
-            `✅ SlowDay: Your ${service.serviceType} with ${service.providerName} is CONFIRMED for ${new Date(booking.preferredTime).toLocaleDateString()}. View: ${bookingLink}`);
+            `✅ SlowDay: Confirmed! ${service.serviceType} on ${confDate}. ${APP_URL}?tab=bookings`);
     }
 };
 
@@ -149,7 +152,7 @@ const notifyCustomerRejected = async (booking, service, customerEmail, customerP
     await sendEmail(customerEmail, `Booking Update – ${service.serviceType}`, html);
     if (customerPhone) {
         await sendSMS(customerPhone,
-            `SlowDay: Your ${service.serviceType} booking was not available. Browse others: ${APP_URL}`);
+            `❌ SlowDay: Your ${service.serviceType} booking was not available. Browse: ${APP_URL}`);
     }
 };
 
@@ -171,7 +174,7 @@ const notifyCustomerRescheduled = async (booking, service, customerEmail, custom
     await sendEmail(customerEmail, `🔄 Rescheduled – ${service.serviceType}`, html);
     if (customerPhone) {
         await sendSMS(customerPhone,
-            `🔄 SlowDay: Your ${service.serviceType} rescheduled to ${dateStr}. View: ${bookingLink}`);
+            `🔄 SlowDay: ${service.serviceType} rescheduled to ${dateStr}. ${APP_URL}?tab=bookings`);
     }
 };
 
@@ -192,7 +195,7 @@ const notifyProviderCancelled = async (booking, service, customer) => {
     await sendEmail(providerEmail, `❌ Booking Cancelled – ${service.serviceType}`, html);
     if (service.contact?.match(/^\+?[\d\s\-()+]{7,}$/)) {
         await sendSMS(service.contact,
-            `❌ SlowDay: ${customer.name} cancelled their ${service.serviceType} for ${new Date(booking.preferredTime).toLocaleDateString()}. View: ${bookingLink}`);
+            `❌ SlowDay: ${customer.name} cancelled ${service.serviceType} for ${new Date(booking.preferredTime).toLocaleDateString('en-US',{month:'short',day:'numeric'})}. ${APP_URL}?tab=provider`);
     }
 };
 

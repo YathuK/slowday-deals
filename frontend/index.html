@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no, address=no, email=no">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
@@ -971,7 +972,7 @@
         .status-cancelled { background: #f3f4f6; color: #6b7280; }
         .status-rescheduled { background: #dbeafe; color: #2563eb; }
         .status-completed { background: #ede9fe; color: #7c3aed; }
-        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; } .booking-meta a { text-decoration: none; color: inherit; }
+        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; } .booking-meta a { text-decoration: none !important; color: inherit !important; } .no-link { -webkit-user-select: text; text-decoration: none !important; pointer-events: none; }
         .booking-meta span { color: #888; }
         .booking-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .action-btn {
@@ -1062,6 +1063,7 @@
         }
         .dt-date-input {
             width: 100%;
+            max-width: 100%;
             padding: 12px 14px;
             border: 1.5px solid #e0e0e0;
             border-radius: 10px;
@@ -1071,6 +1073,9 @@
             box-sizing: border-box;
             margin-bottom: 8px;
             display: block;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 46px;
         }
         .dt-date-input:focus { border-color: #667eea; outline: none; }
         .dt-time-row {
@@ -1756,7 +1761,7 @@
                         <div class="form-group">
                             <label>Preferred Date & Time</label>
                             <!-- Standard picker (shown when no availability windows) -->
-                            <div id="standardPicker" class="custom-dt-picker">
+                            <div id="standardPicker" class="custom-dt-picker" style="overflow:hidden;max-width:100%;">
                                 <input type="date" id="preferredDate" class="dt-date-input">
                                 <div class="dt-time-row">
                                     <select id="preferredHour" class="dt-select">
@@ -2726,6 +2731,38 @@
                 
                 document.getElementById('preferredHour').value = '09';
                 document.getElementById('preferredMinute').value = '00';
+                // Store dayType for date validation
+                window._bookingDayType = dayType;
+                // Set up date change validation
+                const dateInput = document.getElementById('preferredDate');
+                dateInput.onchange = function() { validateBookingDate(this); };
+            }
+        }
+
+        function validateBookingDate(input) {
+            const dayType = window._bookingDayType;
+            if (!dayType || (!input.value)) return;
+            const d = new Date(input.value + 'T12:00:00');
+            const dow = d.getDay(); // 0=Sun, 6=Sat
+            const isWknd = dow === 0 || dow === 6;
+            if (dayType === 'weekend' && !isWknd) {
+                // Jump to next weekend day
+                let next = new Date(d);
+                for (let i = 1; i <= 7; i++) {
+                    next.setDate(next.getDate() + 1);
+                    if (next.getDay() === 0 || next.getDay() === 6) break;
+                }
+                input.value = next.toISOString().split('T')[0];
+                showToast('Weekend bookings only: Sat & Sun', false);
+            } else if (dayType === 'weekday' && isWknd) {
+                // Jump to next weekday
+                let next = new Date(d);
+                for (let i = 1; i <= 7; i++) {
+                    next.setDate(next.getDate() + 1);
+                    if (next.getDay() !== 0 && next.getDay() !== 6) break;
+                }
+                input.value = next.toISOString().split('T')[0];
+                showToast('Weekday bookings only: Mon–Fri', false);
             }
         }
 
@@ -3544,7 +3581,7 @@
                             <span class="status-pill status-${b.status}">${b.status}</span>
                         </div>
                         <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
-                        <div class="booking-meta">📍 <span>Location:</span> ${svc.location || ''}</div>
+                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
                         <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
                         ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
                         ${cancelBtn}
@@ -3588,14 +3625,23 @@
             const drop = document.getElementById(dropId);
             const box = document.getElementById(boxId);
             const isOpen = drop.style.display !== 'none';
-            // Close all other dropdowns first
             document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
             if (!isOpen) {
                 drop.style.display = 'block';
-                const rect = box.getBoundingClientRect();
-                drop.style.top = (box.offsetTop + box.offsetHeight + 2) + 'px';
-                drop.style.left = box.offsetLeft + 'px';
-                drop.style.width = box.offsetWidth + 'px';
+                const boxRect = box.getBoundingClientRect();
+                const appRect = document.querySelector('.app-container').getBoundingClientRect();
+                const topPos = box.offsetTop + box.offsetHeight + 2;
+                drop.style.top = topPos + 'px';
+                // For filter dropdown: anchor to right edge so it doesn't overflow left
+                if (boxId === 'filterTypeBox') {
+                    drop.style.right = '0px';
+                    drop.style.left = 'auto';
+                    drop.style.width = '190px';
+                } else {
+                    drop.style.left = box.offsetLeft + 'px';
+                    drop.style.right = 'auto';
+                    drop.style.width = box.offsetWidth + 'px';
+                }
             }
         }
 
@@ -3731,6 +3777,13 @@
             color: #667eea;
             border: none;
             background: transparent;
+        }
+        #filterTypeDropdown {
+            right: 0 !important;
+            left: auto !important;
+            width: 180px !important;
+            max-height: 70vh;
+            overflow-y: auto;
         }
         .custom-select-dropdown {
             position: absolute;

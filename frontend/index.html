@@ -2799,13 +2799,21 @@
                 const d = new Date(today); d.setDate(today.getDate() + i);
                 const dayName = DAY_ORDER[d.getDay() === 0 ? 6 : d.getDay() - 1];
                 
-                // Filter by dayType if specified
+                // Filter dates by dayType
                 const dow = d.getDay();
                 const isWknd = dow === 0 || dow === 6;
                 if (dayType === 'weekday' && isWknd) continue;
                 if (dayType === 'weekend' && !isWknd) continue;
-                
-                const matchingWindows = windows.filter(w => w.day === dayName);
+
+                // Also filter windows: weekday booking only uses Mon-Fri windows, weekend only Sat-Sun
+                const WEEKEND_DAYS = ['Saturday','Sunday'];
+                const WEEKDAY_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                const matchingWindows = windows.filter(w => {
+                    if (w.day !== dayName) return false;
+                    if (dayType === 'weekday' && !WEEKDAY_DAYS.includes(w.day)) return false;
+                    if (dayType === 'weekend' && !WEEKEND_DAYS.includes(w.day)) return false;
+                    return true;
+                });
                 if (matchingWindows.length === 0) continue;
                 const dateStr = d.toISOString().split('T')[0];
                 daySlots[dateStr] = daySlots[dateStr] || [];

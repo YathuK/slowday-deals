@@ -4026,24 +4026,36 @@
         }
 
         // Prevent iOS overscroll/bounce on discover tab only
-        // But allow scrolling inside card-detail panels
         document.addEventListener('DOMContentLoaded', function() {
             const discoverTab = document.getElementById('discoverTab');
-            if (discoverTab) {
-                discoverTab.addEventListener('touchmove', function(e) {
-                    // Allow scroll if touch is inside a scrollable element (card details)
-                    let el = e.target;
-                    while (el && el !== discoverTab) {
-                        if (el.scrollHeight > el.clientHeight && 
-                            (getComputedStyle(el).overflowY === 'auto' || 
-                             getComputedStyle(el).overflowY === 'scroll')) {
-                            return; // let it scroll
-                        }
-                        el = el.parentElement;
+            if (!discoverTab) return;
+            let startY = 0;
+            discoverTab.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            discoverTab.addEventListener('touchmove', function(e) {
+                // Find scrollable parent
+                let el = e.target;
+                let scrollable = null;
+                while (el && el !== discoverTab) {
+                    if (el.scrollHeight > el.clientHeight + 2) {
+                        scrollable = el;
+                        break;
                     }
+                    el = el.parentElement;
+                }
+                if (!scrollable) {
                     e.preventDefault();
-                }, { passive: false });
-            }
+                    return;
+                }
+                const deltaY = e.touches[0].clientY - startY;
+                const atTop = scrollable.scrollTop <= 0;
+                const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 2;
+                // Block if trying to scroll past top or bottom boundary
+                if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
 
         function goToSlide(idx) {

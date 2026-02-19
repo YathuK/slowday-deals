@@ -3900,7 +3900,9 @@
                 renderPlusAccountSection();
                 updateCardBadges();
             } catch(e) {
+                // Subscription service not available yet
                 currentUserIsPlus = false;
+                plusStatus = null;
             }
         }
 
@@ -3957,7 +3959,12 @@
                     if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
                 }
             } catch(e) {
-                showToast(e.message || 'Payment system not ready yet', true);
+                const msg = e.message || '';
+                if (msg.includes('not found') || msg.includes('404')) {
+                    showToast('Subscription service is still deploying. Try again in 1 minute.', true);
+                } else {
+                    showToast(msg || 'Payment system not ready yet', true);
+                }
                 if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
             }
         }

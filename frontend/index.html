@@ -28,11 +28,16 @@
             max-width: 500px;
             margin: 0 auto;
             background: white;
-            min-height: 100vh;
-            min-height: 100dvh;
-            position: relative;
+            height: 100vh;
+            height: 100dvh;
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
-            overflow-x: hidden;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
         }
 
@@ -40,9 +45,9 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 0 16px;
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 100;
+            flex-shrink: 0;
             box-shadow: 0 2px 12px rgba(0,0,0,0.15);
             overflow: hidden;
             display: flex;
@@ -94,7 +99,10 @@
         }
 
         .view.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
         }
 
         /* Provider View Styles */
@@ -881,9 +889,9 @@
             display: flex;
             border-bottom: 2px solid #f0f0f0;
             background: white;
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 50;
+            flex-shrink: 0;
         }
         #providerView .tab-content,
         #ptabBookingsContent,
@@ -896,13 +904,27 @@
         }
 
         #customerView .tab-content {
+            flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding-bottom: 80px;
+            min-height: 0;
         }
         #customerView #discoverTab {
             overflow: hidden !important;
-            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        [id^="ptabProfileContent"],
+        [id^="ptabBookingsContent"],
+        [id^="ptabCalendarContent"],
+        [id^="ptabAnalyticsContent"] {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+            padding-bottom: 80px;
         }
 
         .ptab-btn {
@@ -1154,12 +1176,10 @@
         }
 
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            position: relative;
             width: 100%;
             max-width: 500px;
+            flex-shrink: 0;
             background: white;
             border-top: 1px solid #eee;
             display: flex;

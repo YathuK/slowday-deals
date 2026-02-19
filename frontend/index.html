@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="format-detection" content="telephone=no, address=no, email=no">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
     <script src="api.js"></script>
@@ -23,7 +23,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             overscroll-behavior: none;
             min-height: 100vh;
-            min-height: 100dvh;
+            min-height: 100svh;
             touch-action: pan-y;
             -webkit-text-size-adjust: 100%;
         }
@@ -33,7 +33,7 @@
             margin: 0 auto;
             background: white;
             min-height: 100vh;
-            min-height: 100dvh;
+            min-height: 100svh;
             position: relative;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
             overflow-x: hidden;
@@ -46,6 +46,7 @@
             padding: 0 16px;
             position: fixed;
             top: 0;
+            top: env(safe-area-inset-top);
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
@@ -205,7 +206,7 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100dvh - 195px);
+            height: calc(100svh - 195px);
             height: calc(100vh - 195px);
             min-height: 360px;
             padding: 12px 16px 16px;
@@ -934,7 +935,7 @@
         }
         #customerView #discoverTab {
             overflow: hidden;
-            height: calc(100dvh - 200px);
+            height: calc(100svh - 200px);
             height: calc(100vh - 200px);
             margin-top: 130px;
             padding-top: 0 !important;

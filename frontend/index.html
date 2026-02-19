@@ -2721,6 +2721,7 @@
 
         async function openBookingModal(serviceId, dayType) {
             if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
+            window._lastDetailDayType = dayType;
             currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');

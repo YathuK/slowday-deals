@@ -8,12 +8,13 @@ const { auth } = require('../middleware/auth');
 // @access  Private
 router.get('/savings', auth, async (req, res) => {
     try {
-        // Aggregate total savings per customer (confirmed bookings only)
+        // Aggregate total spent at deal prices per customer
+        // Sum 'price' (the deal price paid) across confirmed AND rescheduled bookings
         const leaderboard = await Booking.aggregate([
-            { $match: { status: 'confirmed' } },
+            { $match: { status: { $in: ['confirmed', 'rescheduled', 'completed'] } } },
             { $group: {
                 _id: '$customer',
-                totalSaved: { $sum: '$savedAmount' }
+                totalSaved: { $sum: '$price' }
             }},
             { $sort: { totalSaved: -1 } }
         ]);

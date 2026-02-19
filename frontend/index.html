@@ -886,7 +886,7 @@
             border-bottom: 2px solid #f0f0f0;
             background: white;
             position: sticky;
-            top: 0;
+            top: 58px;
             z-index: 50;
         }
         #providerView .tab-content,
@@ -907,11 +907,10 @@
         }
         #customerView #discoverTab {
             overflow: hidden;
-            height: calc(100dvh - 138px);
-            height: calc(100vh - 138px);
-            padding-top: 58px;
+            height: calc(100dvh - 195px);
+            height: calc(100vh - 195px);
+            margin-top: 115px;
             padding-bottom: 0 !important;
-            box-sizing: border-box;
         }
 
         .ptab-btn {
@@ -1038,7 +1037,7 @@
         .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         /* ---- Saved sub-tabs ---- */
-        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; }
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: sticky; top: 58px; background: white; z-index: 50; }
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
@@ -1120,6 +1119,14 @@
             padding: 12px 16px 8px;
             background: #f8f9ff;
             border-bottom: 1px solid #eee;
+            position: fixed;
+            top: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            z-index: 99;
+            box-sizing: border-box;
         }
 
         .search-bar {

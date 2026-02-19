@@ -1762,7 +1762,19 @@
                             <label>Preferred Date & Time</label>
                             <!-- Standard picker (shown when no availability windows) -->
                             <div id="standardPicker" class="custom-dt-picker" style="overflow:hidden;max-width:100%;">
-                                <input type="date" id="preferredDate" class="dt-date-input">
+                                <input type="hidden" id="preferredDate">
+                                <div id="customDatePicker" class="custom-date-picker">
+                                    <div class="cdp-header">
+                                        <button type="button" class="cdp-nav" onclick="cdpChangeMonth(-1)">&#8249;</button>
+                                        <span id="cdpMonthLabel" class="cdp-month-label"></span>
+                                        <button type="button" class="cdp-nav" onclick="cdpChangeMonth(1)">&#8250;</button>
+                                    </div>
+                                    <div class="cdp-weekdays">
+                                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                                    </div>
+                                    <div class="cdp-grid" id="cdpGrid"></div>
+                                    <div id="cdpHint" class="cdp-hint"></div>
+                                </div>
                                 <div class="dt-time-row">
                                     <select id="preferredHour" class="dt-select">
                                         <option value="07">7 AM</option><option value="08">8 AM</option>
@@ -2727,35 +2739,22 @@
                 // Show standard picker
                 document.getElementById('standardPicker').style.display = 'block';
                 document.getElementById('slotPicker').style.display = 'none';
+                // Pre-select the first valid date
                 const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                // If dayType specified, find the next matching day
-                if (dayType === 'weekday' || dayType === 'weekend') {
-                    let d = new Date(tomorrow);
+                let firstValid = new Date(tomorrow);
+                if (dayType === 'weekend' || dayType === 'weekday') {
                     for (let i = 0; i < 14; i++) {
-                        const dow = d.getDay();
+                        const dow = firstValid.getDay();
                         const isWknd = dow === 0 || dow === 6;
-                        if ((dayType === 'weekend' && isWknd) || (dayType === 'weekday' && !isWknd)) {
-                            break;
-                        }
-                        d.setDate(d.getDate() + 1);
+                        if ((dayType === 'weekend' && isWknd) || (dayType === 'weekday' && !isWknd)) break;
+                        firstValid.setDate(firstValid.getDate() + 1);
                     }
-                    const tStr = d.toISOString().split('T')[0];
-                    document.getElementById('preferredDate').value = tStr;
-                    document.getElementById('preferredDate').min = tomorrow.toISOString().split('T')[0];
-                } else {
-                    const tStr = tomorrow.toISOString().split('T')[0];
-                    document.getElementById('preferredDate').min = tStr;
-                    document.getElementById('preferredDate').value = tStr;
                 }
-                
+                document.getElementById('preferredDate').value = firstValid.toISOString().split('T')[0];
                 document.getElementById('preferredHour').value = '09';
                 document.getElementById('preferredMinute').value = '00';
-                // Store dayType for date validation
-                window._bookingDayType = dayType;
-                // Set up date change validation
-                const dateInput = document.getElementById('preferredDate');
-                dateInput.onchange = function() { validateBookingDate(this); };
+                // Init custom calendar with day type restriction
+                cdpInit(dayType);
             }
         }
 
@@ -3703,6 +3702,82 @@
             currentCardIndex = prevIdx;
         }
 
+
+        // ============================================
+        // CUSTOM DATE PICKER
+        // ============================================
+        let _cdpYear, _cdpMonth, _cdpDayType;
+
+        function cdpInit(dayType) {
+            _cdpDayType = dayType; // 'weekday', 'weekend', or null
+            const now = new Date();
+            _cdpYear = now.getFullYear();
+            _cdpMonth = now.getMonth();
+            // Advance to next month if we're near the end and it helps show valid dates
+            cdpRender();
+            // Set hint
+            const hint = document.getElementById('cdpHint');
+            if (dayType === 'weekend') hint.textContent = 'Weekends only — Sat & Sun';
+            else if (dayType === 'weekday') hint.textContent = 'Weekdays only — Mon to Fri';
+            else hint.textContent = '';
+        }
+
+        function cdpChangeMonth(dir) {
+            _cdpMonth += dir;
+            if (_cdpMonth > 11) { _cdpMonth = 0; _cdpYear++; }
+            if (_cdpMonth < 0)  { _cdpMonth = 11; _cdpYear--; }
+            cdpRender();
+        }
+
+        function cdpRender() {
+            const months = ['January','February','March','April','May','June',
+                            'July','August','September','October','November','December'];
+            document.getElementById('cdpMonthLabel').textContent = months[_cdpMonth] + ' ' + _cdpYear;
+            const grid = document.getElementById('cdpGrid');
+            grid.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0);
+            const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+            const firstDay = new Date(_cdpYear, _cdpMonth, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(_cdpYear, _cdpMonth + 1, 0).getDate();
+            const selectedVal = document.getElementById('preferredDate').value;
+
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                const blank = document.createElement('div');
+                blank.className = 'cdp-day cdp-empty';
+                grid.appendChild(blank);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(_cdpYear, _cdpMonth, d);
+                const dow = date.getDay(); // 0=Sun, 6=Sat
+                const isWknd = dow === 0 || dow === 6;
+                const isPast = date < tomorrow;
+                const dateStr = date.toISOString().split('T')[0];
+
+                let disabled = false;
+                if (_cdpDayType === 'weekend' && !isWknd) disabled = true;
+                if (_cdpDayType === 'weekday' && isWknd) disabled = true;
+
+                const el = document.createElement('div');
+                el.textContent = d;
+                el.className = 'cdp-day';
+                if (isPast || disabled) {
+                    el.classList.add(isPast ? 'cdp-past' : 'cdp-disabled');
+                } else {
+                    el.onclick = () => cdpSelect(dateStr, el);
+                }
+                if (dateStr === selectedVal) el.classList.add('cdp-selected');
+                grid.appendChild(el);
+            }
+        }
+
+        function cdpSelect(dateStr, el) {
+            document.getElementById('preferredDate').value = dateStr;
+            document.querySelectorAll('.cdp-day.cdp-selected').forEach(d => d.classList.remove('cdp-selected'));
+            el.classList.add('cdp-selected');
+        }
+
         // ============================================
         // DEEP LINK HANDLER — email/SMS redirect to tab
         // ============================================
@@ -3849,6 +3924,86 @@
         .custom-select-opt:active, .custom-select-opt:hover { background: #f0f4ff; color: #667eea; }
         .form-group { position: relative; }
         .search-bar { position: relative; }
+
+        /* Custom Date Picker */
+        .custom-date-picker {
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            user-select: none;
+        }
+        .cdp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .cdp-nav {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #667eea;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
+        }
+        .cdp-month-label {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a2e;
+        }
+        .cdp-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+        .cdp-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cdp-day {
+            text-align: center;
+            padding: 8px 2px;
+            font-size: 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.15s;
+        }
+        .cdp-day:hover:not(.cdp-disabled):not(.cdp-past) {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        .cdp-day.cdp-selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 700;
+        }
+        .cdp-day.cdp-disabled {
+            color: #ddd;
+            cursor: not-allowed;
+            background: none;
+        }
+        .cdp-day.cdp-past {
+            color: #ddd;
+            cursor: not-allowed;
+        }
+        .cdp-day.cdp-empty { background: none; cursor: default; }
+        .cdp-hint {
+            text-align: center;
+            font-size: 11px;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 6px;
+            min-height: 16px;
+        }
         @keyframes confettiFall {
             to {
                 top: 100%;

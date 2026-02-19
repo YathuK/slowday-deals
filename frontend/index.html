@@ -1530,6 +1530,9 @@
 
                     <hr style="border:none;border-top:1px solid #f0f0f0;margin-bottom:24px;">
 
+                    <!-- SlowDay+ Status -->
+                    <div id="slowdayPlusAccountSection" style="margin-bottom:24px;"></div>
+
                     <!-- Change Password -->
                     <div style="margin-bottom:24px;">
                         <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">🔒 Change Password</h3>
@@ -1866,6 +1869,11 @@
             // Check for deep-link tab param from email/SMS
             const urlParams = new URLSearchParams(window.location.search);
             const deepTab = urlParams.get('tab');
+            const subResult = urlParams.get('subscription');
+            if (subResult === 'success') {
+                sessionStorage.setItem('showPlusSuccess', '1');
+                window.history.replaceState({}, '', window.location.pathname);
+            }
             if (deepTab) {
                 sessionStorage.setItem('deepLinkTab', deepTab);
                 // Clean URL
@@ -2175,6 +2183,7 @@
             await loadMyProfile();
             document.getElementById('savingsBadge').style.visibility = 'visible';
             await updateSavingsTracker();
+            loadSubscriptionStatus();
             // Start real-time polling
             startRealtimePolling();
         }
@@ -2695,13 +2704,13 @@
                             <div onclick="${wdDisabled ? '' : `openBookingModal('${serviceId}', 'weekday')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#667eea,#764ba2)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(102,126,234,0.3);animation:dealPulse 2s ease-in-out infinite;'}${wdDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${wdDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(102,126,234,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(102,126,234,0.3)\';"'}>
                                 ${slotBadge(wdLeft)}
                                 <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKDAYS</div>
-                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekdayPrice) : service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
                                 ${normalLine(service.normalPrice, service.weekdayPrice)}
                             </div>
                             <div onclick="${weDisabled ? '' : `openBookingModal('${serviceId}', 'weekend')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#764ba2,#f093fb)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(118,75,162,0.3);animation:dealPulse 2s ease-in-out infinite;'}${weDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${weDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(118,75,162,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(118,75,162,0.3)\';"'}>
                                 ${slotBadge(weLeft)}
                                 <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKENDS</div>
-                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekendPrice) : service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
                                 ${normalLine(service.normalPrice, service.weekendPrice)}
                             </div>
                         </div>`;
@@ -3181,6 +3190,7 @@
             document.getElementById('profileMsg').style.display = 'none';
             document.getElementById('userProfileModal').classList.add('active');
             loadMyTickets();
+            loadSubscriptionStatus();
         }
 
         function showProfileMsg(msg, isError) {
@@ -3804,6 +3814,11 @@
         // DEEP LINK HANDLER — email/SMS redirect to tab
         // ============================================
         function handleDeepLink() {
+            if (sessionStorage.getItem('showPlusSuccess')) {
+                sessionStorage.removeItem('showPlusSuccess');
+                showToast('🎉 Welcome to SlowDay+! Enjoy your 14-day free trial.', false);
+                loadSubscriptionStatus();
+            }
             const tab = sessionStorage.getItem('deepLinkTab');
             if (!tab || !currentUser) return;
             sessionStorage.removeItem('deepLinkTab');
@@ -3867,6 +3882,117 @@
             } catch(e) {
                 showToast(e.message || 'Failed to submit ticket', true);
             }
+        }
+
+
+        // ============================================
+        // SLOWDAY+ SUBSCRIPTION
+        // ============================================
+        let currentUserIsPlus = false;
+        let plusStatus = null;
+
+        async function loadSubscriptionStatus() {
+            try {
+                const res = await API.getSubscriptionStatus();
+                plusStatus = res;
+                currentUserIsPlus = res.isPlus || false;
+                renderPlusAccountSection();
+                updateCardBadges();
+            } catch(e) {
+                currentUserIsPlus = false;
+            }
+        }
+
+        function renderPlusAccountSection() {
+            const el = document.getElementById('slowdayPlusAccountSection');
+            if (!el) return;
+            if (!plusStatus || !plusStatus.isPlus) {
+                el.innerHTML = `
+                    <div onclick="showSlowDayPlusModal()" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:14px;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-weight:800;font-size:15px;color:#92400e;">⚡ SlowDay<span style="color:#d97706;">+</span></div>
+                            <div style="font-size:12px;color:#a16207;margin-top:2px;">14-day free trial • $4.99/mo after</div>
+                        </div>
+                        <div style="background:#d97706;color:white;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;">Upgrade →</div>
+                    </div>`;
+            } else {
+                const isTrial = plusStatus.status === 'trialing';
+                const endDate = isTrial
+                    ? new Date(plusStatus.trialEnds).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+                    : new Date(plusStatus.currentPeriodEnd).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+                const cancelText = plusStatus.cancelAtPeriodEnd
+                    ? `<div style="font-size:11px;color:#e53e3e;margin-top:4px;">Cancels ${endDate}</div>`
+                    : `<button onclick="cancelSlowDayPlus()" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;padding:0;margin-top:4px;text-decoration:underline;">Cancel subscription</button>`;
+                el.innerHTML = `
+                    <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:14px;padding:16px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <div style="font-weight:800;font-size:15px;color:white;">⚡ SlowDay<span style="color:#fbbf24;">+</span> Active</div>
+                            <div style="background:#fbbf24;color:#1a1a2e;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${isTrial ? 'FREE TRIAL' : 'ACTIVE'}</div>
+                        </div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.7);">${isTrial ? 'Trial ends' : 'Renews'} ${endDate} • 10% off all bookings</div>
+                        ${cancelText}
+                    </div>`;
+            }
+        }
+
+        function showSlowDayPlusModal() {
+            // Update modal CTA based on status
+            const action = document.getElementById('plusModalAction');
+            if (action && plusStatus && plusStatus.isPlus) {
+                action.innerHTML = `<div style="text-align:center;padding:8px;background:#d1fae5;border-radius:12px;color:#065f46;font-weight:700;">✅ You are already a SlowDay+ member!</div>`;
+            }
+            document.getElementById('slowdayPlusModal').classList.add('active');
+        }
+
+        async function startSlowDayPlus() {
+            const btn = document.querySelector('#plusModalAction button');
+            if (btn) { btn.textContent = 'Redirecting to payment...'; btn.disabled = true; }
+            try {
+                const res = await API.startSubscription();
+                if (res.url) {
+                    window.location.href = res.url;
+                } else {
+                    showToast(res.message || 'Could not start subscription', true);
+                    if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
+                }
+            } catch(e) {
+                showToast(e.message || 'Payment system not ready yet', true);
+                if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
+            }
+        }
+
+        async function cancelSlowDayPlus() {
+            showConfirmModal('Cancel your SlowDay+ subscription?\nYou keep access until the end of your billing period.', 'Yes, Cancel', async () => {
+                try {
+                    await API.cancelSubscription();
+                    showToast('Subscription cancelled. You keep access until period end.', false);
+                    await loadSubscriptionStatus();
+                    renderPlusAccountSection();
+                } catch(e) {
+                    showToast(e.message || 'Failed to cancel', true);
+                }
+            });
+        }
+
+        function updateCardBadges() {
+            // Re-render cards to show/hide member badge - triggers on next render cycle
+            if (typeof renderSavedList === 'function') renderSavedList();
+        }
+
+        function getPlusBadge() {
+            if (!currentUserIsPlus) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">👑 PLUS</span>';
+        }
+
+        function getPlusDiscount(price) {
+            if (!currentUserIsPlus) return price;
+            return Math.round(price * 0.9 * 100) / 100; // 10% off, rounded to cents
+        }
+
+        function getPlusDiscountLabel(price) {
+            if (!currentUserIsPlus) return '';
+            const discounted = getPlusDiscount(price);
+            return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px;">👑 $${discounted}</span>`;
         }
 
         function goToSlide(idx) {
@@ -4165,5 +4291,48 @@
     </div>
 
 </div>
-</body>
+
+        <!-- SlowDay+ Upgrade Modal -->
+        <div id="slowdayPlusModal" class="modal-overlay">
+            <div class="modal-content" style="max-width:380px;padding:0;overflow:hidden;border-radius:24px;">
+                <!-- Header gradient -->
+                <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:28px 24px 20px;text-align:center;position:relative;">
+                    <button onclick="document.getElementById('slowdayPlusModal').classList.remove('active')" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+                    <div style="font-size:44px;margin-bottom:8px;">⚡</div>
+                    <h2 style="color:white;margin:0;font-size:24px;font-weight:800;">SlowDay<span style="color:#fef3c7;">+</span></h2>
+                    <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:14px;">Members-only perks, every day</p>
+                </div>
+                <!-- Body -->
+                <div style="padding:24px;">
+                    <!-- Perks -->
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👑</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">Members-Only Badge</div><div style="font-size:12px;color:#888;">Stand out on every service card</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💸</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">10% Off All Deals</div><div style="font-size:12px;color:#888;">Extra discount on every booking</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎟️</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">First Access to Slots</div><div style="font-size:12px;color:#888;">See available spots before anyone else</div></div>
+                        </div>
+                    </div>
+                    <!-- Pricing -->
+                    <div style="background:#f8f9ff;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Only</div>
+                        <div style="font-size:36px;font-weight:800;color:#1a1a2e;">$4.99<span style="font-size:16px;font-weight:500;color:#888;">/mo</span></div>
+                        <div style="display:inline-block;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:6px;">✨ 14-day free trial — cancel anytime</div>
+                    </div>
+                    <!-- CTA -->
+                    <div id="plusModalAction">
+                        <button onclick="startSlowDayPlus()" style="width:100%;padding:15px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:0.3px;">Start Free Trial →</button>
+                        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">No charge for 14 days. $4.99/mo after.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
 </html>

@@ -4025,14 +4025,30 @@
             return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px;">👑 $${discounted}</span>`;
         }
 
-        // Prevent iOS pull-to-expand on bottom nav
+        // Prevent iOS pull-to-expand on bottom nav and overscroll on all tab-content
         document.addEventListener('DOMContentLoaded', function() {
+            // Block bottom nav swipe
             const bottomNav = document.querySelector('.bottom-nav');
             if (bottomNav) {
                 bottomNav.addEventListener('touchmove', function(e) {
                     e.preventDefault();
                 }, { passive: false });
             }
+            // Block overscroll past boundaries on all scrollable tab content
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                let startY = 0;
+                tab.addEventListener('touchstart', function(e) {
+                    startY = e.touches[0].clientY;
+                }, { passive: true });
+                tab.addEventListener('touchmove', function(e) {
+                    const deltaY = e.touches[0].clientY - startY;
+                    const atTop = tab.scrollTop <= 0;
+                    const atBottom = tab.scrollTop + tab.clientHeight >= tab.scrollHeight - 2;
+                    if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            });
         });
 
         // Prevent iOS overscroll/bounce on discover tab only

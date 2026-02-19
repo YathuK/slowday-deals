@@ -204,6 +204,8 @@
             height: calc(100dvh - 195px);
             height: calc(100vh - 195px);
             min-height: 360px;
+            touch-action: none;
+            overscroll-behavior: none;
             padding: 12px 16px 16px;
             overflow: hidden;
         }
@@ -264,6 +266,8 @@
             height: 45%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            overscroll-behavior-y: contain;
         }
 
         .service-header {

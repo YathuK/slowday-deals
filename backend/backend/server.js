@@ -12,6 +12,8 @@ const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/bookings');
 const userRoutes = require('./routes/users');
 const leaderboardRoutes = require('./routes/leaderboard');
+const supportRoutes = require('./routes/support');
+const subscriptionRoutes = require('./routes/subscription');
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/support', supportRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

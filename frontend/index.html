@@ -40,8 +40,12 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 0 16px;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
             z-index: 100;
             box-shadow: 0 2px 12px rgba(0,0,0,0.15);
             overflow: hidden;
@@ -898,13 +902,16 @@
         #customerView .tab-content {
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            padding-top: 58px;
             padding-bottom: 80px;
         }
         #customerView #discoverTab {
             overflow: hidden;
             height: calc(100dvh - 138px);
             height: calc(100vh - 138px);
+            padding-top: 58px;
             padding-bottom: 0 !important;
+            box-sizing: border-box;
         }
 
         .ptab-btn {

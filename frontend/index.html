@@ -15,9 +15,13 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            overscroll-behavior: none;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overscroll-behavior: none;
             min-height: 100vh;
             min-height: 100dvh;
             touch-action: pan-y;
@@ -204,8 +208,6 @@
             height: calc(100dvh - 195px);
             height: calc(100vh - 195px);
             min-height: 360px;
-            touch-action: none;
-            overscroll-behavior: none;
             padding: 12px 16px 16px;
             overflow: hidden;
         }

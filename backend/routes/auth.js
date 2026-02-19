@@ -20,7 +20,7 @@ const generateToken = (userId) => {
 // @access  Public
 router.post('/signup', [
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Please enter a valid email'),
+    body('email').optional({ checkFalsy: true }).isEmail().withMessage('Please enter a valid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('phone').trim().notEmpty().withMessage('Phone number is required'),
     body('accountType').isIn(['customer', 'provider']).withMessage('Invalid account type')
@@ -38,12 +38,19 @@ router.post('/signup', [
 
         const { name, email, password, phone, accountType } = req.body;
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
+        if (!email && !phone) {
+            return res.status(400).json({ success: false, message: 'Email or phone number is required' });
+        }
+
+        // Check if user already exists by email or phone
+        const query = [];
+        if (email) query.push({ email: email.toLowerCase() });
+        if (phone) query.push({ phone });
+        const existingUser = query.length > 0 ? await User.findOne({ $or: query }) : null;
         if (existingUser) {
             return res.status(400).json({ 
                 success: false,
-                message: 'An account with this email already exists' 
+                message: 'An account with this email or phone already exists' 
             });
         }
 
@@ -87,28 +94,26 @@ router.post('/signup', [
 // @desc    Login user
 // @access  Public
 router.post('/login', [
-    body('email').isEmail().withMessage('Please enter a valid email'),
     body('password').notEmpty().withMessage('Password is required')
 ], async (req, res) => {
     try {
-        // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array() 
-            });
+            return res.status(400).json({ success: false, message: 'Password is required' });
         }
 
-        const { email, password } = req.body;
+        const { emailOrPhone, password } = req.body;
+        if (!emailOrPhone) {
+            return res.status(400).json({ success: false, message: 'Email or phone number is required' });
+        }
 
-        // Find user
-        const user = await User.findOne({ email });
+        // Find user by email or phone
+        const isEmail = emailOrPhone.includes('@');
+        const user = await User.findOne(isEmail ? { email: emailOrPhone.toLowerCase() } : { phone: emailOrPhone });
         if (!user) {
             return res.status(401).json({ 
                 success: false,
-                message: 'Invalid email or password' 
+                message: 'Invalid email/phone or password' 
             });
         }
 
@@ -169,8 +174,10 @@ router.get('/me', auth, async (req, res) => {
 // @access  Public
 router.post('/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
+        const { emailOrPhone } = req.body;
+        if (!emailOrPhone) return res.json({ success: true, message: 'If that account exists, a reset link has been sent.' });
+        const isEmail = emailOrPhone.includes('@');
+        const user = await User.findOne(isEmail ? { email: emailOrPhone.toLowerCase() } : { phone: emailOrPhone });
 
         // Always return success to prevent email enumeration
         if (!user) {

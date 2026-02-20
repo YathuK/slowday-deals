@@ -2378,17 +2378,16 @@
             try {
                 const res = await API.getCustomerBookings();
                 const bookings = (res.bookings || []).sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+                window._customerBookings = bookings;
                 await updateSavingsTracker();
                 if (!bookings.length) {
                     el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
                     return;
                 }
-                el.innerHTML = bookings.map(b => {
+                el.innerHTML = bookings.map((b, idx) => {
                     const svc = b.service || {};
                     const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
-                        ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
-                    return `<div class="booking-card">
+                    return `<div class="booking-card" style="cursor:pointer;" onclick="showBookingDetail(${idx})">
                         <div class="booking-card-header">
                             <div>
                                 <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
@@ -2400,12 +2399,30 @@
                         <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
                         <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
                         ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
-                        ${cancelBtn}
                     </div>`;
                 }).join('');
             } catch(e) {
                 el.innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
             }
+        }
+
+        function showBookingDetail(idx) {
+            const b = (window._customerBookings || [])[idx];
+            if (!b || !b.service) return;
+            const canCancel = ['pending','confirmed','rescheduled'].includes(b.status);
+            showDetails(b.service, canCancel ? b._id : null);
+        }
+
+        function cancelBookingFromDetail(id) {
+            showConfirmModal('Cancel this booking?', 'Yes, Cancel', function() {
+                API.updateBookingStatus(id, 'cancelled')
+                    .then(() => {
+                        closeModal();
+                        showToast('Booking cancelled.');
+                        loadCustomerBookingsTab();
+                    })
+                    .catch(() => showToast('Error cancelling booking', true));
+            });
         }
 
         // ============================================
@@ -2862,9 +2879,9 @@
         // ============================================
         // DETAILS & BOOKING
         // ============================================
-        function showDetails() {
-            if (currentCardIndex >= services.length) return;
-            const service = services[currentCardIndex];
+        function showDetails(svcOverride, cancelBookingId) {
+            const service = svcOverride || services[currentCardIndex];
+            if (!service) return;
             const serviceId = service._id || service.id;
             const modal = document.getElementById('detailModal');
             // Photo slideshow (multiple photos) or single image
@@ -2989,6 +3006,9 @@
                     </div>
                 </div>` : ''}
                 ${(() => {
+                    if (cancelBookingId) {
+                        return `<button class="book-now-btn" onclick="cancelBookingFromDetail('${cancelBookingId}')" style="background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 15px rgba(239,68,68,0.4);">Cancel Booking</button>`;
+                    }
                     const today = new Date().getDay();
                     const isWknd = today === 0 || today === 6;
                     const slots = isWknd ? service.weekendSlots : service.weekdaySlots;

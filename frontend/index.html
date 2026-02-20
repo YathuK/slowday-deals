@@ -2481,16 +2481,17 @@
             }
         }
 
-        async function deleteMyProfile() {
-            if (!confirm('Are you sure you want to delete your service profile?')) return;
-            try {
-                await API.deleteService(myService._id);
-                myService = null;
-                document.getElementById('myProfileView').style.display = 'none';
-                document.querySelector('.provider-form').style.display = 'block';
-                document.getElementById('providerSubmitBtn').textContent = 'Create My Profile';
-                showToast('Profile deleted.', false);
-            } catch (e) { showToast('Error deleting profile.', true); }
+        function deleteMyProfile() {
+            showConfirmModal('Are you sure you want to delete your service profile?', 'Delete', async () => {
+                try {
+                    await API.deleteService(myService._id);
+                    myService = null;
+                    document.getElementById('myProfileView').style.display = 'none';
+                    document.querySelector('.provider-form').style.display = 'block';
+                    document.getElementById('providerSubmitBtn').textContent = 'Create My Profile';
+                    showToast('Profile deleted.', false);
+                } catch (e) { showToast('Error deleting profile.', true); }
+            });
         }
 
         // ============================================

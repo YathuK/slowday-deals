@@ -69,7 +69,8 @@ router.post('/', auth, [
             providerName, serviceType, description, location, contact, email,
             weekdayPrice, weekendPrice, normalPrice,
             weekdaySlots, weekendSlots,
-            dealActive, availabilityWindows, photos
+            dealActive, availabilityWindows, photos,
+            instagram, tiktok, facebook
         } = req.body;
 
         const service = new Service({
@@ -80,6 +81,9 @@ router.post('/', auth, [
             location,
             contact,
             email: email || req.user.email,
+            instagram: instagram || '',
+            tiktok: tiktok || '',
+            facebook: facebook || '',
             weekdayPrice,
             weekendPrice,
             normalPrice: normalPrice || null,

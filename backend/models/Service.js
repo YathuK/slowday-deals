@@ -26,6 +26,11 @@ const serviceSchema = new mongoose.Schema({
     contact:     { type: String, required: [true, 'Contact information is required'] },
     email:       { type: String, default: '' },
 
+    // Social media links (optional)
+    instagram:   { type: String, default: '' },
+    tiktok:      { type: String, default: '' },
+    facebook:    { type: String, default: '' },
+
     // Normal (non-deal) price — used to show discount %
     normalPrice: { type: Number, default: null },
 

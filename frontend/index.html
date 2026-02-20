@@ -1447,9 +1447,26 @@
                         </select>
                     </div>
                     <div class="form-group"><label>Service Description</label><textarea id="serviceDesc" required placeholder="Describe what you offer..."></textarea></div>
-                    <div class="form-group"><label>Location/Area</label><input type="text" id="location" required placeholder="e.g., Downtown Brooklyn"></div>
+                    <div class="form-group"><label>Address</label><input type="text" id="location" required placeholder="e.g., Downtown Brooklyn"></div>
                     <div class="form-group"><label>Phone Number <span style="color:#888;font-weight:400;font-size:12px;">(for SMS notifications)</span></label><input type="text" id="providerContact" required placeholder="e.g., 6471234567"></div>
                     <div class="form-group"><label>Email Address <span style="color:#888;font-weight:400;font-size:12px;">(for email notifications)</span></label><input type="email" id="providerEmail" required placeholder="your@email.com"></div>
+                    <div class="form-group">
+                        <label>Social Media <span style="color:#888;font-weight:400;font-size:12px;">(optional — shown on your deal card)</span></label>
+                        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" style="flex-shrink:0;"><defs><linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f09433"/><stop offset="25%" style="stop-color:#e6683c"/><stop offset="50%" style="stop-color:#dc2743"/><stop offset="75%" style="stop-color:#cc2366"/><stop offset="100%" style="stop-color:#bc1888"/></linearGradient></defs><path fill="url(#igGrad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                                <input type="url" id="providerInstagram" placeholder="https://instagram.com/yourhandle" style="flex:1;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" style="flex-shrink:0;"><path fill="#010101" d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.16 8.16 0 004.77 1.52V6.79a4.85 4.85 0 01-1-.1z"/></svg>
+                                <input type="url" id="providerTiktok" placeholder="https://tiktok.com/@yourhandle" style="flex:1;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" style="flex-shrink:0;"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                <input type="url" id="providerFacebook" placeholder="https://facebook.com/yourpage" style="flex:1;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- PRICING SECTION -->
                     <div class="form-group">
@@ -2363,9 +2380,11 @@
                 document.getElementById('providerView').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'none';
-                // Auto-fill email if empty
+                // Auto-fill email and phone if empty
                 const emailField = document.getElementById('providerEmail');
                 if (emailField && !emailField.value && currentUser) emailField.value = currentUser.email || '';
+                const contactField = document.getElementById('providerContact');
+                if (contactField && !contactField.value && currentUser) contactField.value = currentUser.phone || '';
             }
         }
 
@@ -2460,6 +2479,9 @@
                 document.getElementById('location').value = myService.location;
                 document.getElementById('providerContact').value = myService.contact || '';
                 document.getElementById('providerEmail').value = myService.email || currentUser?.email || '';
+                document.getElementById('providerInstagram').value = myService.instagram || '';
+                document.getElementById('providerTiktok').value = myService.tiktok || '';
+                document.getElementById('providerFacebook').value = myService.facebook || '';
                 document.getElementById('normalPrice').value = myService.normalPrice || '';
                 document.getElementById('weekdayPrice').value = myService.weekdayPrice;
                 document.getElementById('weekendPrice').value = myService.weekendPrice;
@@ -2684,11 +2706,16 @@
                     </button>
                 </div>` : '';
 
+            const igIcon = service.instagram ? `<a href="${service.instagram}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);box-shadow:0 2px 6px rgba(0,0,0,0.3);"><svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>` : '';
+            const ttIcon = service.tiktok ? `<a href="${service.tiktok}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#010101;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.16 8.16 0 004.77 1.52V6.79a4.85 4.85 0 01-1-.1z"/></svg></a>` : '';
+            const fbIcon = service.facebook ? `<a href="${service.facebook}" target="_blank" onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#1877F2;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>` : '';
+            const socialOverlay = (igIcon || ttIcon || fbIcon) ? `<div style="position:absolute;bottom:8px;left:8px;display:flex;gap:5px;z-index:2;">${igIcon}${ttIcon}${fbIcon}</div>` : '';
+
             card.innerHTML = `
                 ${endedOverlay}
                 <div class="swipe-indicator like-indicator">LIKE</div>
                 <div class="swipe-indicator nope-indicator">NOPE</div>
-                <div class="card-image">${imageContent}</div>
+                <div class="card-image" style="position:relative;">${imageContent}${socialOverlay}</div>
                 <div class="card-content">
                     <div class="service-header">
                         <div>
@@ -2866,6 +2893,15 @@
                         </div>`;
                     })()}
                 </div>
+                ${(service.instagram || service.tiktok || service.facebook) ? `
+                <div class="detail-section">
+                    <h3>📲 Find Us Online</h3>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+                        ${service.instagram ? `<a href="${service.instagram}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:25px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 3px 12px rgba(220,39,67,0.35);"><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>Instagram</a>` : ''}
+                        ${service.tiktok ? `<a href="${service.tiktok}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:25px;background:#010101;color:white;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 3px 12px rgba(0,0,0,0.25);"><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.16 8.16 0 004.77 1.52V6.79a4.85 4.85 0 01-1-.1z"/></svg>TikTok</a>` : ''}
+                        ${service.facebook ? `<a href="${service.facebook}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:25px;background:#1877F2;color:white;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 3px 12px rgba(24,119,242,0.35);"><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</a>` : ''}
+                    </div>
+                </div>` : ''}
                 ${(() => {
                     const today = new Date().getDay();
                     const isWknd = today === 0 || today === 6;
@@ -3273,6 +3309,9 @@
                 location: document.getElementById('location').value,
                 contact: document.getElementById('providerContact').value,
                 email: document.getElementById('providerEmail').value || currentUser.email,
+                instagram: document.getElementById('providerInstagram').value.trim(),
+                tiktok: document.getElementById('providerTiktok').value.trim(),
+                facebook: document.getElementById('providerFacebook').value.trim(),
                 normalPrice: normalPriceVal ? parseFloat(normalPriceVal) : null,
                 weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
                 weekendPrice: parseFloat(document.getElementById('weekendPrice').value),

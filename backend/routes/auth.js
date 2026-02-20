@@ -197,26 +197,35 @@ router.post('/forgot-password', async (req, res) => {
         const resetUrl = `${process.env.FRONTEND_URL || 'https://www.slowdaydeals.com'}?resetToken=${resetToken}`;
 
         // Send email via SendGrid
-        if (process.env.SENDGRID_API_KEY) {
-            const msg = {
-                to: user.email,
-                from: process.env.FROM_EMAIL || 'notifications@slowdaydeals.com',
-                subject: '🔑 Reset Your SlowDay Deals Password',
-                html: `
-                    <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
-                        <div style="text-align:center;margin-bottom:24px;">
-                            <div style="background:linear-gradient(135deg,#667eea,#764ba2);width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">⚡</div>
-                        </div>
-                        <h2 style="color:#1a1a2e;margin-bottom:8px;">Reset your password</h2>
-                        <p style="color:#666;line-height:1.6;margin-bottom:24px;">Hi ${user.name}, we received a request to reset your SlowDay Deals password. Click the button below to choose a new one.</p>
-                        <a href="${resetUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;margin-bottom:24px;">Reset My Password</a>
-                        <p style="color:#999;font-size:13px;text-align:center;">This link expires in <strong>1 hour</strong>. If you didn't request this, you can safely ignore this email.</p>
-                        <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-                        <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals · slowdaydeals.com</p>
+        if (!process.env.SENDGRID_API_KEY) {
+            console.error('[forgot-password] SENDGRID_API_KEY is not set — cannot send reset email to', user.email);
+            return res.status(500).json({ success: false, message: 'Email service not configured. Please contact support.' });
+        }
+
+        const msg = {
+            to: user.email,
+            from: process.env.FROM_EMAIL || 'notifications@slowdaydeals.com',
+            subject: '🔑 Reset Your SlowDay Deals Password',
+            html: `
+                <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
+                    <div style="text-align:center;margin-bottom:24px;">
+                        <div style="background:linear-gradient(135deg,#667eea,#764ba2);width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">⚡</div>
                     </div>
-                `
-            };
+                    <h2 style="color:#1a1a2e;margin-bottom:8px;">Reset your password</h2>
+                    <p style="color:#666;line-height:1.6;margin-bottom:24px;">Hi ${user.name}, we received a request to reset your SlowDay Deals password. Click the button below to choose a new one.</p>
+                    <a href="${resetUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;margin-bottom:24px;">Reset My Password</a>
+                    <p style="color:#999;font-size:13px;text-align:center;">This link expires in <strong>1 hour</strong>. If you didn't request this, you can safely ignore this email.</p>
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+                    <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals · slowdaydeals.com</p>
+                </div>
+            `
+        };
+        try {
             await sgMail.send(msg);
+            console.log('[forgot-password] Reset email sent to', user.email);
+        } catch (sendErr) {
+            console.error('[forgot-password] SendGrid error:', sendErr.response?.body || sendErr.message);
+            return res.status(500).json({ success: false, message: 'Failed to send reset email. Please try again later.' });
         }
 
         res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });

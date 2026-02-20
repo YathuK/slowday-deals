@@ -2412,6 +2412,13 @@
                 ? `<img class="profile-card-img" src="${myService.photos[0]}" alt="${myService.serviceType}">`
                 : `<div class="profile-card-img-placeholder">${getServiceEmoji(myService.serviceType)}</div>`;
             const emailLine = myService.email ? `<span>✉️ ${myService.email}</span>` : '';
+            const np = myService.normalPrice;
+            const wdPct = np && np > myService.weekdayPrice ? Math.round((1 - myService.weekdayPrice / np) * 100) : 0;
+            const wePct = np && np > myService.weekendPrice ? Math.round((1 - myService.weekendPrice / np) * 100) : 0;
+            const wdDiscountHtml = wdPct > 0 ? `<div style="font-size:11px;color:#999;text-decoration:line-through;">$${np}</div><div style="font-size:11px;font-weight:700;color:#10b981;">${wdPct}% off</div>` : '';
+            const weDiscountHtml = wePct > 0 ? `<div style="font-size:11px;color:#999;text-decoration:line-through;">$${np}</div><div style="font-size:11px;font-weight:700;color:#10b981;">${wePct}% off</div>` : '';
+            const wdSlots = myService.weekdaySlots ? `${myService.weekdaySlots} slot${myService.weekdaySlots > 1 ? 's' : ''}` : '∞ slots';
+            const weSlots = myService.weekendSlots ? `${myService.weekendSlots} slot${myService.weekendSlots > 1 ? 's' : ''}` : '∞ slots';
             document.getElementById('myProfileCard').innerHTML = `
                 ${imgHtml}
                 <div class="profile-card-body">
@@ -2424,8 +2431,18 @@
                         ${emailLine}
                     </p>
                     <div class="profile-price-row">
-                        <div class="profile-price-box"><div class="label">Weekdays</div><div class="value">$${myService.weekdayPrice}</div></div>
-                        <div class="profile-price-box"><div class="label">Weekends</div><div class="value">$${myService.weekendPrice}</div></div>
+                        <div class="profile-price-box">
+                            <div class="label">Weekdays</div>
+                            <div class="value">$${myService.weekdayPrice}</div>
+                            ${wdDiscountHtml}
+                            <div style="font-size:11px;color:#888;margin-top:4px;">🎟️ ${wdSlots}</div>
+                        </div>
+                        <div class="profile-price-box">
+                            <div class="label">Weekends</div>
+                            <div class="value">$${myService.weekendPrice}</div>
+                            ${weDiscountHtml}
+                            <div style="font-size:11px;color:#888;margin-top:4px;">🎟️ ${weSlots}</div>
+                        </div>
                     </div>
                 </div>`;
             document.getElementById('myProfileView').style.display = 'block';

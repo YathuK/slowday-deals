@@ -3095,7 +3095,7 @@
             }
         }
 
-        function closeModal() { document.getElementById('detailModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p) p.style.display = 'block'; }
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p && document.getElementById('navDiscover').classList.contains('active')) p.style.display = 'block'; }
 
         async function openBookingModal(serviceId, dayType) {
             if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
@@ -3263,7 +3263,7 @@
             renderSlots();
         }
 
-        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p) p.style.display = 'block'; }
+        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p && document.getElementById('navDiscover').classList.contains('active')) p.style.display = 'block'; }
 
         async function submitBooking(e) {
             e.preventDefault();

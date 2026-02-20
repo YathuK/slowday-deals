@@ -1300,8 +1300,8 @@
 
         /* Swipe hint animation */
         @keyframes swipeHintFade {
-            0%   { opacity: 0; transform: translateX(-50%) translateY(8px); }
-            15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+            0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+            12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
             75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
             100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
         }
@@ -1315,15 +1315,15 @@
         }
         #swipeHint {
             position: absolute;
-            bottom: 28px;
+            bottom: 36px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 200;
+            z-index: 300;
             pointer-events: none;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0,0,0,0.52);
+            background: rgba(0,0,0,0.58);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             color: white;
@@ -1333,10 +1333,10 @@
             font-weight: 600;
             white-space: nowrap;
             opacity: 0;
-            animation: swipeHintFade 2.8s ease 0.5s forwards;
+            animation: swipeHintFade 3s ease forwards;
         }
-        #swipeHint .sh-l { display:inline-block; animation: shArrowL 0.9s ease-in-out 0.5s infinite; }
-        #swipeHint .sh-r { display:inline-block; animation: shArrowR 0.9s ease-in-out 0.5s infinite; }
+        #swipeHint .sh-l { display:inline-block; animation: shArrowL 0.9s ease-in-out infinite; }
+        #swipeHint .sh-r { display:inline-block; animation: shArrowR 0.9s ease-in-out infinite; }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzFOIKj0VhPwBjEV2IQljeZ3Yw6l99jWI&libraries=places&callback=initPlaces" async defer></script>
 </head>
@@ -2651,11 +2651,15 @@
         function showSwipeHint() {
             if (sessionStorage.getItem('swipeHintShown')) return;
             sessionStorage.setItem('swipeHintShown', '1');
+            // Append to .swipe-container (position:relative + min-height:360px) so
+            // position:absolute bottom:36px resolves correctly and isn't clipped.
+            const container = document.querySelector('.swipe-container');
+            if (!container) return;
             const hint = document.createElement('div');
             hint.id = 'swipeHint';
             hint.innerHTML = '<span class="sh-l">←</span><span>Swipe to explore</span><span class="sh-r">→</span>';
-            document.getElementById('cardStack').appendChild(hint);
-            setTimeout(() => hint.remove(), 3400);
+            container.appendChild(hint);
+            setTimeout(() => hint.remove(), 3200);
         }
 
         function renderCards() {

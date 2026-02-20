@@ -1341,7 +1341,7 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
             <hr style="margin:4px 0 10px;border:none;border-top:1px solid #f0f0f0;">
-            <button class="dropdown-btn" onclick="document.getElementById('userDropdown').style.display='none'; switchToProvider();">💼 My Provider Profile</button>
+            <button class="dropdown-btn" id="providerDropdownBtn" onclick="document.getElementById('userDropdown').style.display='none'; switchToProvider();">💼 My Provider Profile</button>
             <button onclick="document.getElementById('userDropdown').style.display='none'; showSlowDayPlusModal();" style="width:100%;padding:11px 14px;margin-top:8px;margin-bottom:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">⚡ SlowDay+</button>
             <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
         </div>
@@ -1401,7 +1401,12 @@
                         <div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>
                     </div>
                 </div>
-                
+
+            </div>
+            <div id="bookingsTab" class="tab-content" style="display:none;">
+                <div class="my-bookings-section" id="customerBookingsList">
+                    <div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>
+                </div>
             </div>
         </div>
 
@@ -2218,6 +2223,7 @@
             document.getElementById('savingsBadge').style.visibility = 'visible';
             await updateSavingsTracker();
             loadSubscriptionStatus();
+            updateNavForUserType();
             // Start real-time polling
             startRealtimePolling();
         }
@@ -2239,6 +2245,67 @@
             const dd = document.getElementById('userDropdown');
             if (dd) dd.style.display = 'none';
             showTab('provider');
+        }
+
+        function becomeProvider() {
+            document.getElementById('userDropdown').style.display = 'none';
+            switchToProvider();
+        }
+
+        function updateNavForUserType() {
+            if (!currentUser) return;
+            const isProvider = currentUser.accountType === 'provider';
+            const navBtn = document.getElementById('navProvider');
+            const dropdownBtn = document.getElementById('providerDropdownBtn');
+            const stabMyBookings = document.getElementById('stabMyBookings');
+
+            if (isProvider) {
+                navBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span>My Profile</span>`;
+                navBtn.onclick = () => showTab('provider');
+                if (dropdownBtn) { dropdownBtn.textContent = '💼 My Provider Profile'; dropdownBtn.onclick = () => { document.getElementById('userDropdown').style.display = 'none'; switchToProvider(); }; }
+                if (stabMyBookings) stabMyBookings.style.display = 'inline-flex';
+            } else {
+                navBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Bookings</span>`;
+                navBtn.onclick = () => showTab('bookings');
+                if (dropdownBtn) { dropdownBtn.textContent = '🚀 Become a Provider'; dropdownBtn.onclick = () => becomeProvider(); }
+                if (stabMyBookings) stabMyBookings.style.display = 'none';
+            }
+        }
+
+        async function loadCustomerBookingsTab() {
+            const el = document.getElementById('customerBookingsList');
+            el.innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
+            try {
+                const res = await API.getCustomerBookings();
+                const bookings = (res.bookings || []).sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+                await updateSavingsTracker();
+                if (!bookings.length) {
+                    el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
+                    return;
+                }
+                el.innerHTML = bookings.map(b => {
+                    const svc = b.service || {};
+                    const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
+                        ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
+                    return `<div class="booking-card">
+                        <div class="booking-card-header">
+                            <div>
+                                <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
+                                <div class="booking-card-sub">by ${svc.providerName || ''}</div>
+                            </div>
+                            <span class="status-pill status-${b.status}">${b.status}</span>
+                        </div>
+                        <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
+                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
+                        <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
+                        ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                        ${cancelBtn}
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                el.innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
+            }
         }
 
         // ============================================
@@ -2264,10 +2331,19 @@
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
+                document.getElementById('bookingsTab').style.display = 'none';
                 renderSavedList();
+            } else if (tab === 'bookings') {
+                document.getElementById('navProvider').classList.add('active');
+                document.getElementById('customerView').style.display = 'block';
+                document.getElementById('discoverTab').style.display = 'none';
+                document.getElementById('savedTab').style.display = 'none';
+                document.getElementById('bookingsTab').style.display = 'block';
+                loadCustomerBookingsTab();
             } else if (tab === 'provider') {
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('providerView').style.display = 'block';
+                document.getElementById('bookingsTab').style.display = 'none';
                 // Auto-fill email if empty
                 const emailField = document.getElementById('providerEmail');
                 if (emailField && !emailField.value && currentUser) emailField.value = currentUser.email || '';
@@ -3167,6 +3243,10 @@
                 renderMyProfile();
                 await loadPublicServices();
                 currentCardIndex = 0;
+                if (currentUser && currentUser.accountType !== 'provider') {
+                    currentUser.accountType = 'provider';
+                    updateNavForUserType();
+                }
                 showToast('✅ Profile saved successfully!', false);
             } catch (error) { showToast(error.message || 'Error saving profile.', true); }
         }

@@ -14,6 +14,7 @@ const userRoutes = require('./routes/users');
 const leaderboardRoutes = require('./routes/leaderboard');
 const supportRoutes = require('./routes/support');
 const subscriptionRoutes = require('./routes/subscription');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

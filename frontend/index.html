@@ -4183,10 +4183,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             const appContainer = document.querySelector('.app-container');
 
-            // overflow-y: hidden for non-iOS browsers
+            // overflow-y: hidden + freeze swipe-container height when any modal opens.
+            // Freezing prevents the card from jumping when the browser viewport shrinks
+            // due to keyboard / password manager autofill UI appearing.
             const observer = new MutationObserver(() => {
                 const anyActive = document.querySelector('.modal.active');
                 appContainer.style.overflowY = anyActive ? 'hidden' : 'auto';
+                const swipeContainer = document.querySelector('.swipe-container');
+                if (swipeContainer) {
+                    if (anyActive) {
+                        swipeContainer.style.height = swipeContainer.offsetHeight + 'px';
+                    } else {
+                        swipeContainer.style.height = '';
+                    }
+                }
             });
             document.querySelectorAll('.modal').forEach(modal => {
                 observer.observe(modal, { attributes: true, attributeFilter: ['class'] });

@@ -2209,6 +2209,7 @@
         }
 
         async function showAuthenticatedView() {
+            document.querySelector('.app-container').scrollTop = 0;
             document.getElementById('userMenu').style.display = 'flex';
             document.getElementById('guestMenu').style.display = 'none';
             const firstLetter = currentUser.name.charAt(0).toUpperCase();
@@ -2325,6 +2326,7 @@
             document.getElementById('searchBarWrap').style.display = tab === 'discover' ? 'block' : 'none';
 
             if (tab === 'discover') {
+                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navDiscover').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'block';

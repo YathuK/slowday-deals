@@ -2681,7 +2681,7 @@
             card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; currentX = undefined; startX = e.clientX; card.style.transition = 'none'; });
             card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; swipeDirection = null; currentX = undefined; startX = e.touches[0].clientX; startY = e.touches[0].clientY; card.style.transition = 'none'; }, { passive: true });
             document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
-            document.addEventListener('touchmove', e => { if (!isDragging) return; const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY; if (!swipeDirection && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) { swipeDirection = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'; } if (!swipeDirection) return; if (swipeDirection === 'vertical') { if (!e.target.closest('.card-content')) { e.preventDefault(); } return; } e.preventDefault(); currentX = e.touches[0].clientX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: false });
+            document.addEventListener('touchmove', e => { if (!isDragging) return; const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY; if (!swipeDirection && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) { swipeDirection = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'; } if (!swipeDirection) return; if (swipeDirection === 'vertical') { e.preventDefault(); return; } e.preventDefault(); currentX = e.touches[0].clientX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: false });
             const endDrag = () => { if (!isDragging) return; isDragging = false; swipeDirection = null; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
@@ -3193,13 +3193,13 @@
                         ${DAYS.map(d=>`<option value="${d}" ${existing&&existing.day===d?'selected':''}>${d}</option>`).join('')}
                     </select>
                 </div>
-                <div>
+                <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Start Time</label>
-                    <input type="time" class="av-start" value="${existing?existing.startTime:'09:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                    <input type="time" class="av-start" value="${existing?existing.startTime:'09:00'}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
                 </div>
-                <div>
+                <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">End Time</label>
-                    <input type="time" class="av-end" value="${existing?existing.endTime:'17:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                    <input type="time" class="av-end" value="${existing?existing.endTime:'17:00'}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Session Duration</label>
@@ -3828,11 +3828,14 @@
                     drop.style.right = '0px';
                     drop.style.left = 'auto';
                     drop.style.width = '190px';
+                    appContainer.style.overflowY = 'hidden';
                 } else {
                     drop.style.left = box.offsetLeft + 'px';
                     drop.style.right = 'auto';
                     drop.style.width = box.offsetWidth + 'px';
                 }
+            } else {
+                if (boxId === 'filterTypeBox') appContainer.style.overflowY = 'auto';
             }
         }
 
@@ -3846,6 +3849,7 @@
             document.getElementById('filterType').value = value;
             document.getElementById('filterTypeLabel').textContent = label || 'All types';
             document.getElementById('filterTypeDropdown').style.display = 'none';
+            appContainer.style.overflowY = 'auto';
             searchServices(document.getElementById('searchInput').value);
         }
 
@@ -3853,6 +3857,7 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.custom-select-box') && !e.target.closest('.custom-select-dropdown')) {
                 document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+                appContainer.style.overflowY = 'auto';
             }
         });
 

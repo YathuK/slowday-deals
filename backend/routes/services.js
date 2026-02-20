@@ -65,7 +65,12 @@ router.post('/', auth, [
             return res.status(400).json({ success: false, message: errors.array()[0].msg, errors: errors.array() });
         }
 
-        const { providerName, serviceType, description, location, contact, weekdayPrice, weekendPrice, photos } = req.body;
+        const {
+            providerName, serviceType, description, location, contact, email,
+            weekdayPrice, weekendPrice, normalPrice,
+            weekdaySlots, weekendSlots,
+            dealActive, availabilityWindows, photos
+        } = req.body;
 
         const service = new Service({
             provider: req.user._id,
@@ -74,8 +79,14 @@ router.post('/', auth, [
             description,
             location,
             contact,
+            email: email || req.user.email,
             weekdayPrice,
             weekendPrice,
+            normalPrice: normalPrice || null,
+            weekdaySlots: weekdaySlots || null,
+            weekendSlots: weekendSlots || null,
+            dealActive: dealActive !== undefined ? dealActive : true,
+            availabilityWindows: availabilityWindows || [],
             photos: photos || []
         });
 

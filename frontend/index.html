@@ -2410,16 +2410,20 @@
             const b = (window._customerBookings || [])[idx];
             if (!b || !b.service) return;
             const canCancel = ['pending','confirmed','rescheduled'].includes(b.status);
-            showDetails(b.service, canCancel ? b._id : null);
+            showDetails(b.service, canCancel ? b._id : null, b.price);
         }
 
-        function cancelBookingFromDetail(id) {
-            showConfirmModal('Cancel this booking?', 'Yes, Cancel', function() {
+        function cancelBookingFromDetail(id, savings) {
+            const savingsLine = savings > 0
+                ? `<br><span style="color:#ef4444;font-size:13px;font-weight:700;">⚠️ You'll miss out on saving $${savings}!</span>`
+                : '';
+            showConfirmModal(`Are you sure you want to cancel?${savingsLine}`, 'Yes, Cancel', function() {
                 API.updateBookingStatus(id, 'cancelled')
                     .then(() => {
                         closeModal();
                         showToast('Booking cancelled.');
                         loadCustomerBookingsTab();
+                        loadMyBookings();
                     })
                     .catch(() => showToast('Error cancelling booking', true));
             });
@@ -2882,7 +2886,7 @@
         // ============================================
         // DETAILS & BOOKING
         // ============================================
-        function showDetails(svcOverride, cancelBookingId) {
+        function showDetails(svcOverride, cancelBookingId, bookingPrice) {
             const service = svcOverride || services[currentCardIndex];
             if (!service) return;
             const serviceId = service._id || service.id;
@@ -2941,8 +2945,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="detail-section"><h3>💰 Pricing</h3>
+                <div class="detail-section"><h3>💰 ${cancelBookingId ? 'Your Booking' : 'Pricing'}</h3>
                     ${(() => {
+                        if (cancelBookingId && bookingPrice != null) {
+                            const np = service.normalPrice;
+                            const savings = np && np > bookingPrice ? (np - bookingPrice).toFixed(2) : null;
+                            const discountPct = savings ? Math.round((1 - bookingPrice / np) * 100) : 0;
+                            return `
+                            <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:20px;color:white;">
+                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;opacity:0.8;margin-bottom:6px;">Price you're paying</div>
+                                <div style="font-size:36px;font-weight:800;line-height:1;">$${bookingPrice}</div>
+                                ${savings ? `
+                                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+                                    <div style="font-size:13px;opacity:0.65;text-decoration:line-through;">was $${np}</div>
+                                    <div style="background:#fbbf24;color:#92400e;font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;">-${discountPct}% OFF</div>
+                                </div>
+                                <div style="margin-top:8px;font-size:14px;font-weight:600;opacity:0.9;">🎉 You're saving $${savings}!</div>
+                                ` : ''}
+                            </div>`;
+                        }
                         const wdSlots = service.weekdaySlots;
                         const weSlots = service.weekendSlots;
                         const wdUsed  = service.weekdaySlotsUsed || 0;
@@ -3010,7 +3031,9 @@
                 </div>` : ''}
                 ${(() => {
                     if (cancelBookingId) {
-                        return `<button class="book-now-btn" onclick="cancelBookingFromDetail('${cancelBookingId}')" style="background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 15px rgba(239,68,68,0.4);">Cancel Booking</button>`;
+                        const np = service.normalPrice;
+                        const savings = (np && bookingPrice != null && np > bookingPrice) ? (np - bookingPrice).toFixed(2) : 0;
+                        return `<button onclick="cancelBookingFromDetail('${cancelBookingId}',${savings})" style="width:100%;padding:12px;border:1.5px solid #d1d5db;border-radius:12px;background:white;color:#9ca3af;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;">Cancel Booking</button>`;
                     }
                     const today = new Date().getDay();
                     const isWknd = today === 0 || today === 6;

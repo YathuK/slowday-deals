@@ -2861,6 +2861,7 @@
                         : `<button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
                 })()}`;
             modal.classList.add('active');
+            const p = document.getElementById('discoverPills'); if (p) p.style.display = 'none';
             initSlideTouch();
         }
 
@@ -2882,7 +2883,7 @@
             }
         }
 
-        function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p) p.style.display = 'block'; }
 
         async function openBookingModal(serviceId, dayType) {
             if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
@@ -3050,7 +3051,7 @@
             renderSlots();
         }
 
-        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
+        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); const p = document.getElementById('discoverPills'); if (p) p.style.display = 'block'; }
 
         async function submitBooking(e) {
             e.preventDefault();

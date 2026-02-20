@@ -3991,6 +3991,7 @@
             const drop = document.getElementById('filterTypeDropdown');
             const isOpen = drop.style.display !== 'none';
             document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            drop.style.display = 'none';
             document.removeEventListener('touchmove', _blockFilterScroll);
             if (!isOpen) {
                 drop.style.display = 'block';

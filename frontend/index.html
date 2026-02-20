@@ -2672,7 +2672,7 @@
                     <div class="location-header" onclick="toggleMap('${encodedLocation}')">
                         <h3 style="margin:0;white-space:nowrap;flex-shrink:0;">📍 Location</h3>
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="color:#555;font-size:14px;">${service.location}</span>
+                            <span style="color:#555;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${service.location}</span>
                             <svg viewBox="0 0 24 24" width="18" height="18" id="mapChevron" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
                     </div>

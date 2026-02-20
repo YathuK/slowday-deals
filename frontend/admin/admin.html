@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlowDay — Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.13);
+    --accent: #7c5cfc;
+    --accent2: #fc5c7d;
+    --green: #22d3a0;
+    --yellow: #f5c842;
+    --red: #fc5c5c;
+    --text: #f0f0f8;
+    --text2: #8888aa;
+    --text3: #4a4a6a;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+}
+
+body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* LOGIN SCREEN */
+#loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+}
+#loginScreen::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,92,252,0.15) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.login-box {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 380px;
+    position: relative;
+    z-index: 1;
+}
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+}
+.login-logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+}
+.login-logo-text {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+.login-logo-text span {
+    color: var(--text2);
+    font-weight: 400;
+    font-size: 13px;
+    display: block;
+    font-family: var(--mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.login-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.login-sub { color: var(--text2); font-size: 14px; margin-bottom: 28px; }
+
+.login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    margin-bottom: 8px;
+}
+.login-field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+}
+.login-field input:focus { border-color: var(--accent); }
+.login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #5a3dcc);
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-family: var(--sans);
+}
+.login-btn:hover { opacity: 0.85; }
+.login-error {
+    background: rgba(252,92,92,0.1);
+    border: 1px solid rgba(252,92,92,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-bottom: 16px;
+    display: none;
+}
+
+/* DASHBOARD */
+#dashboard { display: none; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    padding: 24px 0;
+}
+.sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+.sidebar-logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+}
+.sidebar-logo-text { font-size: 15px; font-weight: 700; }
+.sidebar-logo-text span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text2);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+    margin-top: 1px;
+}
+.nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 0;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    margin: 1px 0;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--text); background: rgba(124,92,252,0.1); border-left-color: var(--accent); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+}
+.logout-btn {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.15s;
+    background: none; border: none; width: 100%;
+    font-family: var(--sans);
+}
+.logout-btn:hover { color: var(--red); background: rgba(252,92,92,0.1); }
+
+/* MAIN CONTENT */
+.main {
+    margin-left: 220px;
+    padding: 32px 36px;
+    min-height: 100vh;
+}
+.page { display: none; }
+.page.active { display: block; }
+
+.page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 32px;
+}
+.page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+.page-sub { color: var(--text2); font-size: 14px; margin-top: 4px; }
+.refresh-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: var(--text2);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+}
+.refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+
+/* STAT CARDS */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border-bright); }
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.08;
+}
+.stat-card.purple::before { background: var(--accent); }
+.stat-card.pink::before { background: var(--accent2); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.yellow::before { background: var(--yellow); }
+
+.stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text2);
+    margin-bottom: 10px;
+}
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+.stat-value.purple { color: var(--accent); }
+.stat-value.green { color: var(--green); }
+.stat-value.yellow { color: var(--yellow); }
+.stat-value.pink { color: var(--accent2); }
+.stat-change {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+}
+
+/* SECTION HEADERS */
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* TABLE */
+.table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.table-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+.table-title { font-size: 14px; font-weight: 600; }
+.table-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+}
+tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody td {
+    padding: 12px 16px;
+    color: var(--text2);
+    vertical-align: middle;
+}
+tbody td.bold { color: var(--text); font-weight: 500; }
+tbody td.mono { font-family: var(--mono); font-size: 12px; }
+
+/* CATEGORY ACCORDION */
+.category-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+.category-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+}
+.category-header:hover { background: rgba(255,255,255,0.03); }
+.category-header-left { display: flex; align-items: center; gap: 12px; }
+.category-icon { font-size: 22px; }
+.category-name { font-size: 15px; font-weight: 600; }
+.category-providers { font-size: 12px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+.category-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(124,92,252,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,92,252,0.25);
+}
+.chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; }
+.category-block.open .chevron { transform: rotate(180deg); }
+.category-body { display: none; border-top: 1px solid var(--border); }
+.category-block.open .category-body { display: block; }
+
+.provider-row {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+}
+.provider-row:last-child { border-bottom: none; }
+.provider-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.provider-location { font-size: 12px; color: var(--text2); margin-bottom: 12px; }
+.deal-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+.deal-status.active { background: rgba(34,211,160,0.12); color: var(--green); border: 1px solid rgba(34,211,160,0.25); }
+.deal-status.inactive { background: rgba(252,92,92,0.1); color: var(--red); border: 1px solid rgba(252,92,92,0.2); }
+
+/* SLOT MINI TABLE */
+.slot-table { width: 100%; border-collapse: collapse; font-size: 12px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.slot-table th { padding: 7px 12px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); }
+.slot-table td { padding: 8px 12px; color: var(--text2); border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.slot-table tr:last-child td { border-bottom: none; }
+.slot-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.slot-bar {
+    display: flex; align-items: center; gap: 8px;
+}
+.slot-bar-track {
+    flex: 1;
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 60px;
+}
+.slot-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.3s;
+}
+.slot-bar-fill.full { background: var(--red); }
+.slot-bar-fill.half { background: var(--yellow); }
+.slot-bar-fill.low { background: var(--green); }
+
+/* LOADING */
+.loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px;
+    color: var(--text2);
+    gap: 12px;
+    font-size: 14px;
+}
+.spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border-bright);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* PILL BADGES */
+.pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+.pill.green { background: rgba(34,211,160,0.12); color: var(--green); }
+.pill.red { background: rgba(252,92,92,0.1); color: var(--red); }
+.pill.yellow { background: rgba(245,200,66,0.12); color: var(--yellow); }
+.pill.purple { background: rgba(124,92,252,0.15); color: var(--accent); }
+
+/* LAST UPDATED */
+.last-updated {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 24px;
+}
+
+/* TWO COL GRID */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="login-title">Internal Access Only</div>
+        <div class="login-sub">Enter your admin password to continue</div>
+        <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+        <div class="login-field">
+            <label>Admin Password</label>
+            <input type="password" id="adminPass" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="login-btn" onclick="doLogin()">Access Dashboard →</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">⚡</div>
+            <div class="sidebar-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="nav-item active" onclick="showPage('overview')" id="nav-overview">
+            <span class="nav-icon">📊</span> Overview
+        </div>
+        <div class="nav-item" onclick="showPage('categories')" id="nav-categories">
+            <span class="nav-icon">🗂️</span> Categories & Slots
+        </div>
+        <div class="nav-item" onclick="showPage('users')" id="nav-users">
+            <span class="nav-icon">👥</span> Users
+        </div>
+        <div class="nav-item" onclick="showPage('bookings')" id="nav-bookings">
+            <span class="nav-icon">📅</span> Bookings
+        </div>
+        <div class="sidebar-bottom">
+            <button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- OVERVIEW PAGE -->
+        <div class="page active" id="page-overview">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Overview</div>
+                    <div class="page-sub">Platform health at a glance</div>
+                </div>
+                <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+            </div>
+            <div class="last-updated" id="lastUpdated">Loading...</div>
+
+            <div class="section-title">Application Usage</div>
+            <div class="stats-grid" id="usageStats">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+
+            <div class="section-title">User Breakdown</div>
+            <div class="stats-grid" id="userStats">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+
+            <div class="section-title">Bookings & Revenue</div>
+            <div class="stats-grid" id="bookingStats">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+        <!-- CATEGORIES & SLOTS PAGE -->
+        <div class="page" id="page-categories">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Categories & Slots</div>
+                    <div class="page-sub">Service deals grouped by category with slot availability</div>
+                </div>
+                <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+            </div>
+            <div id="categoriesContent">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+        <!-- USERS PAGE -->
+        <div class="page" id="page-users">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">User Analytics</div>
+                    <div class="page-sub">Active users and growth metrics</div>
+                </div>
+                <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+            </div>
+            <div id="usersContent">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+        <!-- BOOKINGS PAGE -->
+        <div class="page" id="page-bookings">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Booking Analytics</div>
+                    <div class="page-sub">Booking volume and revenue tracking</div>
+                </div>
+                <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+            </div>
+            <div id="bookingsContent">
+                <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const API_BASE = 'https://slowday-deals.onrender.com/api';
+let adminKey = '';
+let cachedData = null;
+
+const CATEGORY_ICONS = {
+    'Haircut': '✂️', 'Barber': '💈', 'Cleaning': '🧹', 'Massage': '💆',
+    'Nails': '💅', 'Spa': '🛁', 'Personal Training': '🏋️', 'Dog Walking': '🐕',
+    'Tutoring': '📚', 'Photography': '📷', 'Car Detailing': '🚗',
+    'Laundry Service': '👕', 'Other': '✨'
+};
+
+function doLogin() {
+    const pass = document.getElementById('adminPass').value.trim();
+    if (!pass) return;
+    adminKey = pass;
+    document.getElementById('loginError').style.display = 'none';
+    loadData(true);
+}
+
+function doLogout() {
+    adminKey = '';
+    cachedData = null;
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('adminPass').value = '';
+}
+
+async function loadData(isLogin = false) {
+    try {
+        const res = await fetch(`${API_BASE}/admin/analytics`, {
+            headers: { 'x-admin-key': adminKey }
+        });
+        if (res.status === 401) {
+            document.getElementById('loginError').style.display = 'block';
+            return;
+        }
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        cachedData = data;
+        if (isLogin) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+        renderAll(data);
+    } catch (err) {
+        console.error(err);
+        if (isLogin) {
+            document.getElementById('loginError').style.display = 'block';
+            document.getElementById('loginError').textContent = 'Connection error. Check API URL.';
+        }
+    }
+}
+
+function renderAll(data) {
+    const time = new Date(data.generatedAt).toLocaleString();
+    document.getElementById('lastUpdated').textContent = `Last updated: ${time}`;
+    renderOverview(data);
+    renderCategories(data);
+    renderUsers(data);
+    renderBookings(data);
+}
+
+function renderOverview(data) {
+    const { users, bookings } = data;
+
+    document.getElementById('usageStats').innerHTML = `
+        <div class="stat-card purple">
+            <div class="stat-label">Daily Active Users</div>
+            <div class="stat-value purple">${users.dau}</div>
+            <div class="stat-change">last 24 hours</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-label">Weekly Active Users</div>
+            <div class="stat-value purple">${users.wau}</div>
+            <div class="stat-change">last 7 days</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-label">Monthly Active Users</div>
+            <div class="stat-value purple">${users.mau}</div>
+            <div class="stat-change">last 30 days</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Bookings Today</div>
+            <div class="stat-value green">${bookings.bookingsToday}</div>
+            <div class="stat-change">this week: ${bookings.bookingsWeek}</div>
+        </div>
+    `;
+
+    document.getElementById('userStats').innerHTML = `
+        <div class="stat-card purple">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value purple">${users.totalUsers}</div>
+            <div class="stat-change">+${users.newUsersToday} today</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value green">${users.totalCustomers}</div>
+            <div class="stat-change">+${users.newUsersWeek} this week</div>
+        </div>
+        <div class="stat-card pink">
+            <div class="stat-label">Total Providers</div>
+            <div class="stat-value pink">${users.totalProviders}</div>
+            <div class="stat-change">+${users.newUsersMonth} this month</div>
+        </div>
+    `;
+
+    document.getElementById('bookingStats').innerHTML = `
+        <div class="stat-card purple">
+            <div class="stat-label">Total Bookings</div>
+            <div class="stat-value purple">${bookings.totalBookings}</div>
+            <div class="stat-change">all time</div>
+        </div>
+        <div class="stat-card yellow">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value yellow">${bookings.pendingBookings}</div>
+            <div class="stat-change">awaiting confirmation</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Confirmed</div>
+            <div class="stat-value green">${bookings.confirmedBookings}</div>
+            <div class="stat-change">+ ${bookings.completedBookings} completed</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value green">$${bookings.totalRevenue.toLocaleString()}</div>
+            <div class="stat-change">$${bookings.totalSaved.toLocaleString()} saved by users</div>
+        </div>
+    `;
+}
+
+function renderCategories(data) {
+    const { byCategory } = data.services;
+    const cats = Object.keys(byCategory).sort();
+
+    if (cats.length === 0) {
+        document.getElementById('categoriesContent').innerHTML = '<div class="loading">No services found</div>';
+        return;
+    }
+
+    let html = `<p style="font-size:13px;color:var(--text2);margin-bottom:20px;">${data.services.total} active services across ${cats.length} categories. Click a category to expand.</p>`;
+
+    cats.forEach(cat => {
+        const providers = byCategory[cat];
+        const icon = CATEGORY_ICONS[cat] || '✨';
+        const totalSlots = providers.reduce((sum, p) => {
+            return sum + p.slots.reduce((s2, sl) => s2 + (typeof sl.totalSlots === 'number' ? sl.totalSlots : 0), 0);
+        }, 0);
+
+        html += `
+        <div class="category-block" id="cat-${cat.replace(/\s/g,'_')}">
+            <div class="category-header" onclick="toggleCat('${cat.replace(/\s/g,'_')}')">
+                <div class="category-header-left">
+                    <div class="category-icon">${icon}</div>
+                    <div>
+                        <div class="category-name">${cat}</div>
+                        <div class="category-providers">${providers.length} provider${providers.length !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="category-badge">${providers.length} deals</span>
+                    <span class="chevron">▼</span>
+                </div>
+            </div>
+            <div class="category-body">`;
+
+        providers.forEach(prov => {
+            html += `
+                <div class="provider-row">
+                    <div class="provider-name">${prov.providerName}</div>
+                    <div class="provider-location">📍 ${prov.location}</div>
+                    <span class="deal-status ${prov.dealActive ? 'active' : 'inactive'}">
+                        ${prov.dealActive ? '● Active Deal' : '○ Deal Off'}
+                    </span>
+                    <table class="slot-table">
+                        <thead>
+                            <tr>
+                                <th>Day / Period</th>
+                                <th>Time</th>
+                                <th>Duration</th>
+                                <th>Price</th>
+                                <th>Total Slots</th>
+                                <th>Booked</th>
+                                <th>Remaining</th>
+                                <th>Fill Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+            prov.slots.forEach(slot => {
+                const total = typeof slot.totalSlots === 'number' ? slot.totalSlots : null;
+                const booked = slot.bookedSlots || 0;
+                const remaining = typeof slot.remainingSlots === 'number' ? slot.remainingSlots : '∞';
+                const pct = total ? Math.round((booked / total) * 100) : 0;
+                const fillClass = pct >= 90 ? 'full' : pct >= 50 ? 'half' : 'low';
+                const timeStr = slot.startTime !== '-' ? `${slot.startTime} – ${slot.endTime}` : '—';
+                const durStr = slot.duration !== '-' ? `${slot.duration}m` : '—';
+
+                html += `
+                            <tr>
+                                <td class="bold">${slot.day}</td>
+                                <td class="mono">${timeStr}</td>
+                                <td class="mono">${durStr}</td>
+                                <td class="mono" style="color:var(--green)">$${slot.price}</td>
+                                <td class="mono">${slot.totalSlots}</td>
+                                <td class="mono">${booked}</td>
+                                <td class="mono">${remaining}</td>
+                                <td>
+                                    ${total ? `<div class="slot-bar">
+                                        <div class="slot-bar-track">
+                                            <div class="slot-bar-fill ${fillClass}" style="width:${pct}%"></div>
+                                        </div>
+                                        <span class="mono" style="font-size:10px;color:var(--text3);min-width:28px">${pct}%</span>
+                                    </div>` : '<span style="color:var(--text3);font-size:11px">unlimited</span>'}
+                                </td>
+                            </tr>`;
+            });
+            html += `</tbody></table></div>`;
+        });
+
+        html += `</div></div>`;
+    });
+
+    document.getElementById('categoriesContent').innerHTML = html;
+}
+
+function renderUsers(data) {
+    const { users } = data;
+    document.getElementById('usersContent').innerHTML = `
+        <div class="two-col">
+            <div class="table-wrap">
+                <div class="table-header">
+                    <div class="table-title">Active Users</div>
+                </div>
+                <table>
+                    <thead><tr><th>Period</th><th>Active Users</th><th>New Sign-ups</th></tr></thead>
+                    <tbody>
+                        <tr><td class="bold">Today (24h)</td><td class="mono" style="color:var(--accent)">${users.dau}</td><td class="mono" style="color:var(--green)">+${users.newUsersToday}</td></tr>
+                        <tr><td class="bold">This Week (7d)</td><td class="mono" style="color:var(--accent)">${users.wau}</td><td class="mono" style="color:var(--green)">+${users.newUsersWeek}</td></tr>
+                        <tr><td class="bold">This Month (30d)</td><td class="mono" style="color:var(--accent)">${users.mau}</td><td class="mono" style="color:var(--green)">+${users.newUsersMonth}</td></tr>
+                        <tr><td class="bold">All Time</td><td class="mono" style="color:var(--accent)">${users.totalUsers}</td><td class="mono" style="color:var(--text3)">total</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-wrap">
+                <div class="table-header">
+                    <div class="table-title">User Breakdown</div>
+                </div>
+                <table>
+                    <thead><tr><th>Type</th><th>Count</th><th>Share</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">👥 Customers</td>
+                            <td class="mono" style="color:var(--green)">${users.totalCustomers}</td>
+                            <td><div class="slot-bar"><div class="slot-bar-track"><div class="slot-bar-fill low" style="width:${users.totalUsers ? Math.round(users.totalCustomers/users.totalUsers*100) : 0}%"></div></div><span class="mono" style="font-size:10px;color:var(--text3)">${users.totalUsers ? Math.round(users.totalCustomers/users.totalUsers*100) : 0}%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">🏪 Providers</td>
+                            <td class="mono" style="color:var(--accent2)">${users.totalProviders}</td>
+                            <td><div class="slot-bar"><div class="slot-bar-track"><div class="slot-bar-fill" style="background:var(--accent2);width:${users.totalUsers ? Math.round(users.totalProviders/users.totalUsers*100) : 0}%"></div></div><span class="mono" style="font-size:10px;color:var(--text3)">${users.totalUsers ? Math.round(users.totalProviders/users.totalUsers*100) : 0}%</span></div></td>
+                        </tr>
+                        <tr>
+                            <td class="bold">📊 Total</td>
+                            <td class="mono" style="color:var(--accent)">${users.totalUsers}</td>
+                            <td><span class="pill purple">100%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+function renderBookings(data) {
+    const { bookings } = data;
+    const statuses = [
+        { label: 'Pending', count: bookings.pendingBookings, color: 'yellow' },
+        { label: 'Confirmed', count: bookings.confirmedBookings, color: 'green' },
+        { label: 'Completed', count: bookings.completedBookings, color: 'purple' },
+        { label: 'Cancelled', count: bookings.cancelledBookings, color: 'red' },
+    ];
+
+    document.getElementById('bookingsContent').innerHTML = `
+        <div class="two-col">
+            <div class="table-wrap">
+                <div class="table-header"><div class="table-title">Booking Volume</div></div>
+                <table>
+                    <thead><tr><th>Period</th><th>Bookings</th></tr></thead>
+                    <tbody>
+                        <tr><td class="bold">Today</td><td class="mono" style="color:var(--green)">${bookings.bookingsToday}</td></tr>
+                        <tr><td class="bold">This Week (7d)</td><td class="mono" style="color:var(--green)">${bookings.bookingsWeek}</td></tr>
+                        <tr><td class="bold">All Time</td><td class="mono" style="color:var(--accent)">${bookings.totalBookings}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-wrap">
+                <div class="table-header"><div class="table-title">Revenue</div></div>
+                <table>
+                    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr><td class="bold">Total Revenue</td><td class="mono" style="color:var(--green)">$${bookings.totalRevenue.toLocaleString()}</td></tr>
+                        <tr><td class="bold">Total Saved by Users</td><td class="mono" style="color:var(--yellow)">$${bookings.totalSaved.toLocaleString()}</td></tr>
+                        <tr><td class="bold">Avg per Booking</td><td class="mono" style="color:var(--accent)">$${bookings.totalBookings ? Math.round(bookings.totalRevenue / bookings.totalBookings) : 0}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <div class="table-header">
+                <div class="table-title">Status Breakdown</div>
+                <span class="table-count">${bookings.totalBookings} total</span>
+            </div>
+            <table>
+                <thead><tr><th>Status</th><th>Count</th><th>Share</th></tr></thead>
+                <tbody>
+                    ${statuses.map(s => `
+                    <tr>
+                        <td class="bold">${s.label}</td>
+                        <td class="mono">${s.count}</td>
+                        <td><div class="slot-bar">
+                            <div class="slot-bar-track">
+                                <div class="slot-bar-fill ${s.color === 'red' ? 'full' : s.color === 'yellow' ? 'half' : 'low'}" style="width:${bookings.totalBookings ? Math.round(s.count/bookings.totalBookings*100) : 0}%"></div>
+                            </div>
+                            <span class="pill ${s.color}">${bookings.totalBookings ? Math.round(s.count/bookings.totalBookings*100) : 0}%</span>
+                        </div></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function toggleCat(id) {
+    const el = document.getElementById(`cat-${id}`);
+    el.classList.toggle('open');
+}
+
+function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    document.getElementById(`nav-${name}`).classList.add('active');
+}
+</script>
+</body>
+</html>

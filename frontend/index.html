@@ -1297,6 +1297,46 @@
         .profile-price-box { flex: 1; background: #f8f9ff; border-radius: 10px; padding: 10px; text-align: center; }
         .profile-price-box .label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; }
         .profile-price-box .value { font-size: 20px; color: #667eea; font-weight: 700; }
+
+        /* Swipe hint animation */
+        @keyframes swipeHintFade {
+            0%   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+            15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+            75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+        }
+        @keyframes shArrowL {
+            0%, 100% { transform: translateX(0);    opacity: 0.6; }
+            50%       { transform: translateX(-7px); opacity: 1; }
+        }
+        @keyframes shArrowR {
+            0%, 100% { transform: translateX(0);   opacity: 0.6; }
+            50%       { transform: translateX(7px); opacity: 1; }
+        }
+        #swipeHint {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.52);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 50px;
+            padding: 11px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            animation: swipeHintFade 2.8s ease 0.5s forwards;
+        }
+        #swipeHint .sh-l { display:inline-block; animation: shArrowL 0.9s ease-in-out 0.5s infinite; }
+        #swipeHint .sh-r { display:inline-block; animation: shArrowR 0.9s ease-in-out 0.5s infinite; }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzFOIKj0VhPwBjEV2IQljeZ3Yw6l99jWI&libraries=places&callback=initPlaces" async defer></script>
 </head>
@@ -2608,6 +2648,16 @@
         // ============================================
         // CARDS & SWIPING
         // ============================================
+        function showSwipeHint() {
+            if (sessionStorage.getItem('swipeHintShown')) return;
+            sessionStorage.setItem('swipeHintShown', '1');
+            const hint = document.createElement('div');
+            hint.id = 'swipeHint';
+            hint.innerHTML = '<span class="sh-l">←</span><span>Swipe to explore</span><span class="sh-r">→</span>';
+            document.getElementById('cardStack').appendChild(hint);
+            setTimeout(() => hint.remove(), 3400);
+        }
+
         function renderCards() {
             const stack = document.getElementById('cardStack');
             stack.innerHTML = '';
@@ -2642,6 +2692,7 @@
                 const card = createCard(services[i], i - currentCardIndex);
                 stack.appendChild(card);
             }
+            if (currentCardIndex === 0) showSwipeHint();
         }
 
         function createCard(service, stackPosition) {

@@ -206,8 +206,8 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100svh - 195px);
-            height: calc(100vh - 195px);
+            height: calc(100svh - 145px);
+            height: calc(100vh - 145px);
             min-height: 360px;
             padding: 12px 16px 16px;
             overflow: hidden;
@@ -1150,7 +1150,7 @@
         .dt-select:focus { border-color: #667eea; outline: none; }
 
         @media (max-width: 600px) {
-            .swipe-container { height: calc(100vh - 225px); min-height: 320px; }
+            .swipe-container { height: calc(100vh - 175px); min-height: 320px; }
         }
 
         .search-bar-wrap {
@@ -1356,39 +1356,45 @@
             <button class="mode-btn" onclick="switchMode('provider')">💼 I'm a Provider</button>
         </div>
 
-        <!-- Search Bar -->
-        <div class="search-bar-wrap" id="searchBarWrap">
-            <div class="search-bar">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="searchInput" placeholder="Search services, location..." oninput="searchServices(this.value)">
-                <input type="hidden" id="filterType" value="">
-                <div class="custom-select-box filter-select-box" id="filterTypeBox" onclick="toggleCustomSelect('filterTypeBox')">
-                    <span id="filterTypeLabel">All types</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-                <div class="custom-select-dropdown" id="filterTypeDropdown" style="display:none;min-width:160px;right:0;left:auto;">
-                    <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
-                </div>
-            </div>
-        </div>
-
         <!-- Customer View -->
         <div id="customerView" class="view active">
             <div id="discoverTab" class="tab-content active">
                 <div class="swipe-container">
+
+                    <!-- Floating search pill (left) -->
+                    <div id="searchPill" style="position:absolute;top:14px;left:16px;z-index:20;">
+                        <div id="searchPillInner" onclick="toggleSearchPill()" style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,0.14);display:flex;align-items:center;padding:9px 13px;gap:0;cursor:pointer;transition:all 0.2s ease;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchInput" placeholder="Search..." oninput="searchServices(this.value)" onclick="event.stopPropagation()" style="display:none;width:150px;border:none;outline:none;font-size:14px;background:transparent;margin-left:8px;color:#333;">
+                        </div>
+                    </div>
+
+                    <!-- Floating filter pill (right) -->
+                    <div id="filterPill" style="position:absolute;top:14px;right:16px;z-index:20;">
+                        <div onclick="toggleFilterPill()" style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,0.14);display:flex;align-items:center;gap:6px;padding:9px 14px;cursor:pointer;white-space:nowrap;">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                            <span id="filterTypeLabel" style="font-size:13px;font-weight:600;color:#333;">All types</span>
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div id="filterTypeDropdown" class="custom-select-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:180px;max-height:300px;overflow-y:auto;">
+                            <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
+                            <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="filterType" value="">
+
                     <div class="card-stack" id="cardStack"></div>
                 </div>
             </div>
@@ -2327,7 +2333,6 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('customerView').style.display = 'none';
             document.getElementById('providerView').style.display = 'none';
-            document.getElementById('searchBarWrap').style.display = tab === 'discover' ? 'block' : 'none';
 
             if (tab === 'discover') {
                 document.querySelector('.app-container').scrollTop = 0;
@@ -3815,6 +3820,30 @@
         // ============================================
         const _blockFilterScroll = e => e.preventDefault();
 
+        function toggleSearchPill() {
+            const input = document.getElementById('searchInput');
+            const isExpanded = input.style.display !== 'none';
+            if (isExpanded) {
+                input.style.display = 'none';
+                input.value = '';
+                searchServices('');
+            } else {
+                input.style.display = 'block';
+                input.focus();
+            }
+        }
+
+        function toggleFilterPill() {
+            const drop = document.getElementById('filterTypeDropdown');
+            const isOpen = drop.style.display !== 'none';
+            document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            document.removeEventListener('touchmove', _blockFilterScroll);
+            if (!isOpen) {
+                drop.style.display = 'block';
+                document.addEventListener('touchmove', _blockFilterScroll, { passive: false });
+            }
+        }
+
         function toggleCustomSelect(boxId) {
             const dropId = boxId.replace('Box', 'Dropdown');
             const drop = document.getElementById(dropId);
@@ -3823,23 +3852,11 @@
             document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
             if (!isOpen) {
                 drop.style.display = 'block';
-                const boxRect = box.getBoundingClientRect();
-                const appRect = document.querySelector('.app-container').getBoundingClientRect();
                 const topPos = box.offsetTop + box.offsetHeight + 2;
                 drop.style.top = topPos + 'px';
-                // For filter dropdown: anchor to right edge so it doesn't overflow left
-                if (boxId === 'filterTypeBox') {
-                    drop.style.right = '0px';
-                    drop.style.left = 'auto';
-                    drop.style.width = '190px';
-                    document.addEventListener('touchmove', _blockFilterScroll, { passive: false });
-                } else {
-                    drop.style.left = box.offsetLeft + 'px';
-                    drop.style.right = 'auto';
-                    drop.style.width = box.offsetWidth + 'px';
-                }
-            } else {
-                if (boxId === 'filterTypeBox') document.removeEventListener('touchmove', _blockFilterScroll);
+                drop.style.left = box.offsetLeft + 'px';
+                drop.style.right = 'auto';
+                drop.style.width = box.offsetWidth + 'px';
             }
         }
 

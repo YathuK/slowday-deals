@@ -2050,11 +2050,14 @@
         // ============================================
         function showAuthModal() {
             document.getElementById('authModal').classList.add('active');
+            const p = document.getElementById('discoverPills'); if (p) p.style.display = 'none';
             showLogin();
         }
 
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
+            const p = document.getElementById('discoverPills');
+            if (p && document.getElementById('navDiscover').classList.contains('active')) p.style.display = 'block';
         }
 
         function showLogin() {

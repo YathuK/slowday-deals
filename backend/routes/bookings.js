@@ -78,7 +78,7 @@ router.post('/', auth, [
 router.get('/customer', auth, async (req, res) => {
     try {
         const bookings = await Booking.find({ customer: req.user._id })
-            .populate('service', 'serviceType providerName location photos contact')
+            .populate('service', 'serviceType providerName location photos contact normalPrice weekdayPrice weekendPrice instagram tiktok facebook description')
             .populate('provider', 'name phone email')
             .sort({ createdAt: -1 });
         res.json({ success: true, count: bookings.length, bookings });

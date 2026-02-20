@@ -923,9 +923,6 @@
         #savedTab {
             padding-top: 0;
         }
-        #bookingsListWrap {
-            padding-top: 16px;
-        }
         #savedListWrap, #myBookingsWrap {
             padding-top: 33px;
         }
@@ -2243,42 +2240,2182 @@
             showTab('provider');
         }
 
-        function handleProviderDropdown() {
-            if (currentUser && currentUser.accountType === 'provider') {
-                showTab('provider');
-            } else {
-                showTab('provider'); // takes customer to provider form
+        // ============================================
+        // BOTTOM NAV
+        // ============================================
+        function showTab(tab) {
+            if (!currentUser && tab !== 'discover') {
+                showAuthModal();
+                return;
+            }
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('customerView').style.display = 'none';
+            document.getElementById('providerView').style.display = 'none';
+            document.getElementById('searchBarWrap').style.display = tab === 'discover' ? 'block' : 'none';
+
+            if (tab === 'discover') {
+                document.getElementById('navDiscover').classList.add('active');
+                document.getElementById('customerView').style.display = 'block';
+                document.getElementById('discoverTab').style.display = 'block';
+                document.getElementById('savedTab').style.display = 'none';
+            } else if (tab === 'saved') {
+                document.getElementById('navSaved').classList.add('active');
+                document.getElementById('customerView').style.display = 'block';
+                document.getElementById('discoverTab').style.display = 'none';
+                document.getElementById('savedTab').style.display = 'block';
+                renderSavedList();
+            } else if (tab === 'provider') {
+                document.getElementById('navProvider').classList.add('active');
+                document.getElementById('providerView').style.display = 'block';
+                // Auto-fill email if empty
+                const emailField = document.getElementById('providerEmail');
+                if (emailField && !emailField.value && currentUser) emailField.value = currentUser.email || '';
             }
         }
 
-        function loadCustomerBookingsTab() {
-            const list = document.getElementById('bookingsList');
-            if (!list) return;
-            list.innerHTML = '<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>';
-            API.getCustomerBookings().then(res => {
-                const bookings = (res.bookings || []).sort((a,b) => new Date(b.preferredTime) - new Date(a.preferredTime));
-                if (!bookings.length) {
-                    list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📅</div><h3>No bookings yet</h3><p>Book a service to see your bookings here</p></div>';
+        // ============================================
+        // SEARCH
+        // ============================================
+        let allServices = [];
+
+        function searchServices(query) {
+            const type = document.getElementById('filterType').value;
+            const q = query.toLowerCase();
+            services = allServices.filter(s => {
+                const matchesType = !type || s.serviceType === type;
+                const matchesQuery = !q ||
+                    s.providerName.toLowerCase().includes(q) ||
+                    s.serviceType.toLowerCase().includes(q) ||
+                    s.location.toLowerCase().includes(q) ||
+                    s.description.toLowerCase().includes(q);
+                return matchesType && matchesQuery;
+            });
+            currentCardIndex = 0;
+            renderCards();
+        }
+
+        // ============================================
+        // MY PROVIDER PROFILE
+        // ============================================
+        let myService = null;
+
+        async function loadMyProfile() {
+            if (!currentUser) return;
+            try {
+                const response = await API.getMyServices();
+                if (response.services && response.services.length > 0) {
+                    myService = response.services[0];
+                    renderMyProfile();
+                }
+            } catch (e) { console.log('No profile yet'); }
+        }
+
+        function renderMyProfile() {
+            if (!myService) return;
+            const imgHtml = myService.photos && myService.photos.length > 0
+                ? `<img class="profile-card-img" src="${myService.photos[0]}" alt="${myService.serviceType}">`
+                : `<div class="profile-card-img-placeholder">${getServiceEmoji(myService.serviceType)}</div>`;
+            const emailLine = myService.email ? `<span>✉️ ${myService.email}</span>` : '';
+            document.getElementById('myProfileCard').innerHTML = `
+                ${imgHtml}
+                <div class="profile-card-body">
+                    <h2>${myService.providerName}</h2>
+                    <div class="type-badge">${myService.serviceType}</div>
+                    <p>${myService.description}</p>
+                    <p style="color:#888;font-size:13px;display:flex;flex-wrap:wrap;gap:8px;">
+                        <span>📍 ${myService.location}</span>
+                        <span>📞 ${myService.contact}</span>
+                        ${emailLine}
+                    </p>
+                    <div class="profile-price-row">
+                        <div class="profile-price-box"><div class="label">Weekdays</div><div class="value">$${myService.weekdayPrice}</div></div>
+                        <div class="profile-price-box"><div class="label">Weekends</div><div class="value">$${myService.weekendPrice}</div></div>
+                    </div>
+                </div>`;
+            document.getElementById('myProfileView').style.display = 'block';
+            document.querySelector('.provider-form').style.display = 'none';
+        }
+
+        function editMyProfile() {
+            document.getElementById('myProfileView').style.display = 'none';
+            document.querySelector('.provider-form').style.display = 'block';
+            document.getElementById('providerSubmitBtn').textContent = 'Save Changes';
+            if (myService) {
+                document.getElementById('providerName').value = myService.providerName;
+                document.getElementById('serviceType').value = myService.serviceType;
+                document.getElementById('serviceDesc').value = myService.description;
+                document.getElementById('location').value = myService.location;
+                document.getElementById('providerContact').value = myService.contact || '';
+                document.getElementById('providerEmail').value = myService.email || currentUser?.email || '';
+                document.getElementById('normalPrice').value = myService.normalPrice || '';
+                document.getElementById('weekdayPrice').value = myService.weekdayPrice;
+                document.getElementById('weekendPrice').value = myService.weekendPrice;
+                document.getElementById('weekdaySlots').value = myService.weekdaySlots || '';
+                document.getElementById('weekendSlots').value = myService.weekendSlots || '';
+
+                // Restore deal toggle
+                dealActiveState = myService.dealActive !== false;
+                document.getElementById('dealActive').value = dealActiveState;
+                const toggle = document.getElementById('dealToggle');
+                const knob = document.getElementById('dealToggleKnob');
+                const label = document.getElementById('dealToggleLabel');
+                if (dealActiveState) {
+                    toggle.style.background = '#22c55e'; knob.style.left = '27px';
+                    label.style.color = '#22c55e'; label.textContent = 'Deal is LIVE';
+                } else {
+                    toggle.style.background = '#d1d5db'; knob.style.left = '3px';
+                    label.style.color = '#9ca3af'; label.textContent = 'Deal is OFF';
+                }
+
+                // Restore availability windows
+                document.getElementById('availabilityList').innerHTML = '';
+                if (myService.availabilityWindows && myService.availabilityWindows.length > 0) {
+                    myService.availabilityWindows.forEach(w => addAvailabilityWindow(w));
+                }
+
+                // Restore existing photos into preview
+                const preview = document.getElementById('photoPreview');
+                preview.innerHTML = '';
+                if (myService.photos && myService.photos.length > 0) {
+                    myService.photos.forEach(photoSrc => {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'photo-thumb';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;overflow:hidden;border-radius:8px;';
+                        const imgEl = document.createElement('img');
+                        imgEl.src = photoSrc;
+                        imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
+                        const xBtn = document.createElement('button');
+                        xBtn.type = 'button'; xBtn.textContent = '×';
+                        xBtn.style.cssText = 'position:absolute;top:0;right:0;width:22px;height:22px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:0 0 0 8px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.onclick = () => wrap.remove();
+                        wrap.appendChild(imgEl); wrap.appendChild(xBtn);
+                        preview.appendChild(wrap);
+                    });
+                }
+            }
+        }
+
+        async function deleteMyProfile() {
+            if (!confirm('Are you sure you want to delete your service profile?')) return;
+            try {
+                await API.deleteService(myService._id);
+                myService = null;
+                document.getElementById('myProfileView').style.display = 'none';
+                document.querySelector('.provider-form').style.display = 'block';
+                document.getElementById('providerSubmitBtn').textContent = 'Create My Profile';
+                showToast('Profile deleted.', false);
+            } catch (e) { showToast('Error deleting profile.', true); }
+        }
+
+        // ============================================
+        // MODE SWITCHING
+        // ============================================
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            if (mode === 'customer') {
+                document.querySelectorAll('.mode-btn')[0].classList.add('active');
+                document.getElementById('customerView').classList.add('active');
+            } else {
+                if (!currentUser) {
+                    showToast('Please log in to access provider features.', true);
+                    showAuthModal();
+                    document.querySelectorAll('.mode-btn')[0].classList.add('active');
+                    document.getElementById('customerView').classList.add('active');
                     return;
                 }
-                list.innerHTML = bookings.map(b => {
+                // Any logged-in user can set up a provider profile
+                document.querySelectorAll('.mode-btn')[1].classList.add('active');
+                document.getElementById('providerView').classList.add('active');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            if (tab === 'discover') {
+                document.getElementById('discoverTab').style.display = 'block';
+                document.getElementById('savedTab').style.display = 'none';
+            } else {
+                document.getElementById('discoverTab').style.display = 'none';
+                document.getElementById('savedTab').style.display = 'block';
+                renderSavedList();
+                // Update savings tracker when viewing saved tab
+                if (currentUser && currentUser.accountType === 'customer') {
+                    updateSavingsTracker();
+                }
+            }
+        }
+
+        // ============================================
+        // CARDS & SWIPING
+        // ============================================
+        function renderCards() {
+            const stack = document.getElementById('cardStack');
+            stack.innerHTML = '';
+            if (services.length === 0) {
+                stack.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-emoji">🔍</div>
+                        <h3>No results found</h3>
+                        <p>Try a different search or category</p>
+                        <button onclick="document.getElementById('searchInput').value='';document.getElementById('filterType').value='';searchServices('');" style="margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;">
+                            Clear Search
+                        </button>
+                    </div>`;
+                return;
+            }
+            if (currentCardIndex >= services.length) {
+                stack.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-emoji">🎉</div>
+                        <h3>You've seen them all!</h3>
+                        <p>You've browsed every deal. New services are added regularly — check back soon!</p>
+                        <div class="empty-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <button onclick="currentCardIndex=0;renderCards();" style="margin-top:24px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;">
+                            🔄 Start Over
+                        </button>
+                    </div>`;
+                return;
+            }
+            for (let i = currentCardIndex; i < Math.min(currentCardIndex + 3, services.length); i++) {
+                const card = createCard(services[i], i - currentCardIndex);
+                stack.appendChild(card);
+            }
+        }
+
+        function createCard(service, stackPosition) {
+            const card = document.createElement('div');
+            card.className = 'service-card';
+            card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
+            card.style.zIndex = 100 - stackPosition;
+            const serviceId = service._id || service.id;
+
+            const today = new Date().getDay();
+            const isWknd = today === 0 || today === 6;
+            const dealPrice = isWknd ? service.weekendPrice : service.weekdayPrice;
+            const dealSlots = isWknd ? service.weekendSlots : service.weekdaySlots;
+            const slotsUsed = isWknd ? service.weekendSlotsUsed : service.weekdaySlotsUsed;
+            const slotsLeft = dealSlots !== null && dealSlots !== undefined ? dealSlots - (slotsUsed || 0) : null;
+
+            const dealEnded = !service.dealActive || (slotsLeft !== null && slotsLeft <= 0);
+
+            if (dealEnded) card.classList.add('deal-ended');
+
+            const imageContent = service.photos && service.photos[0]
+                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" style="width:100%;height:100%;object-fit:cover;">`
+                : `<div style="font-size:72px;display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#667eea,#764ba2);">${getServiceEmoji(service.serviceType)}</div>`;
+
+            // Deal price badge HTML with slots overlaid
+            let priceHTML = '';
+            let slotsBadge = '';
+            
+            // Slots badge — overlaid on bottom-right of price card
+            if (dealEnded && !service.dealActive) {
+                slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.95);color:#6b7280;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🚫 OFF</div>`;
+            } else if (slotsLeft !== null) {
+                if (slotsLeft <= 0) {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:#ef4444;color:white;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 8px rgba(239,68,68,0.4);">0 left</div>`;
+                } else if (slotsLeft <= 3) {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;animation:slotBlink 1s ease-in-out infinite;box-shadow:0 2px 8px rgba(251,191,36,0.5);">🔥 ${slotsLeft} left</div>`;
+                } else {
+                    slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.95);color:#667eea;font-size:10px;font-weight:800;padding:4px 8px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🎟️ ${slotsLeft} left</div>`;
+                }
+            } else {
+                slotsBadge = `<div style="position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.9);color:#667eea;font-size:12px;font-weight:800;padding:4px 10px;border-radius:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,0.15);">∞</div>`;
+            }
+
+            if (service.normalPrice && service.normalPrice > dealPrice) {
+                const pct = Math.round((1 - dealPrice / service.normalPrice) * 100);
+                priceHTML = `
+                    <div class="deal-price-badge">
+                        ${slotsBadge}
+                        <div class="deal-pct">-${pct}%</div>
+                        <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
+                        <div class="deal-actual">$${dealPrice}</div>
+                        <div class="deal-normal">$${service.normalPrice}</div>
+                    </div>`;
+            } else {
+                priceHTML = `
+                    <div class="deal-price-badge">
+                        ${slotsBadge}
+                        <div class="price-label">${isWknd ? 'Weekend' : 'Weekday'} Deal</div>
+                        <div class="deal-actual">$${dealPrice}</div>
+                    </div>`;
+            }
+
+            // Grayed-out overlay
+            const endedOverlay = dealEnded ? `
+                <div class="deal-ended-overlay">
+                    <div class="ended-icon">⏰</div>
+                    <div class="ended-text">Deal Ended</div>
+                    <div class="ended-sub">You missed this one</div>
+                </div>` : '';
+
+            const buttonsHtml = stackPosition === 0 && !dealEnded ? `
+                <div class="card-action-row" onclick="event.stopPropagation()">
+                    <button class="card-btn card-btn-nope" onclick="swipeLeft()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-info" onclick="showDetails()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-like" onclick="handleSwipeRight()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </button>
+                </div>` : '';
+
+            card.innerHTML = `
+                ${endedOverlay}
+                <div class="swipe-indicator like-indicator">LIKE</div>
+                <div class="swipe-indicator nope-indicator">NOPE</div>
+                <div class="card-image">${imageContent}</div>
+                <div class="card-content">
+                    <div class="service-header">
+                        <div>
+                            <div class="service-title">${service.serviceType}</div>
+                            <div class="provider-name">by ${service.providerName}</div>
+                        </div>
+                        <div class="service-type">${service.location}</div>
+                    </div>
+                    <div class="service-description">${service.description}</div>
+                    <div class="price-display">${priceHTML}</div>
+                    ${buttonsHtml}
+                </div>`;
+
+            if (stackPosition !== 0) return card;
+
+            let startX, startY, currentX, isDragging = false;
+            card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.clientX; card.style.transition = 'none'; });
+            card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; card.style.transition = 'none'; }, { passive: true });
+            document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
+            document.addEventListener('touchmove', e => { if (!isDragging) return; const inScrollable = e.target.closest('.card-content'); if (!inScrollable) { e.preventDefault(); } currentX = e.touches[0].clientX; const diffX = currentX - startX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: false });
+            const endDrag = () => { if (!isDragging) return; isDragging = false; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            card.addEventListener('click', e => { if (!isDragging && !e.target.closest('.card-action-row')) showDetails(); });
+            return card;
+        }
+
+        function swipeLeft() { swipeCard('left'); }
+
+        async function handleSwipeRight() {
+            if (!currentUser) {
+                showToast('Please log in to save services!', true);
+                showAuthModal();
+                swipeCard('right');
+                return;
+            }
+            const service = services[currentCardIndex];
+            const serviceId = service._id || service.id;
+            try {
+                if (!savedServices.find(s => (s._id || s.id) === serviceId)) {
+                    await API.saveService(serviceId);
+                    await loadSavedServices();
+                }
+            } catch (error) { console.error('Error saving:', error); }
+            swipeCard('right');
+        }
+
+        function swipeRight() { handleSwipeRight(); }
+
+        function swipeCard(direction) {
+            const cards = document.querySelectorAll('.service-card');
+            if (!cards.length) return;
+            const topCard = cards[0];
+            topCard.style.transform = `translateX(${direction === 'right' ? 1000 : -1000}px) rotate(${direction === 'right' ? 30 : -30}deg)`;
+            setTimeout(() => { currentCardIndex++; renderCards(); }, 300);
+        }
+
+        // ============================================
+        // DETAILS & BOOKING
+        // ============================================
+        function showDetails() {
+            if (currentCardIndex >= services.length) return;
+            const service = services[currentCardIndex];
+            const serviceId = service._id || service.id;
+            const modal = document.getElementById('detailModal');
+            // Photo slideshow (multiple photos) or single image
+            let imageContent;
+            if (service.photos && service.photos.length > 1) {
+                window._slidePhotos = service.photos;
+                window._slideIdx = 0;
+                const pct = (100 / service.photos.length);
+                const slides = service.photos.map(p =>
+                    `<img src="${p}" alt="" style="width:${pct}%;height:100%;object-fit:cover;flex-shrink:0;">`
+                ).join('');
+                const dots = service.photos.map((_, i) =>
+                    `<div id="slideDot${i}" onclick="event.stopPropagation();goToSlide(${i})" style="width:${i===0?'18px':'7px'};height:7px;border-radius:4px;background:${i===0?'white':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.25s;"></div>`
+                ).join('');
+                imageContent = `<div style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;">
+                    <div id="slideTrack" style="display:flex;height:100%;width:${service.photos.length*100}%;transition:transform 0.35s ease;">${slides}</div>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">‹</button>
+                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx+1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">›</button>
+                    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;">${dots}</div>
+                    <div id="slideCounter" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;">1 / ${service.photos.length}</div>
+                </div>`;
+            } else if (service.photos && service.photos.length === 1) {
+                imageContent = `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`;
+            } else {
+                imageContent = `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
+            }
+            const encodedLocation = encodeURIComponent(service.location);
+            const mapsUrl = `https://maps.apple.com/?q=${encodedLocation}`;
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+            document.getElementById('modalBody').innerHTML = `
+                ${imageContent}
+                <div class="detail-section"><h3>${service.serviceType}</h3><p style="color:#666;font-size:14px;margin-bottom:10px;">by ${service.providerName}</p><p style="color:#555;line-height:1.6;">${service.description}</p></div>
+                <div class="detail-section">
+                    <div class="location-header" onclick="toggleMap('${encodedLocation}')">
+                        <h3 style="margin:0;white-space:nowrap;flex-shrink:0;">📍 Location</h3>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="color:#555;font-size:14px;">${service.location}</span>
+                            <svg viewBox="0 0 24 24" width="18" height="18" id="mapChevron" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                    </div>
+                    <div id="mapExpand" style="display:none;margin-top:12px;">
+                        <div style="border-radius:14px;overflow:hidden;border:1.5px solid #e0e0e0;">
+                            <iframe id="mapIframe" width="100%" height="200" frameborder="0" style="border:0;display:block;" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:10px;">
+                            <a href="${mapsUrl}" target="_blank" class="dir-btn" style="background:#000;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                Apple Maps
+                            </a>
+                            <a href="${googleMapsUrl}" target="_blank" class="dir-btn" style="background:#4285f4;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-section"><h3>💰 Pricing</h3>
+                    ${(() => {
+                        const wdSlots = service.weekdaySlots;
+                        const weSlots = service.weekendSlots;
+                        const wdUsed  = service.weekdaySlotsUsed || 0;
+                        const weUsed  = service.weekendSlotsUsed || 0;
+                        const wdLeft  = wdSlots != null ? wdSlots - wdUsed : null;
+                        const weLeft  = weSlots != null ? weSlots - weUsed : null;
+                        const dealOff = !service.dealActive;
+
+                        function pctBadge(normal, deal) {
+                            if (!normal || normal <= deal) return '';
+                            const pct = Math.round((1 - deal/normal)*100);
+                            return `<span style="background:#fbbf24;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;">-${pct}%</span>`;
+                        }
+
+                        function slotLine(left) {
+                            return ''; // Moved to top-right badge
+                        }
+
+                        function slotBadge(left) {
+                            if (dealOff) return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;backdrop-filter:blur(4px);">🚫 OFF</div>`;
+                            if (left === null) return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;backdrop-filter:blur(4px);">∞</div>`;
+                            if (left <= 0)  return `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;box-shadow:0 2px 8px rgba(239,68,68,0.4);">SOLD OUT</div>`;
+                            if (left <= 3)  return `<div style="position:absolute;top:10px;right:10px;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;animation:slotBlink 1s ease-in-out infinite;box-shadow:0 2px 8px rgba(239,68,68,0.4);">🔥 ${left} LEFT</div>`;
+                            return `<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;backdrop-filter:blur(4px);">🎟️ ${left}</div>`;
+                        }
+
+                        function normalLine(normal, deal) {
+                            if (!normal || normal <= deal) return '';
+                            return `<div style="font-size:12px;color:rgba(255,255,255,0.6);text-decoration:line-through;margin-top:2px;">was $${normal}</div>`;
+                        }
+
+                        const dealStatusBanner = dealOff
+                            ? `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:10px 14px;margin-bottom:14px;color:#991b1b;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;">🚫 This deal is currently turned off</div>`
+                            : '';
+
+                        const wdDisabled = dealOff || (wdLeft !== null && wdLeft <= 0);
+                        const weDisabled = dealOff || (weLeft !== null && weLeft <= 0);
+
+                        return `
+                        ${dealStatusBanner}
+                        <div style="display:flex;gap:10px;">
+                            <div onclick="${wdDisabled ? '' : `openBookingModal('${serviceId}', 'weekday')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#667eea,#764ba2)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(102,126,234,0.3);animation:dealPulse 2s ease-in-out infinite;'}${wdDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${wdDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(102,126,234,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(102,126,234,0.3)\';"'}>
+                                ${slotBadge(wdLeft)}
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKDAYS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekdayPrice) : service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
+                                ${normalLine(service.normalPrice, service.weekdayPrice)}
+                            </div>
+                            <div onclick="${weDisabled ? '' : `openBookingModal('${serviceId}', 'weekend')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#764ba2,#f093fb)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(118,75,162,0.3);animation:dealPulse 2s ease-in-out infinite;'}${weDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${weDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(118,75,162,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(118,75,162,0.3)\';"'}>
+                                ${slotBadge(weLeft)}
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKENDS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekendPrice) : service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
+                                ${normalLine(service.normalPrice, service.weekendPrice)}
+                            </div>
+                        </div>`;
+                    })()}
+                </div>
+                <button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
+            modal.classList.add('active');
+        }
+
+        function toggleMap(encodedLocation) {
+            const expand = document.getElementById('mapExpand');
+            const chevron = document.getElementById('mapChevron');
+            const iframe = document.getElementById('mapIframe');
+            const isOpen = expand.style.display !== 'none';
+            if (isOpen) {
+                expand.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                expand.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+                // Load map only when opened (lazy)
+                if (!iframe.src || iframe.src === window.location.href) {
+                    iframe.src = `https://maps.google.com/maps?q=${encodedLocation}&output=embed&z=15`;
+                }
+            }
+        }
+
+        function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+        async function openBookingModal(serviceId, dayType) {
+            if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
+            window._lastDetailDayType = dayType;
+            currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
+            document.getElementById('detailModal').classList.remove('active');
+            document.getElementById('bookingModal').classList.add('active');
+            document.getElementById('bookingSuccess').style.display = 'none';
+            document.getElementById('customerName').value = currentUser.name;
+            document.getElementById('customerContact').value = currentUser.email || '';
+
+            const windows = currentBookingService.availabilityWindows;
+            if (windows && windows.length > 0) {
+                // Show slot picker
+                document.getElementById('standardPicker').style.display = 'none';
+                document.getElementById('slotPicker').style.display = 'block';
+                document.getElementById('selectedSlotTime').value = '';
+                buildSlotPicker(windows, dayType);
+            } else {
+                // Show standard picker
+                document.getElementById('standardPicker').style.display = 'block';
+                document.getElementById('slotPicker').style.display = 'none';
+                // Pre-select the first valid date
+                const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+                let firstValid = new Date(tomorrow);
+                if (dayType === 'weekend' || dayType === 'weekday') {
+                    for (let i = 0; i < 14; i++) {
+                        const dow = firstValid.getDay();
+                        const isWknd = dow === 0 || dow === 6;
+                        if ((dayType === 'weekend' && isWknd) || (dayType === 'weekday' && !isWknd)) break;
+                        firstValid.setDate(firstValid.getDate() + 1);
+                    }
+                }
+                document.getElementById('preferredDate').value = firstValid.toISOString().split('T')[0];
+                document.getElementById('preferredHour').value = '09';
+                document.getElementById('preferredMinute').value = '00';
+                // Init custom calendar with day type restriction
+                cdpInit(dayType);
+            }
+        }
+
+        function validateBookingDate(input) {
+            const dayType = window._bookingDayType;
+            if (!dayType || (!input.value)) return;
+            const d = new Date(input.value + 'T12:00:00');
+            const dow = d.getDay(); // 0=Sun, 6=Sat
+            const isWknd = dow === 0 || dow === 6;
+            if (dayType === 'weekend' && !isWknd) {
+                // Jump to next weekend day
+                let next = new Date(d);
+                for (let i = 1; i <= 7; i++) {
+                    next.setDate(next.getDate() + 1);
+                    if (next.getDay() === 0 || next.getDay() === 6) break;
+                }
+                input.value = next.toISOString().split('T')[0];
+                showToast('Weekend bookings only: Sat & Sun', false);
+            } else if (dayType === 'weekday' && isWknd) {
+                // Jump to next weekday
+                let next = new Date(d);
+                for (let i = 1; i <= 7; i++) {
+                    next.setDate(next.getDate() + 1);
+                    if (next.getDay() !== 0 && next.getDay() !== 6) break;
+                }
+                input.value = next.toISOString().split('T')[0];
+                showToast('Weekday bookings only: Mon–Fri', false);
+            }
+        }
+
+        function buildSlotPicker(windows, dayType) {
+            const DAY_ORDER = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+            const dayTabsEl = document.getElementById('slotDayTabs');
+            const timeGridEl = document.getElementById('slotTimeGrid');
+            dayTabsEl.innerHTML = ''; timeGridEl.innerHTML = '';
+
+            // Get next 14 days that match any window day
+            const daySlots = {}; // {dateStr: [{time, label}]}
+            const today = new Date();
+            for (let i = 1; i <= 14; i++) {
+                const d = new Date(today); d.setDate(today.getDate() + i);
+                const dayName = DAY_ORDER[d.getDay() === 0 ? 6 : d.getDay() - 1];
+                
+                // Filter dates by dayType
+                const dow = d.getDay();
+                const isWknd = dow === 0 || dow === 6;
+                if (dayType === 'weekday' && isWknd) continue;
+                if (dayType === 'weekend' && !isWknd) continue;
+
+                // Also filter windows: weekday booking only uses Mon-Fri windows, weekend only Sat-Sun
+                const WEEKEND_DAYS = ['Saturday','Sunday'];
+                const WEEKDAY_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+                const matchingWindows = windows.filter(w => {
+                    if (w.day !== dayName) return false;
+                    if (dayType === 'weekday' && !WEEKDAY_DAYS.includes(w.day)) return false;
+                    if (dayType === 'weekend' && !WEEKEND_DAYS.includes(w.day)) return false;
+                    return true;
+                });
+                if (matchingWindows.length === 0) continue;
+                const dateStr = d.toISOString().split('T')[0];
+                daySlots[dateStr] = daySlots[dateStr] || [];
+                matchingWindows.forEach(w => {
+                    // Generate time slots
+                    const [sh, sm] = w.startTime.split(':').map(Number);
+                    const [eh, em] = w.endTime.split(':').map(Number);
+                    let cur = sh * 60 + sm;
+                    const end = eh * 60 + em;
+                    while (cur + w.sessionDuration <= end) {
+                        const hh = Math.floor(cur/60);
+                        const mm = cur % 60;
+                        const ampm = hh >= 12 ? 'PM' : 'AM';
+                        const h12 = hh > 12 ? hh - 12 : hh === 0 ? 12 : hh;
+                        const label = `${h12}:${mm.toString().padStart(2,'0')} ${ampm}`;
+                        const iso = `${dateStr}T${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:00`;
+                        daySlots[dateStr].push({ iso, label });
+                        cur += w.sessionDuration;
+                    }
+                });
+            }
+
+            const dates = Object.keys(daySlots).sort();
+            if (dates.length === 0) {
+                timeGridEl.innerHTML = '<p style="color:#999;font-size:13px;grid-column:1/-1;">No available slots in the next 2 weeks.</p>';
+                return;
+            }
+
+            let selectedDate = dates[0];
+            function renderTabs() {
+                dayTabsEl.innerHTML = '';
+                dates.forEach(dateStr => {
+                    const d = new Date(dateStr + 'T12:00:00');
+                    const label = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = label;
+                    btn.style.cssText = `padding:8px 12px;border-radius:20px;border:2px solid ${dateStr===selectedDate?'#667eea':'#e2e8f0'};background:${dateStr===selectedDate?'#667eea':'white'};color:${dateStr===selectedDate?'white':'#444'};font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;`;
+                    btn.onclick = () => { selectedDate = dateStr; renderTabs(); renderSlots(); };
+                    dayTabsEl.appendChild(btn);
+                });
+            }
+
+            function renderSlots() {
+                timeGridEl.innerHTML = '';
+                document.getElementById('selectedSlotTime').value = '';
+                (daySlots[selectedDate] || []).forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = slot.label;
+                    btn.style.cssText = 'padding:10px 6px;border-radius:10px;border:2px solid #e2e8f0;background:white;color:#444;font-size:13px;font-weight:600;cursor:pointer;text-align:center;';
+                    btn.onclick = () => {
+                        document.querySelectorAll('#slotTimeGrid button').forEach(b => {
+                            b.style.border = '2px solid #e2e8f0';
+                            b.style.background = 'white';
+                            b.style.color = '#444';
+                        });
+                        btn.style.border = '2px solid #667eea';
+                        btn.style.background = '#667eea';
+                        btn.style.color = 'white';
+                        document.getElementById('selectedSlotTime').value = slot.iso;
+                    };
+                    timeGridEl.appendChild(btn);
+                });
+            }
+
+            renderTabs();
+            renderSlots();
+        }
+
+        function closeBookingModal() { document.getElementById('bookingModal').classList.remove('active'); }
+
+        async function submitBooking(e) {
+            e.preventDefault();
+            if (!currentUser) { showToast('Please log in', true); showAuthModal(); return; }
+            try {
+                const serviceId = currentBookingService._id || currentBookingService.id;
+                let preferredTime;
+
+                const windows = currentBookingService.availabilityWindows;
+                if (windows && windows.length > 0) {
+                    // Slot picker mode
+                    preferredTime = document.getElementById('selectedSlotTime').value;
+                    if (!preferredTime) { showToast('Please select a time slot', true); return; }
+                    preferredTime = new Date(preferredTime).toISOString();
+                } else {
+                    // Standard picker mode
+                    const date = document.getElementById('preferredDate').value;
+                    const hour = document.getElementById('preferredHour').value;
+                    const minute = document.getElementById('preferredMinute').value;
+                    if (!date) { showToast('Please select a date', true); return; }
+                    preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
+                }
+
+                const response = await API.createBooking({
+                    serviceId,
+                    customerContact: document.getElementById('customerContact').value,
+                    preferredTime,
+                    notes: document.getElementById('bookingNotes').value
+                });
+                if (response.success) {
+                    const successEl = document.getElementById('bookingSuccess');
+                    successEl.style.display = 'block';
+                    successEl.textContent = '✅ Booking sent! The provider will confirm soon.';
+                    e.target.reset();
+                    try {
+                        await API.removeSavedService(serviceId);
+                        await loadSavedServices();
+                        renderSavedList();
+                    } catch(err) { /* already not saved, no problem */ }
+                    
+                    // Auto-advance to next card and reload services to reflect updated slots
+                    setTimeout(async () => {
+                        closeBookingModal();
+                        await loadPublicServices(); // Reload to get updated slot counts
+                        swipeCard('right'); // Move to next card
+                    }, 1500);
+                }
+            } catch (error) { showToast(error.message || 'Error creating booking.', true); }
+        }
+
+        // ============================================
+        // SAVED SERVICES
+        // ============================================
+        async function loadSavedServices() {
+            if (!currentUser) { savedServices = []; return; }
+            try {
+                const response = await API.getSavedServices();
+                savedServices = response.services || [];
+            } catch (error) { savedServices = []; }
+        }
+
+        function renderSavedList() {
+            const savedList = document.getElementById('savedList');
+            if (!savedServices.length) {
+                savedList.innerHTML = `
+                    <div class="empty-state" style="padding-top:40px;">
+                        <div class="empty-emoji">💝</div>
+                        <h3>Nothing saved yet!</h3>
+                        <p>Swipe right on services you love and they'll appear here</p>
+                        <button onclick="showTab('discover')" style="margin-top:20px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;">
+                            🔍 Browse Services
+                        </button>
+                        <div class="empty-dots" style="margin-top:20px;"><span></span><span></span><span></span></div>
+                    </div>`;
+                return;
+            }
+            savedList.innerHTML = savedServices.map(service => {
+                const serviceId = service._id || service.id;
+                const img = service.photos && service.photos[0]
+                    ? `<img src="${service.photos[0]}" alt="${service.serviceType}">`
+                    : `<div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:32px;">${getServiceEmoji(service.serviceType)}</div>`;
+                const today2 = new Date().getDay();
+                const isWknd2 = today2 === 0 || today2 === 6;
+                const dealPrice2 = isWknd2 ? service.weekendPrice : service.weekdayPrice;
+                const dealSlots2 = isWknd2 ? service.weekendSlots : service.weekdaySlots;
+                const slotsUsed2 = isWknd2 ? service.weekendSlotsUsed : service.weekdaySlotsUsed;
+                const slotsLeft2 = dealSlots2 != null ? dealSlots2 - (slotsUsed2 || 0) : null;
+                const dealEnded2 = !service.dealActive || (slotsLeft2 !== null && slotsLeft2 <= 0);
+                const endedStyle = dealEnded2 ? 'filter:grayscale(1);opacity:0.6;' : '';
+                const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#e5e7eb;color:#6b7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-bottom:4px;">⏰ Deal Ended</div>` : '';
+                const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
+                const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
+                return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
+            }).join('');
+        }
+
+        async function removeSaved(serviceId) {
+            try {
+                await API.removeSavedService(serviceId);
+                await loadSavedServices();
+                renderSavedList();
+            } catch (error) { showToast('Error removing service.', true); }
+        }
+
+        // ============================================
+        // PROVIDER
+        // ============================================
+        // Deal toggle
+        let dealActiveState = true;
+        function toggleDeal() {
+            dealActiveState = !dealActiveState;
+            const toggle = document.getElementById('dealToggle');
+            const knob = document.getElementById('dealToggleKnob');
+            const label = document.getElementById('dealToggleLabel');
+            document.getElementById('dealActive').value = dealActiveState;
+            if (dealActiveState) {
+                toggle.style.background = '#22c55e';
+                knob.style.left = '27px';
+                label.style.color = '#22c55e';
+                label.textContent = 'Deal is LIVE';
+            } else {
+                toggle.style.background = '#d1d5db';
+                knob.style.left = '3px';
+                label.style.color = '#9ca3af';
+                label.textContent = 'Deal is OFF';
+            }
+        }
+
+        // Availability windows
+        const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const DURATIONS = [{v:15,l:'15 min'},{v:30,l:'30 min'},{v:45,l:'45 min'},{v:60,l:'1 hour'},{v:90,l:'1 hr 30 min'},{v:120,l:'2 hours'}];
+
+        function addAvailabilityWindow(existing) {
+            const list = document.getElementById('availabilityList');
+            const idx = list.children.length;
+            const div = document.createElement('div');
+            div.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;';
+            div.innerHTML = `
+                <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">
+                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:12px;font-weight:600;color:#444;">Day</label>
+                    <select class="av-day" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                        ${DAYS.map(d=>`<option value="${d}" ${existing&&existing.day===d?'selected':''}>${d}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;color:#444;">Start Time</label>
+                    <input type="time" class="av-start" value="${existing?existing.startTime:'09:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;color:#444;">End Time</label>
+                    <input type="time" class="av-end" value="${existing?existing.endTime:'17:00'}" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:12px;font-weight:600;color:#444;">Session Duration</label>
+                    <select class="av-dur" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
+                        ${DURATIONS.map(d=>`<option value="${d.v}" ${existing&&existing.sessionDuration===d.v?'selected':''}>${d.l}</option>`).join('')}
+                    </select>
+                </div>`;
+            list.appendChild(div);
+        }
+
+        function duplicateAvWindow(btn) {
+            const parent = btn.closest('[style*="grid"]');
+            const data = {
+                day: parent.querySelector('.av-day').value,
+                startTime: parent.querySelector('.av-start').value,
+                endTime: parent.querySelector('.av-end').value,
+                sessionDuration: parseInt(parent.querySelector('.av-dur').value)
+            };
+            addAvailabilityWindow(data);
+        }
+
+        function getAvailabilityWindows() {
+            return Array.from(document.getElementById('availabilityList').children).map(div => ({
+                day: div.querySelector('.av-day').value,
+                startTime: div.querySelector('.av-start').value,
+                endTime: div.querySelector('.av-end').value,
+                sessionDuration: parseInt(div.querySelector('.av-dur').value)
+            }));
+        }
+
+        async function submitProvider(e) {
+            e.preventDefault();
+            if (!currentUser) { showToast('Please log in', true); return; }
+            
+            const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
+            const photos = Array.from(photoImgs).map(img => img.src);
+            const normalPriceVal = document.getElementById('normalPrice').value;
+
+            const serviceData = {
+                providerName: document.getElementById('providerName').value,
+                serviceType: document.getElementById('serviceType').value,
+                description: document.getElementById('serviceDesc').value,
+                location: document.getElementById('location').value,
+                contact: document.getElementById('providerContact').value,
+                email: document.getElementById('providerEmail').value || currentUser.email,
+                normalPrice: normalPriceVal ? parseFloat(normalPriceVal) : null,
+                weekdayPrice: parseFloat(document.getElementById('weekdayPrice').value),
+                weekendPrice: parseFloat(document.getElementById('weekendPrice').value),
+                weekdaySlots: document.getElementById('weekdaySlots').value ? parseInt(document.getElementById('weekdaySlots').value) : null,
+                weekendSlots: document.getElementById('weekendSlots').value ? parseInt(document.getElementById('weekendSlots').value) : null,
+                dealActive: document.getElementById('dealActive').value === 'true',
+                availabilityWindows: getAvailabilityWindows(),
+                photos
+            };
+
+            try {
+                let response;
+                if (myService) {
+                    response = await API.updateService(myService._id, serviceData);
+                    myService = response.service;
+                } else {
+                    response = await API.createService(serviceData);
+                    myService = response.service;
+                }
+                document.getElementById('providerSubmitBtn').textContent = 'Save Changes';
+                renderMyProfile();
+                await loadPublicServices();
+                currentCardIndex = 0;
+                showToast('✅ Profile saved successfully!', false);
+            } catch (error) { showToast(error.message || 'Error saving profile.', true); }
+        }
+
+        function previewPhotos(e) {
+            const preview = document.getElementById('photoPreview');
+            const existing = preview.querySelectorAll('.photo-thumb').length;
+            const remaining = 6 - existing;
+            Array.from(e.target.files).slice(0, remaining).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    // Resize to max 600px to keep size small enough for MongoDB
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX = 600;
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+                        else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const resized = canvas.toDataURL('image/jpeg', 0.7);
+
+                        const wrap = document.createElement('div');
+                        wrap.className = 'photo-thumb';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;';
+
+                        const imgEl = document.createElement('img');
+                        imgEl.src = resized;
+                        imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
+
+                        const xBtn = document.createElement('button');
+                        xBtn.type = 'button';
+                        xBtn.textContent = '×';
+                        xBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.onclick = () => wrap.remove();
+
+                        wrap.appendChild(imgEl);
+                        wrap.appendChild(xBtn);
+                        preview.appendChild(wrap);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            // Reset input so same file can be re-added
+            e.target.value = '';
+        }
+
+        function openUserProfile() {
+            document.getElementById('userDropdown').style.display = 'none';
+            document.getElementById('newName').value = currentUser.name || '';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('profileMsg').style.display = 'none';
+            document.getElementById('userProfileModal').classList.add('active');
+            loadMyTickets();
+            loadSubscriptionStatus();
+        }
+
+        function showProfileMsg(msg, isError) {
+            const el = document.getElementById('profileMsg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            el.style.background = isError ? '#fee2e2' : '#d1fae5';
+            el.style.color = isError ? '#e53e3e' : '#059669';
+        }
+
+        async function updateName() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) { showProfileMsg('Please enter a name', true); return; }
+            try {
+                const res = await API.updateProfile({ name });
+                currentUser.name = name;
+                const firstLetter = name.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = firstLetter;
+                document.getElementById('dropdownAvatar').textContent = firstLetter;
+                document.getElementById('userDropdownName').textContent = name;
+                showProfileMsg('✅ Name updated!', false);
+            } catch(e) { showProfileMsg(e.message || 'Error updating name', true); }
+        }
+
+        async function updatePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const next = document.getElementById('newPassword').value;
+            if (!current || !next) { showProfileMsg('Please fill in both password fields', true); return; }
+            if (next.length < 6) { showProfileMsg('New password must be at least 6 characters', true); return; }
+            try {
+                await API.changePassword(current, next);
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                showProfileMsg('✅ Password changed!', false);
+            } catch(e) { showProfileMsg(e.message || 'Current password incorrect', true); }
+        }
+
+        async function deleteAccount() {
+            if (!confirm('⚠️ Delete your account? This cannot be undone. All your data will be permanently removed.')) return;
+            if (!confirm('Are you absolutely sure? Type OK to confirm.')) return;
+            try {
+                await API.deleteAccount();
+                logout();
+                showToast('Your account has been deleted.', false);
+            } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
+        }
+
+        // ============================================
+        // CALENDAR VIEW
+        // ============================================
+        let calCurrentDate = new Date();
+
+        function changeCalMonth(delta) {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + delta, 1);
+            renderCalendar();
+        }
+
+        function loadCalendar() {
+            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth(), 1);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            document.getElementById('calMonthLabel').textContent = monthNames[month] + ' ' + year;
+
+            const bookingsByDate = {};
+            allProviderBookings.forEach(b => {
+                const d = new Date(b.preferredTime);
+                const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                if (!bookingsByDate[key]) bookingsByDate[key] = [];
+                bookingsByDate[key].push(b);
+            });
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('calGrid');
+            let html = '';
+
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+                const bks = bookingsByDate[dateStr] || [];
+                const isToday = dateStr === todayStr;
+                const hasPending = bks.some(b => b.status === 'pending');
+                const hasConfirmed = bks.some(b => b.status === 'confirmed');
+                const dotColor = hasPending ? '#f59e0b' : hasConfirmed ? '#22c55e' : bks.length ? '#667eea' : 'transparent';
+                const bgStyle = isToday ? 'background:linear-gradient(135deg,#667eea,#764ba2);' : bks.length ? 'background:rgba(102,126,234,0.1);' : '';
+                const textColor = isToday ? 'color:white;' : 'color:#333;';
+                const dot = bks.length ? '<div style="width:5px;height:5px;border-radius:50%;background:' + dotColor + ';margin:1px auto 0;"></div>' : '';
+                html += '<div onclick="showCalDay(&quot;' + dateStr + '&quot;)" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:' + (bks.length?'pointer':'default') + ';' + bgStyle + '">' +
+                    '<div style="font-size:13px;font-weight:' + (isToday?700:400) + ';' + textColor + 'line-height:1.2;">' + d + '</div>' + dot + '</div>';
+            }
+
+            grid.innerHTML = html;
+            document.getElementById('calDayBookings').innerHTML = '';
+        }
+
+        function showCalDay(dateStr) {
+            const bks = allProviderBookings.filter(function(b) {
+                const d = new Date(b.preferredTime);
+                const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                return key === dateStr;
+            });
+            if (!bks.length) return;
+            const el = document.getElementById('calDayBookings');
+            const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+            let html = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;">📅 ' + label + '</div>';
+            bks.sort(function(a,b){ return new Date(a.preferredTime)-new Date(b.preferredTime); }).forEach(function(b) {
+                const svc = b.service || {};
+                const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+                const bid = b._id;
+                let actions = '';
+                if (b.status === 'pending') {
+                    actions = '<div style="display:flex;gap:6px;margin-top:8px;">'
+                        + '<button class="action-btn btn-confirm" onclick="updateBooking(\''+bid+'\',\'confirmed\')">✅ Confirm</button>'
+                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'rejected\')">❌ Reject</button>'
+                        + '</div>';
+                } else if (b.status === 'confirmed') {
+                    actions = '<div style="margin-top:8px;">'
+                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'cancelled\')">Cancel</button>'
+                        + '</div>';
+                }
+                html += '<div class="booking-card" style="margin-bottom:8px;">'
+                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
+                    + '<div>'
+                    + '<div style="font-size:15px;font-weight:700;color:#333;">' + time + ' — ' + (svc.serviceType||'Service') + '</div>'
+                    + '<div style="font-size:13px;color:#888;margin-top:2px;">' + (b.customerName||'') + ' · ' + (b.customerContact||'') + '</div>'
+                    + '</div>'
+                    + '<span class="status-pill status-' + b.status + '">' + b.status + '</span>'
+                    + '</div>'
+                    + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;">📝 ' + b.notes + '</div>' : '')
+                    + actions
+                    + '</div>';
+            });
+            el.innerHTML = html;
+        }
+
+        // ============================================
+        // REAL-TIME POLLING
+        // ============================================
+        let realtimeInterval = null;
+
+        function startRealtimePolling() {
+            if (realtimeInterval) return;
+            realtimeInterval = setInterval(async () => {
+                if (!currentUser) return;
+                const activeBtn = document.querySelector('#providerView .ptab-btn.active');
+                if (!activeBtn) return;
+                const tabId = activeBtn.id;
+                if (tabId !== 'ptabBookings' && tabId !== 'ptabCalendar') return;
+                try {
+                    const res = await API.getProviderBookings();
+                    const fresh = res.bookings || [];
+                    const prevSig = allProviderBookings.map(b => b._id + b.status).join();
+                    const newSig  = fresh.map(b => b._id + b.status).join();
+                    if (newSig === prevSig) return;
+                    const prevPending = allProviderBookings.filter(b => b.status === 'pending').length;
+                    const newPending  = fresh.filter(b => b.status === 'pending').length;
+                    allProviderBookings = fresh;
+                    if (tabId === 'ptabBookings') {
+                        const activeFilter = document.querySelector('.filter-btn.active');
+                        const status = activeFilter ? activeFilter.textContent.trim().replace(/[^a-zA-Z]/g,'').toLowerCase() : 'all';
+                        const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b => b.status === status);
+                        renderProviderBookings(filtered);
+                    } else {
+                        renderCalendar();
+                    }
+                    const badge = document.getElementById('pendingBadge');
+                    if (newPending > 0) { badge.textContent = newPending; badge.style.display = 'inline'; }
+                    else badge.style.display = 'none';
+                    if (newPending > prevPending) showRealtimeToast('🔔 New booking request!');
+                } catch(e) {}
+            }, 15000);
+        }
+
+        function showRealtimeToast(msg) {
+            const old = document.getElementById('realtimeToast');
+            if (old) old.remove();
+            const t = document.createElement('div');
+            t.id = 'realtimeToast';
+            t.textContent = msg;
+            t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 20px;border-radius:25px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(102,126,234,0.5);';
+            document.querySelector('.app-container').appendChild(t);
+            setTimeout(() => t.remove(), 4000);
+        }
+
+        // ============================================
+        // PROVIDER TABS
+        // ============================================
+        function switchProviderTab(tab) {
+            ['profile','bookings','calendar','analytics'].forEach(t => {
+                const btn = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`);
+                const cnt = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`);
+                if (btn) btn.classList.toggle('active', t === tab);
+                if (cnt) cnt.style.display = t === tab ? 'block' : 'none';
+            });
+            if (tab === 'bookings') loadProviderBookings();
+            if (tab === 'calendar') loadCalendar();
+            if (tab === 'analytics') loadAnalytics();
+        }
+
+        // ============================================
+        // SAVED SUB-TABS
+        // ============================================
+        function switchSavedTab(tab) {
+            document.getElementById('stabSaved').classList.toggle('active', tab === 'saved');
+            document.getElementById('stabMyBookings').classList.toggle('active', tab === 'mybookings');
+            document.getElementById('savedListWrap').style.display = tab === 'saved' ? 'block' : 'none';
+            document.getElementById('myBookingsWrap').style.display = tab === 'mybookings' ? 'block' : 'none';
+            if (tab === 'mybookings') loadMyBookings();
+        }
+
+        // ============================================
+        // PROVIDER BOOKINGS MANAGEMENT
+        // ============================================
+        let allProviderBookings = [];
+        let rescheduleBookingId = null;
+
+        async function loadProviderBookings() {
+            document.getElementById('providerBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
+            try {
+                const res = await API.getProviderBookings();
+                allProviderBookings = res.bookings || [];
+                renderProviderBookings(allProviderBookings);
+                // Update pending badge
+                const pending = allProviderBookings.filter(b => b.status === 'pending').length;
+                const badge = document.getElementById('pendingBadge');
+                if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+                else badge.style.display = 'none';
+            } catch(e) {
+                document.getElementById('providerBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
+            }
+        }
+
+        function filterProviderBookings(status, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b => b.status === status);
+            renderProviderBookings(filtered);
+        }
+
+        function renderProviderBookings(bookings) {
+            bookings = [...bookings].sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+            const el = document.getElementById('providerBookingsList');
+            if (!bookings.length) {
+                el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings here</h3></div>`;
+                return;
+            }
+            el.innerHTML = bookings.map(b => {
+                const svc = b.service || {};
+                const cust = b.customer || {};
+                const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                const actions = b.status === 'pending' ? `
+                    <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed')">✅ Confirm</button>
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
+                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected')">❌ Reject</button>` :
+                b.status === 'confirmed' ? `
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
+                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','cancelled')">Cancel</button>` : '';
+                return `<div class="booking-card">
+                    <div class="booking-card-header">
+                        <div>
+                            <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
+                            <div class="booking-card-sub">${cust.name || b.customerName}</div>
+                        </div>
+                        <span class="status-pill status-${b.status}">${b.status}</span>
+                    </div>
+                    <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
+                    <div class="booking-meta">📞 <span>Contact:</span> ${b.customerContact}</div>
+                    <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
+                    ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                    ${actions ? `<div class="booking-actions">${actions}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        async function updateBooking(id, status) {
+            try {
+                await API.updateBookingStatus(id, status);
+                await loadProviderBookings();
+            } catch(e) { showToast('Error updating booking', true); }
+        }
+
+        function openReschedule(id) {
+            rescheduleBookingId = id;
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            const tStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('rescheduleDate').min = tStr;
+            document.getElementById('rescheduleDate').value = tStr;
+            document.getElementById('rescheduleHour').value = '09';
+            document.getElementById('rescheduleMinute').value = '00';
+            document.getElementById('rescheduleModal').classList.add('active');
+        }
+
+        async function confirmReschedule() {
+            const date = document.getElementById('rescheduleDate').value;
+            const hour = document.getElementById('rescheduleHour').value;
+            const minute = document.getElementById('rescheduleMinute').value;
+            if (!date) { showToast('Please select a date', true); return; }
+            const newTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
+            try {
+                await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
+                document.getElementById('rescheduleModal').classList.remove('active');
+                await loadProviderBookings();
+                showToast('✅ Booking rescheduled! Customer has been notified.', false);
+            } catch(e) {
+                console.error('Reschedule error:', e);
+                showToast('Error rescheduling: ' + (e.message || 'Please try again'), true);
+            }
+        }
+
+        // ============================================
+        // ANALYTICS
+        // ============================================
+        async function loadAnalytics() {
+            document.getElementById('analyticsContent').innerHTML = `<div class="empty-state"><div class="empty-emoji">📊</div><h3>Loading analytics...</h3></div>`;
+            try {
+                const res = await API.getAnalytics();
+                const a = res.analytics;
+
+                // Calculate potential earnings from unsold slots
+                let potentialEarnings = 0;
+                if (myService) {
+                    const wdLeft = myService.weekdaySlots != null ? Math.max(0, myService.weekdaySlots - (myService.weekdaySlotsUsed || 0)) : 0;
+                    const weLeft = myService.weekendSlots != null ? Math.max(0, myService.weekendSlots - (myService.weekendSlotsUsed || 0)) : 0;
+                    potentialEarnings = (wdLeft * myService.weekdayPrice) + (weLeft * myService.weekendPrice);
+                }
+
+                const maxBookings = Math.max(...a.last7Days.map(d => d.bookings), 1);
+                const maxEarnings = Math.max(...a.last7Days.map(d => d.earnings), 1);
+
+                document.getElementById('analyticsContent').innerHTML = `
+                    ${potentialEarnings > 0 ? `
+                    <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:16px;margin-bottom:16px;color:white;text-align:center;">
+                        <div style="font-size:12px;font-weight:700;opacity:0.85;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">💰 Potential Revenue</div>
+                        <div style="font-size:32px;font-weight:900;line-height:1;margin-bottom:4px;">$${potentialEarnings.toFixed(2)}</div>
+                        <div style="font-size:13px;opacity:0.75;">If all remaining slots sell</div>
+                    </div>` : ''}
+                    <div class="analytics-grid">
+                        <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${a.daily.count}</div><div class="stat-earn">$${a.daily.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${a.weekly.count}</div><div class="stat-earn">$${a.weekly.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${a.monthly.count}</div><div class="stat-earn">$${a.monthly.earnings.toFixed(2)}</div></div>
+                        <div class="stat-card highlight"><div class="stat-label">All Time</div><div class="stat-value">${a.allTime.count}</div><div class="stat-earn">$${a.allTime.earnings.toFixed(2)}</div></div>
+                    </div>
+                    <div class="stat-card" style="margin-bottom:16px;display:flex;justify-content:space-around;">
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#d97706;">${a.byStatus.pending||0}</div><div style="font-size:11px;color:#888;">Pending</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#059669;">${a.byStatus.confirmed||0}</div><div style="font-size:11px;color:#888;">Confirmed</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#7c3aed;">${a.byStatus.completed||0}</div><div style="font-size:11px;color:#888;">Completed</div></div>
+                        <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#dc2626;">${a.byStatus.rejected||0}</div><div style="font-size:11px;color:#888;">Rejected</div></div>
+                    </div>
+                    <div class="chart-bar-wrap">
+                        <h3>📅 Bookings – Last 7 Days</h3>
+                        ${a.last7Days.map(d => `
+                        <div class="bar-row">
+                            <div class="bar-label">${d.date.split(',')[0]}</div>
+                            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((d.bookings/maxBookings)*100)}%"></div></div>
+                            <div class="bar-val">${d.bookings}</div>
+                        </div>`).join('')}
+                    </div>
+                    <div class="chart-bar-wrap">
+                        <h3>💰 Earnings – Last 7 Days</h3>
+                        ${a.last7Days.map(d => `
+                        <div class="bar-row">
+                            <div class="bar-label">${d.date.split(',')[0]}</div>
+                            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((d.earnings/maxEarnings)*100)}%;background:linear-gradient(135deg,#f093fb,#f5576c)"></div></div>
+                            <div class="bar-val">$${d.earnings.toFixed(0)}</div>
+                        </div>`).join('')}
+                    </div>`;
+            } catch(e) {
+                document.getElementById('analyticsContent').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load analytics</h3></div>`;
+            }
+        }
+
+        // ============================================
+        // CUSTOMER MY BOOKINGS
+        // ============================================
+        async function updateSavingsTracker() {
+            try {
+                const res = await API.getSavingsLeaderboard();
+                const totalSaved = res.totalSaved || 0;
+                const percentile = res.percentile || 0;
+                
+                document.getElementById('savingsAmount').textContent = `$${Math.round(totalSaved)}`;
+                
+                // Show rank based on actual percentile among all customers
+                let rank = '';
+                if (percentile >= 99) rank = 'Top 1% 🏆';
+                else if (percentile >= 90) rank = 'Top 10% 🌟';
+                else if (percentile >= 75) rank = 'Top 25% ⭐';
+                else if (percentile >= 50) rank = 'Top 50% ✨';
+                else if (totalSaved > 0) rank = 'Keep saving!';
+                else rank = 'Start saving!';
+                
+                document.getElementById('savingsRank').textContent = rank;
+                
+                // Always show badge for customers
+                document.getElementById('savingsBadge').style.visibility = 'visible';
+                
+                // Store for celebration modal
+                savingsCelebrationData = { totalSaved, rank, percentile };
+            } catch (err) {
+                console.error('Error loading savings tracker:', err);
+                // Still show badge even on error, just with $0
+                document.getElementById('savingsAmount').textContent = '$0';
+                document.getElementById('savingsRank').textContent = 'Start saving!';
+                document.getElementById('savingsBadge').style.visibility = 'visible';
+            }
+        }
+
+        async function loadMyBookings() {
+            document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
+            try {
+                const res = await API.getCustomerBookings();
+                const bookings = (res.bookings || []).sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+                
+                // Update savings tracker
+                await updateSavingsTracker();
+                
+                if (!bookings.length) {
+                    document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
+                    return;
+                }
+                document.getElementById('myBookingsList').innerHTML = bookings.map(b => {
                     const svc = b.service || {};
                     const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    const canCancel = ['pending','confirmed','rescheduled'].includes(b.status);
-                    const cancelBtn = canCancel ? '<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('' + b._id + '')">Cancel Booking</button>' : '';
-                    return '<div class="booking-card">' +
-                        '<div class="booking-card-header"><div>' +
-                        '<div class="booking-card-title">' + (svc.serviceType || 'Service') + '</div>' +
-                        '<div class="booking-card-sub">by ' + (svc.providerName || '') + '</div>' +
-                        '</div><span class="status-pill status-' + b.status + '">' + b.status + '</span></div>' +
-                        '<div class="booking-meta">📅 <span>Date:</span> ' + date + '</div>' +
-                        '<div class="booking-meta">💰 <span>Price:</span> $' + b.price + '</div>' +
-                        (b.notes ? '<div class="booking-meta">📝 <span>Notes:</span> ' + b.notes + '</div>' : '') +
-                        cancelBtn + '</div>';
+                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
+                        ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
+                    return `<div class="booking-card">
+                        <div class="booking-card-header">
+                            <div>
+                                <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
+                                <div class="booking-card-sub">by ${svc.providerName || ''}</div>
+                            </div>
+                            <span class="status-pill status-${b.status}">${b.status}</span>
+                        </div>
+                        <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
+                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
+                        <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
+                        ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                        ${cancelBtn}
+                    </div>`;
                 }).join('');
-            }).catch(() => {
-                list.innerHTML = '<div class="empty-state"><div class="empty-emoji">❌</div><h3>Error loading bookings</h3></div>';
+            } catch(e) {
+                document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⚠️</div><h3>Could not load bookings</h3></div>`;
+            }
+        }
+
+        async function cancelMyBooking(id) {
+            cancelMyBookingConfirm(id);
+        }
+
+        // ============================================
+        // UTILS
+        // ============================================
+        // ============================================
+        // TOAST — replaces all alert() calls
+        // ============================================
+        function showToast(msg, isError) {
+            const old = document.getElementById('appToast');
+            if (old) old.remove();
+            const t = document.createElement('div');
+            t.id = 'appToast';
+            t.textContent = msg;
+            const bg = isError
+                ? 'linear-gradient(135deg,#ef4444,#dc2626)'
+                : 'linear-gradient(135deg,#667eea,#764ba2)';
+            t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + bg + ';color:white;padding:13px 22px;border-radius:25px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);max-width:320px;text-align:center;line-height:1.4;';
+            document.querySelector('.app-container').appendChild(t);
+            setTimeout(() => { if (t.parentNode) t.remove(); }, 3500);
+        }
+
+
+        // ============================================
+        // CUSTOM SELECT DROPDOWNS
+        // ============================================
+        function toggleCustomSelect(boxId) {
+            const dropId = boxId.replace('Box', 'Dropdown');
+            const drop = document.getElementById(dropId);
+            const box = document.getElementById(boxId);
+            const isOpen = drop.style.display !== 'none';
+            document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            if (!isOpen) {
+                drop.style.display = 'block';
+                const boxRect = box.getBoundingClientRect();
+                const appRect = document.querySelector('.app-container').getBoundingClientRect();
+                const topPos = box.offsetTop + box.offsetHeight + 2;
+                drop.style.top = topPos + 'px';
+                // For filter dropdown: anchor to right edge so it doesn't overflow left
+                if (boxId === 'filterTypeBox') {
+                    drop.style.right = '0px';
+                    drop.style.left = 'auto';
+                    drop.style.width = '190px';
+                } else {
+                    drop.style.left = box.offsetLeft + 'px';
+                    drop.style.right = 'auto';
+                    drop.style.width = box.offsetWidth + 'px';
+                }
+            }
+        }
+
+        function pickAccountType(value, label) {
+            document.getElementById('signupAccountType').value = value;
+            document.getElementById('accountTypeLabel').textContent = label;
+            document.getElementById('accountTypeDropdown').style.display = 'none';
+        }
+
+        function pickFilterType(value, label) {
+            document.getElementById('filterType').value = value;
+            document.getElementById('filterTypeLabel').textContent = label || 'All types';
+            document.getElementById('filterTypeDropdown').style.display = 'none';
+            searchServices(document.getElementById('searchInput').value);
+        }
+
+        // Close custom dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-select-box') && !e.target.closest('.custom-select-dropdown')) {
+                document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
+        // ============================================
+        // SHOW DETAIL FROM SAVED LIST
+        // ============================================
+        function showDetailFromSaved(serviceId) {
+            const service = allServices.find(s => (s._id || s.id) === serviceId)
+                || savedServices.find(s => (s._id || s.id) === serviceId);
+            if (!service) return;
+            // Temporarily set as current service for showDetails
+            const prevIdx = currentCardIndex;
+            const prevServices = services;
+            services = [service];
+            currentCardIndex = 0;
+            showDetails();
+            // Restore after modal is shown
+            services = prevServices;
+            currentCardIndex = prevIdx;
+        }
+
+
+        // ============================================
+        // CUSTOM DATE PICKER
+        // ============================================
+        let _cdpYear, _cdpMonth, _cdpDayType;
+
+        function cdpInit(dayType) {
+            _cdpDayType = dayType; // 'weekday', 'weekend', or null
+            const now = new Date();
+            _cdpYear = now.getFullYear();
+            _cdpMonth = now.getMonth();
+            // Advance to next month if we're near the end and it helps show valid dates
+            cdpRender();
+            // Set hint
+            const hint = document.getElementById('cdpHint');
+            if (dayType === 'weekend') hint.textContent = 'Weekends only — Sat & Sun';
+            else if (dayType === 'weekday') hint.textContent = 'Weekdays only — Mon to Fri';
+            else hint.textContent = '';
+        }
+
+        function cdpChangeMonth(dir) {
+            _cdpMonth += dir;
+            if (_cdpMonth > 11) { _cdpMonth = 0; _cdpYear++; }
+            if (_cdpMonth < 0)  { _cdpMonth = 11; _cdpYear--; }
+            cdpRender();
+        }
+
+        function cdpRender() {
+            const months = ['January','February','March','April','May','June',
+                            'July','August','September','October','November','December'];
+            document.getElementById('cdpMonthLabel').textContent = months[_cdpMonth] + ' ' + _cdpYear;
+            const grid = document.getElementById('cdpGrid');
+            grid.innerHTML = '';
+            const today = new Date(); today.setHours(0,0,0,0);
+            const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+            const firstDay = new Date(_cdpYear, _cdpMonth, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(_cdpYear, _cdpMonth + 1, 0).getDate();
+            const selectedVal = document.getElementById('preferredDate').value;
+
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                const blank = document.createElement('div');
+                blank.className = 'cdp-day cdp-empty';
+                grid.appendChild(blank);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(_cdpYear, _cdpMonth, d);
+                const dow = date.getDay(); // 0=Sun, 6=Sat
+                const isWknd = dow === 0 || dow === 6;
+                const isPast = date < tomorrow;
+                const dateStr = date.toISOString().split('T')[0];
+
+                let disabled = false;
+                if (_cdpDayType === 'weekend' && !isWknd) disabled = true;
+                if (_cdpDayType === 'weekday' && isWknd) disabled = true;
+
+                const el = document.createElement('div');
+                el.textContent = d;
+                el.className = 'cdp-day';
+                if (isPast || disabled) {
+                    el.classList.add(isPast ? 'cdp-past' : 'cdp-disabled');
+                } else {
+                    el.onclick = () => cdpSelect(dateStr, el);
+                }
+                if (dateStr === selectedVal) el.classList.add('cdp-selected');
+                grid.appendChild(el);
+            }
+        }
+
+        function cdpSelect(dateStr, el) {
+            document.getElementById('preferredDate').value = dateStr;
+            document.querySelectorAll('.cdp-day.cdp-selected').forEach(d => d.classList.remove('cdp-selected'));
+            el.classList.add('cdp-selected');
+        }
+
+        // ============================================
+        // DEEP LINK HANDLER — email/SMS redirect to tab
+        // ============================================
+        function handleDeepLink() {
+            if (sessionStorage.getItem('showPlusSuccess')) {
+                sessionStorage.removeItem('showPlusSuccess');
+                showToast('🎉 Welcome to SlowDay+! Enjoy your 14-day free trial.', false);
+                loadSubscriptionStatus();
+            }
+            const tab = sessionStorage.getItem('deepLinkTab');
+            if (!tab || !currentUser) return;
+            sessionStorage.removeItem('deepLinkTab');
+            if (tab === 'bookings') {
+                showTab('saved');
+                // Switch to My Bookings subtab
+                setTimeout(() => {
+                    const mybookingsBtn = document.getElementById('stabMyBookings');
+                    if (mybookingsBtn) mybookingsBtn.click();
+                }, 200);
+            } else if (tab === 'provider') {
+                showTab('provider');
+                // Switch to Bookings subtab inside provider view
+                setTimeout(() => {
+                    const provBookingsBtn = document.querySelector('.ptab-btn[onclick*="bookings"]');
+                    if (provBookingsBtn) provBookingsBtn.click();
+                }, 200);
+            }
+        }
+
+
+        // ============================================
+        // SUPPORT TICKETS
+        // ============================================
+        async function loadMyTickets() {
+            const list = document.getElementById('accountOpenTickets');
+            if (!list) return;
+            try {
+                const res = await API.call('/support/my');
+                if (!res.tickets || res.tickets.length === 0) {
+                    list.innerHTML = '';
+                    return;
+                }
+                list.innerHTML = res.tickets.map(t => `
+                    <div style="background:white;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:12px;border-left:4px solid #f59e0b;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                            <div>
+                                <div style="font-weight:700;font-size:15px;color:#1a1a2e;">${t.subject}</div>
+                                <div style="font-size:11px;color:#aaa;margin-top:2px;">Ticket #${t._id.slice(-8).toUpperCase()} • ${new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+                            </div>
+                            <span style="background:#fef3c7;color:#d97706;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">OPEN</span>
+                        </div>
+                        <div style="font-size:13px;color:#555;line-height:1.5;">${t.message}</div>
+                    </div>`).join('');
+            } catch(e) {
+                list.innerHTML = '';
+            }
+        }
+
+        async function submitSupportTicket() {
+            const subject = document.getElementById('ticketSubject').value.trim();
+            const message = document.getElementById('ticketMessage').value.trim();
+            if (!subject) { showToast('Please enter a subject', true); return; }
+            if (!message) { showToast('Please describe your issue', true); return; }
+            try {
+                await API.call('/support', 'POST', { subject, message });
+                showToast('✅ Ticket submitted! We will get back to you soon.', false);
+                document.getElementById('ticketSubject').value = '';
+                document.getElementById('ticketMessage').value = '';
+                loadMyTickets();
+            } catch(e) {
+                showToast(e.message || 'Failed to submit ticket', true);
+            }
+        }
+
+
+        // ============================================
+        // SLOWDAY+ SUBSCRIPTION
+        // ============================================
+        let currentUserIsPlus = false;
+        let plusStatus = null;
+
+        async function loadSubscriptionStatus() {
+            try {
+                const res = await API.getSubscriptionStatus();
+                plusStatus = res;
+                currentUserIsPlus = res.isPlus || false;
+                renderPlusAccountSection();
+                updateCardBadges();
+            } catch(e) {
+                // Subscription service not available yet
+                currentUserIsPlus = false;
+                plusStatus = null;
+            }
+        }
+
+        function renderPlusAccountSection() {
+            const el = document.getElementById('slowdayPlusAccountSection');
+            if (!el) return;
+            if (!plusStatus || !plusStatus.isPlus) {
+                el.innerHTML = `
+                    <div onclick="showSlowDayPlusModal()" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:14px;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-weight:800;font-size:15px;color:#92400e;">⚡ SlowDay<span style="color:#d97706;">+</span></div>
+                            <div style="font-size:12px;color:#a16207;margin-top:2px;">14-day free trial • $4.99/mo after</div>
+                        </div>
+                        <div style="background:#d97706;color:white;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;">Upgrade →</div>
+                    </div>`;
+            } else {
+                const isTrial = plusStatus.status === 'trialing';
+                const endDate = isTrial
+                    ? new Date(plusStatus.trialEnds).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+                    : new Date(plusStatus.currentPeriodEnd).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+                const cancelText = plusStatus.cancelAtPeriodEnd
+                    ? `<div style="font-size:11px;color:#e53e3e;margin-top:4px;">Cancels ${endDate}</div>`
+                    : `<button onclick="cancelSlowDayPlus()" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;padding:0;margin-top:4px;text-decoration:underline;">Cancel subscription</button>`;
+                el.innerHTML = `
+                    <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:14px;padding:16px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <div style="font-weight:800;font-size:15px;color:white;">⚡ SlowDay<span style="color:#fbbf24;">+</span> Active</div>
+                            <div style="background:#fbbf24;color:#1a1a2e;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${isTrial ? 'FREE TRIAL' : 'ACTIVE'}</div>
+                        </div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.7);">${isTrial ? 'Trial ends' : 'Renews'} ${endDate} • 10% off all bookings</div>
+                        ${cancelText}
+                    </div>`;
+            }
+        }
+
+        function showSlowDayPlusModal() {
+            // Update modal CTA based on status
+            const action = document.getElementById('plusModalAction');
+            if (action && plusStatus && plusStatus.isPlus) {
+                action.innerHTML = `<div style="text-align:center;padding:8px;background:#d1fae5;border-radius:12px;color:#065f46;font-weight:700;">✅ You are already a SlowDay+ member!</div>`;
+            }
+            document.getElementById('slowdayPlusModal').classList.add('active');
+        }
+
+        async function startSlowDayPlus() {
+            const btn = document.querySelector('#plusModalAction button');
+            if (btn) { btn.textContent = 'Redirecting to payment...'; btn.disabled = true; }
+            try {
+                const res = await API.startSubscription();
+                if (res.url) {
+                    window.location.href = res.url;
+                } else {
+                    showToast(res.message || 'Could not start subscription', true);
+                    if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
+                }
+            } catch(e) {
+                const msg = e.message || '';
+                if (msg.includes('not found') || msg.includes('404')) {
+                    showToast('Subscription service is still deploying. Try again in 1 minute.', true);
+                } else {
+                    showToast(msg || 'Payment system not ready yet', true);
+                }
+                if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
+            }
+        }
+
+        async function cancelSlowDayPlus() {
+            showConfirmModal('Cancel your SlowDay+ subscription?\nYou keep access until the end of your billing period.', 'Yes, Cancel', async () => {
+                try {
+                    await API.cancelSubscription();
+                    showToast('Subscription cancelled. You keep access until period end.', false);
+                    await loadSubscriptionStatus();
+                    renderPlusAccountSection();
+                } catch(e) {
+                    showToast(e.message || 'Failed to cancel', true);
+                }
             });
         }
 
-        >
+        function updateCardBadges() {
+            // Re-render cards to show/hide member badge - triggers on next render cycle
+            if (typeof renderSavedList === 'function') renderSavedList();
+        }
+
+        function getPlusBadge() {
+            if (!currentUserIsPlus) return '';
+            return '<span style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">👑 PLUS</span>';
+        }
+
+        function getPlusDiscount(price) {
+            if (!currentUserIsPlus) return price;
+            return Math.round(price * 0.9 * 100) / 100; // 10% off, rounded to cents
+        }
+
+        function getPlusDiscountLabel(price) {
+            if (!currentUserIsPlus) return '';
+            const discounted = getPlusDiscount(price);
+            return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px;">👑 $${discounted}</span>`;
+        }
+
+        // Prevent iOS pull-to-expand on bottom nav only
+        document.addEventListener('DOMContentLoaded', function() {
+            const bottomNav = document.querySelector('.bottom-nav');
+            if (bottomNav) {
+                bottomNav.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            }
+        });
+
+        // Prevent iOS overscroll/bounce on discover tab only
+        document.addEventListener('DOMContentLoaded', function() {
+            const discoverTab = document.getElementById('discoverTab');
+            if (!discoverTab) return;
+            let startY = 0;
+            discoverTab.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+            discoverTab.addEventListener('touchmove', function(e) {
+                // Find scrollable parent
+                let el = e.target;
+                let scrollable = null;
+                while (el && el !== discoverTab) {
+                    if (el.scrollHeight > el.clientHeight + 2) {
+                        scrollable = el;
+                        break;
+                    }
+                    el = el.parentElement;
+                }
+                if (!scrollable) {
+                    e.preventDefault();
+                    return;
+                }
+                const deltaY = e.touches[0].clientY - startY;
+                const atTop = scrollable.scrollTop <= 0;
+                const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 2;
+                // Block if trying to scroll past top or bottom boundary
+                if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        });
+
+        function goToSlide(idx) {
+            const photos = window._slidePhotos;
+            if (!photos) return;
+            window._slideIdx = ((idx % photos.length) + photos.length) % photos.length;
+            const track = document.getElementById('slideTrack');
+            if (track) track.style.transform = 'translateX(-' + (window._slideIdx * (100/photos.length)) + '%)';
+            const counter = document.getElementById('slideCounter');
+            if (counter) counter.textContent = (window._slideIdx+1) + ' / ' + photos.length;
+            photos.forEach((_, i) => {
+                const dot = document.getElementById('slideDot' + i);
+                if (!dot) return;
+                dot.style.width = i === window._slideIdx ? '18px' : '7px';
+                dot.style.background = i === window._slideIdx ? 'white' : 'rgba(255,255,255,0.5)';
+            });
+        }
+
+        function getServiceEmoji(serviceType) {
+            const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
+            return emojis[serviceType] || '⭐';
+        }
+
+        function showTerms() {
+            document.getElementById('userProfileModal').classList.remove('active');
+            document.getElementById('termsModal').classList.add('active');
+        }
+        function showPrivacy() {
+            document.getElementById('userProfileModal').classList.remove('active');
+            document.getElementById('privacyModal').classList.add('active');
+        }
+
+        // Savings celebration
+        let savingsCelebrationData = { totalSaved: 0, rank: '', percentile: 0 };
+        function showSavingsCelebration() {
+            document.getElementById('celebrationModal').classList.add('active');
+            document.getElementById('celebrationAmount').textContent = `$${Math.round(savingsCelebrationData.totalSaved)}`;
+            document.getElementById('celebrationRank').textContent = savingsCelebrationData.rank;
+            
+            // Calculate top percentage (minimum 1%)
+            const topPercent = Math.max(1, 100 - savingsCelebrationData.percentile);
+            document.getElementById('celebrationPercentile').textContent = `You're in the top ${topPercent}% of all SlowDay savers!`;
+            
+            // Trigger confetti
+            createConfetti();
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            container.innerHTML = '';
+            const colors = ['#667eea', '#764ba2', '#fbbf24', '#f093fb', '#4ade80', '#f87171'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position:absolute;
+                    width:10px;
+                    height:10px;
+                    background:${colors[Math.floor(Math.random()*colors.length)]};
+                    top:-10px;
+                    left:${Math.random()*100}%;
+                    opacity:${0.5 + Math.random()*0.5};
+                    transform:rotate(${Math.random()*360}deg);
+                    animation:confettiFall ${2 + Math.random()*2}s linear forwards;
+                `;
+                container.appendChild(confetti);
+            }
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+    </script>
+
+    <style>
+
+        /* Custom Select Dropdowns */
+        .custom-select-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            user-select: none;
+            position: relative;
+        }
+        .custom-select-box:active { background: #f8f9ff; }
+        .filter-select-box {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            border: none;
+            background: transparent;
+        }
+        #filterTypeDropdown {
+            right: 0 !important;
+            left: auto !important;
+            width: 180px !important;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .custom-select-dropdown {
+            position: absolute;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+            z-index: 9999;
+            overflow: hidden;
+            min-width: 100%;
+        }
+        .custom-select-opt {
+            padding: 13px 16px;
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .custom-select-opt:last-child { border-bottom: none; }
+        .custom-select-opt:active, .custom-select-opt:hover { background: #f0f4ff; color: #667eea; }
+        .form-group { position: relative; }
+        .search-bar { position: relative; }
+
+        /* Custom Date Picker */
+        .custom-date-picker {
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            user-select: none;
+        }
+        .cdp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .cdp-nav {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #667eea;
+            cursor: pointer;
+            padding: 0 8px;
+            line-height: 1;
+        }
+        .cdp-month-label {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1a1a2e;
+        }
+        .cdp-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+        .cdp-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cdp-day {
+            text-align: center;
+            padding: 8px 2px;
+            font-size: 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.15s;
+        }
+        .cdp-day:hover:not(.cdp-disabled):not(.cdp-past) {
+            background: #f0f4ff;
+            color: #667eea;
+        }
+        .cdp-day.cdp-selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 700;
+        }
+        .cdp-day.cdp-disabled {
+            color: #ddd;
+            cursor: not-allowed;
+            background: none;
+        }
+        .cdp-day.cdp-past {
+            color: #ddd;
+            cursor: not-allowed;
+        }
+        .cdp-day.cdp-empty { background: none; cursor: default; }
+        .cdp-hint {
+            text-align: center;
+            font-size: 11px;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 6px;
+            min-height: 16px;
+        }
+        @keyframes confettiFall {
+            to {
+                top: 100%;
+                transform: translateY(100vh) rotate(${Math.random()*720}deg);
+            }
+        }
+    </style>
+
+    <!-- Savings Celebration Modal -->
+    <div class="modal" id="celebrationModal">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:16px 16px 0 0;">
+                <h2>🎉 Congratulations!</h2>
+                <button class="close-btn" onclick="document.getElementById('celebrationModal').classList.remove('active')" style="color:white;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:40px 20px;text-align:center;position:relative;overflow:hidden;">
+                <div id="confettiContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"></div>
+                <div style="position:relative;z-index:2;">
+                    <div style="font-size:18px;color:#666;font-weight:600;margin-bottom:12px;">You've saved</div>
+                    <div id="celebrationAmount" style="font-size:56px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:8px;">$0</div>
+                    <div id="celebrationRank" style="font-size:28px;font-weight:800;color:#fbbf24;margin-bottom:16px;">Top 1% 🏆</div>
+                    <div id="celebrationPercentile" style="font-size:15px;color:#555;line-height:1.5;max-width:280px;margin:0 auto;">You're in the top 1% of all SlowDay savers!</div>
+                    <button onclick="document.getElementById('celebrationModal').classList.remove('active')" style="margin-top:28px;padding:14px 32px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(102,126,234,0.4);">Keep Saving!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Use Modal -->
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 Terms of Use</h2>
+                <button class="close-btn" onclick="document.getElementById('termsModal').classList.remove('active')">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;max-height:60vh;overflow-y:auto;">
+                <p style="color:#666;margin-bottom:16px;font-size:14px;line-height:1.6;">Effective Date: February 17, 2026</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">1. Acceptance of Terms</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">By accessing and using SlowDay Deals ("the Service"), you agree to be bound by these Terms of Use. If you do not agree, please discontinue use immediately.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">2. Service Description</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">SlowDay Deals is a marketplace connecting customers with service providers offering time-limited deals. We facilitate bookings but are not a party to agreements between customers and providers.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">3. User Accounts</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">4. Provider Obligations</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">Service providers must accurately represent their services, honor confirmed bookings, and comply with all applicable laws.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">5. Customer Obligations</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">Customers must provide accurate booking information and honor confirmed appointments.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">6. Limitation of Liability</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">SlowDay Deals is not liable for the quality, safety, or legality of services provided. Disputes are between customers and providers.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Termination</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We reserve the right to suspend or terminate accounts that violate these terms or engage in fraudulent activity.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Changes to Terms</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We may update these terms at any time. Continued use constitutes acceptance of modified terms.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔒 Privacy Policy</h2>
+                <button class="close-btn" onclick="document.getElementById('privacyModal').classList.remove('active')">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;max-height:60vh;overflow-y:auto;">
+                <p style="color:#666;margin-bottom:16px;font-size:14px;line-height:1.6;">Effective Date: February 17, 2026</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">1. Information We Collect</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We collect: account information (name, email, phone), booking details, service listings, and usage analytics.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">2. How We Use Your Information</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">To facilitate bookings, send notifications, improve the Service, and communicate updates.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">3. Information Sharing</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We share booking information between customers and providers. We do not sell personal data to third parties.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">4. Data Security</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We implement industry-standard security measures to protect your data, but cannot guarantee absolute security.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">5. Your Rights</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">You may access, update, or delete your personal information through your account settings.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">6. Cookies and Tracking</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We use cookies and similar technologies to enhance user experience and analyze usage patterns.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Third-Party Services</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">We use SendGrid for email and Twilio for SMS. These services have their own privacy policies.</p>
+                <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Contact Us</h3>
+                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660e030a0a0926150a091102071f0203070a154805090b">[email protected]</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+        <!-- SlowDay+ Upgrade Modal -->
+        <div id="slowdayPlusModal" class="modal">
+            <div class="modal-content" style="max-width:380px;padding:0;overflow:hidden;border-radius:24px;">
+                <!-- Header gradient -->
+                <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:28px 24px 20px;text-align:center;position:relative;">
+                    <button onclick="document.getElementById('slowdayPlusModal').classList.remove('active')" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+                    <div style="font-size:44px;margin-bottom:8px;">⚡</div>
+                    <h2 style="color:white;margin:0;font-size:24px;font-weight:800;">SlowDay<span style="color:#fef3c7;">+</span></h2>
+                    <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:14px;">Members-only perks, every day</p>
+                </div>
+                <!-- Body -->
+                <div style="padding:24px;">
+                    <!-- Perks -->
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👑</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">Members-Only Badge</div><div style="font-size:12px;color:#888;">Stand out on every service card</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💸</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">10% Off All Deals</div><div style="font-size:12px;color:#888;">Extra discount on every booking</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎟️</div>
+                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">First Access to Slots</div><div style="font-size:12px;color:#888;">See available spots before anyone else</div></div>
+                        </div>
+                    </div>
+                    <!-- Pricing -->
+                    <div style="background:#f8f9ff;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;">
+                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Only</div>
+                        <div style="font-size:36px;font-weight:800;color:#1a1a2e;">$4.99<span style="font-size:16px;font-weight:500;color:#888;">/mo</span></div>
+                        <div style="display:inline-block;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:6px;">✨ 14-day free trial — cancel anytime</div>
+                    </div>
+                    <!-- CTA -->
+                    <div id="plusModalAction">
+                        <button onclick="startSlowDayPlus()" style="width:100%;padding:15px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:0.3px;">Start Free Trial →</button>
+                        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">No charge for 14 days. $4.99/mo after.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

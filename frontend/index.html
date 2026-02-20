@@ -2444,13 +2444,16 @@
             const pillsEl = document.getElementById('discoverPills');
             if (tab === 'discover') {
                 document.querySelector('.app-container').scrollTop = 0;
-                // Reset any card-content scroll so cards always show from the top
-                document.querySelectorAll('#cardStack .card-content').forEach(el => el.scrollTop = 0);
                 document.getElementById('navDiscover').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'block';
+                // Reset card-content scroll AFTER elements are visible —
+                // iOS Safari ignores scrollTop on display:none elements
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('#cardStack .card-content').forEach(el => el.scrollTop = 0);
+                });
             } else if (tab === 'saved') {
                 document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navSaved').classList.add('active');

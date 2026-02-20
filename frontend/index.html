@@ -2374,6 +2374,7 @@
                 document.getElementById('savedTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'block';
             } else if (tab === 'saved') {
+                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navSaved').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';
@@ -2382,6 +2383,7 @@
                 if (pillsEl) pillsEl.style.display = 'none';
                 renderSavedList();
             } else if (tab === 'bookings') {
+                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';

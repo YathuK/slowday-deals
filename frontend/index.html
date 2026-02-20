@@ -3230,13 +3230,13 @@
                         await loadSavedServices();
                         renderSavedList();
                     } catch(err) { /* already not saved, no problem */ }
-                    
-                    // Auto-advance to next card and reload services to reflect updated slots
+
                     setTimeout(async () => {
                         closeBookingModal();
-                        await loadPublicServices(); // Reload to get updated slot counts
-                        swipeCard('right'); // Move to next card
-                    }, 1500);
+                        showToast('🎉 Booking request sent! Check your Bookings tab for updates.');
+                        showTab('bookings');
+                        await loadPublicServices(); // Refresh slot counts in the background
+                    }, 900);
                 }
             } catch (error) { showToast(error.message || 'Error creating booking.', true); }
         }

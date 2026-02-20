@@ -2105,6 +2105,7 @@
                 allServices = [];
                 services = [];
             }
+            injectPlusCard();
             renderCards();
         }
 
@@ -2519,8 +2520,17 @@
                     s.description.toLowerCase().includes(q);
                 return matchesType && matchesQuery;
             });
+            injectPlusCard();
             currentCardIndex = 0;
             renderCards();
+        }
+
+        function injectPlusCard() {
+            if (!currentUser || currentUserIsPlus || sessionStorage.getItem('plusCardShown')) return;
+            if (services.some(s => s._isPlusCard)) return;
+            sessionStorage.setItem('plusCardShown', '1');
+            const insertAt = Math.min(3, services.length);
+            services.splice(insertAt, 0, { _isPlusCard: true });
         }
 
         // ============================================
@@ -2755,6 +2765,7 @@
         }
 
         function createCard(service, stackPosition) {
+            if (service._isPlusCard) return createPlusCard(stackPosition);
             const card = document.createElement('div');
             card.className = 'service-card';
             card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
@@ -2874,7 +2885,86 @@
 
         function swipeLeft() { swipeCard('left'); }
 
+        function handlePlusCardRight() {
+            swipeCard('right');
+            setTimeout(() => showSlowDayPlusModal(), 350);
+        }
+
+        function createPlusCard(stackPosition) {
+            const card = document.createElement('div');
+            card.className = 'service-card';
+            card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`;
+            card.style.zIndex = 100 - stackPosition;
+
+            const buttonsHtml = stackPosition === 0 ? `
+                <div class="card-action-row" onclick="event.stopPropagation()">
+                    <button class="card-btn card-btn-nope" onclick="swipeCard('left')">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-info" onclick="showSlowDayPlusModal()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </button>
+                    <button class="card-btn card-btn-like" style="color:#d97706;" onclick="handlePlusCardRight()">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="#d97706" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </button>
+                </div>` : '';
+
+            card.innerHTML = `
+                <div class="swipe-indicator like-indicator" style="color:#d97706;border-color:#d97706;">⚡ UPGRADE</div>
+                <div class="swipe-indicator nope-indicator">SKIP</div>
+                <div class="card-image" style="position:relative;background:linear-gradient(135deg,#f59e0b 0%,#d97706 60%,#b45309 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;overflow:hidden;">
+                    <div style="position:absolute;inset:0;background:radial-gradient(circle at 65% 25%,rgba(255,255,255,0.18) 0%,transparent 55%);pointer-events:none;"></div>
+                    <div style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.25);color:white;font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;backdrop-filter:blur(4px);letter-spacing:0.5px;">👑 MEMBERS ONLY</div>
+                    <div style="font-size:70px;line-height:1;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.25));">⚡</div>
+                    <div style="font-size:30px;font-weight:900;color:white;letter-spacing:-0.5px;text-shadow:0 2px 10px rgba(0,0,0,0.2);">SlowDay<span style="color:#fef3c7;">+</span></div>
+                    <div style="font-size:13px;color:rgba(255,255,255,0.88);font-weight:600;">Members-only perks, every day</div>
+                </div>
+                <div class="card-content">
+                    <div class="service-header">
+                        <div>
+                            <div class="service-title">Get 10% off every deal</div>
+                            <div class="provider-name" style="margin-top:4px;">
+                                <span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:11px;font-weight:800;padding:2px 10px;border-radius:20px;">SlowDay+</span>
+                                <span style="color:#888;font-size:12px;margin-left:6px;">cancel anytime</span>
+                            </div>
+                        </div>
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div style="font-size:26px;font-weight:900;color:#d97706;line-height:1;">$4.99</div>
+                            <div style="font-size:11px;color:#888;">/month</div>
+                        </div>
+                    </div>
+                    <div class="service-description" style="display:flex;flex-wrap:wrap;gap:6px;">
+                        <span style="background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;">👑 Members badge</span>
+                        <span style="background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;">💸 10% off all deals</span>
+                        <span style="background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;">🎟️ First access to slots</span>
+                    </div>
+                    <div class="price-display">
+                        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:11px 14px;text-align:center;">
+                            <div style="font-size:13px;font-weight:700;color:#92400e;">✨ 14-day free trial — no charge now</div>
+                        </div>
+                    </div>
+                    ${buttonsHtml}
+                </div>`;
+
+            if (stackPosition !== 0) return card;
+
+            let startX, startY, currentX, isDragging = false, swipeDirection = null, startedInCardContent = false;
+            card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; currentX = undefined; startX = e.clientX; card.style.transition = 'none'; });
+            card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; swipeDirection = null; currentX = undefined; startX = e.touches[0].clientX; startY = e.touches[0].clientY; startedInCardContent = !!e.target.closest('.card-content'); card.style.transition = 'none'; }, { passive: true });
+            document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
+            document.addEventListener('touchmove', e => { if (!isDragging) return; const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY; if (!swipeDirection && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) { swipeDirection = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'; } if (!swipeDirection) return; if (swipeDirection === 'vertical') { if (!startedInCardContent) e.preventDefault(); return; } e.preventDefault(); currentX = e.touches[0].clientX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: false });
+            const endDrag = () => { if (!isDragging) return; isDragging = false; swipeDirection = null; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handlePlusCardRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            card.addEventListener('click', e => { if (!isDragging && !e.target.closest('.card-action-row')) showSlowDayPlusModal(); });
+            return card;
+        }
+
         async function handleSwipeRight() {
+            if (services[currentCardIndex] && services[currentCardIndex]._isPlusCard) {
+                handlePlusCardRight();
+                return;
+            }
             if (!currentUser) {
                 showToast('Please log in to save services!', true);
                 showAuthModal();

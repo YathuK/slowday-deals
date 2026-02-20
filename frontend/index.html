@@ -2013,11 +2013,25 @@
             return false;
         }
 
+        function dealSortPriority(s) {
+            if (!s.dealActive) return 1;
+            const wdLeft = s.weekdaySlots != null ? s.weekdaySlots - (s.weekdaySlotsUsed || 0) : Infinity;
+            const weLeft = s.weekendSlots != null ? s.weekendSlots - (s.weekendSlotsUsed || 0) : Infinity;
+            if (wdLeft <= 0 && weLeft <= 0) return 1;
+            return 0;
+        }
+
         async function loadPublicServices() {
             try {
                 const response = await API.getServices();
                 allServices = response.services || [];
-                
+
+                // Active deals first (newest first), ended/inactive deals last
+                allServices.sort((a, b) =>
+                    dealSortPriority(a) - dealSortPriority(b) ||
+                    new Date(b.createdAt) - new Date(a.createdAt)
+                );
+
                 // Filter out provider's own service if they're a provider
                 if (myService && myService._id) {
                     services = allServices.filter(s => (s._id || s.id) !== myService._id);

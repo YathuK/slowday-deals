@@ -133,6 +133,8 @@ router.delete('/:id', auth, async (req, res) => {
         }
 
         await service.deleteOne();
+        req.user.accountType = 'customer';
+        await req.user.save();
         res.json({ success: true, message: 'Service deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error deleting service', error: error.message });

@@ -3193,11 +3193,11 @@
                         ${DAYS.map(d=>`<option value="${d}" ${existing&&existing.day===d?'selected':''}>${d}</option>`).join('')}
                     </select>
                 </div>
-                <div style="grid-column:1/-1;">
+                <div>
                     <label style="font-size:12px;font-weight:600;color:#444;">Start Time</label>
                     <input type="time" class="av-start" value="${existing?existing.startTime:'09:00'}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
                 </div>
-                <div style="grid-column:1/-1;">
+                <div>
                     <label style="font-size:12px;font-weight:600;color:#444;">End Time</label>
                     <input type="time" class="av-end" value="${existing?existing.endTime:'17:00'}" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;">
                 </div>
@@ -3367,14 +3367,16 @@
             } catch(e) { showProfileMsg(e.message || 'Current password incorrect', true); }
         }
 
-        async function deleteAccount() {
-            if (!confirm('⚠️ Delete your account? This cannot be undone. All your data will be permanently removed.')) return;
-            if (!confirm('Are you absolutely sure? Type OK to confirm.')) return;
-            try {
-                await API.deleteAccount();
-                logout();
-                showToast('Your account has been deleted.', false);
-            } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
+        function deleteAccount() {
+            showConfirmModal('Delete your account? This cannot be undone. All your data will be permanently removed.', 'Delete Account', () => {
+                showConfirmModal('Are you absolutely sure? This is irreversible.', 'Yes, Delete Forever', async () => {
+                    try {
+                        await API.deleteAccount();
+                        logout();
+                        showToast('Your account has been deleted.', false);
+                    } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
+                });
+            });
         }
 
         // ============================================
@@ -3811,6 +3813,8 @@
         // ============================================
         // CUSTOM SELECT DROPDOWNS
         // ============================================
+        const _blockFilterScroll = e => e.preventDefault();
+
         function toggleCustomSelect(boxId) {
             const dropId = boxId.replace('Box', 'Dropdown');
             const drop = document.getElementById(dropId);
@@ -3828,14 +3832,14 @@
                     drop.style.right = '0px';
                     drop.style.left = 'auto';
                     drop.style.width = '190px';
-                    appContainer.style.overflowY = 'hidden';
+                    document.addEventListener('touchmove', _blockFilterScroll, { passive: false });
                 } else {
                     drop.style.left = box.offsetLeft + 'px';
                     drop.style.right = 'auto';
                     drop.style.width = box.offsetWidth + 'px';
                 }
             } else {
-                if (boxId === 'filterTypeBox') appContainer.style.overflowY = 'auto';
+                if (boxId === 'filterTypeBox') document.removeEventListener('touchmove', _blockFilterScroll);
             }
         }
 
@@ -3849,7 +3853,7 @@
             document.getElementById('filterType').value = value;
             document.getElementById('filterTypeLabel').textContent = label || 'All types';
             document.getElementById('filterTypeDropdown').style.display = 'none';
-            appContainer.style.overflowY = 'auto';
+            document.removeEventListener('touchmove', _blockFilterScroll);
             searchServices(document.getElementById('searchInput').value);
         }
 
@@ -3857,7 +3861,7 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.custom-select-box') && !e.target.closest('.custom-select-dropdown')) {
                 document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
-                appContainer.style.overflowY = 'auto';
+                document.removeEventListener('touchmove', _blockFilterScroll);
             }
         });
 

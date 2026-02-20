@@ -3221,22 +3221,16 @@
                     notes: document.getElementById('bookingNotes').value
                 });
                 if (response.success) {
-                    const successEl = document.getElementById('bookingSuccess');
-                    successEl.style.display = 'block';
-                    successEl.textContent = '✅ Booking sent! The provider will confirm soon.';
                     e.target.reset();
                     try {
                         await API.removeSavedService(serviceId);
                         await loadSavedServices();
                         renderSavedList();
                     } catch(err) { /* already not saved, no problem */ }
-
-                    setTimeout(async () => {
-                        closeBookingModal();
-                        showToast('🎉 Booking request sent! Check your Bookings tab for updates.');
-                        showTab('bookings');
-                        await loadPublicServices(); // Refresh slot counts in the background
-                    }, 900);
+                    closeBookingModal();
+                    showToast('🎉 Booking request sent! The provider will confirm soon.');
+                    showTab('bookings');
+                    loadPublicServices(); // Refresh slot counts in the background
                 }
             } catch (error) { showToast(error.message || 'Error creating booking.', true); }
         }

@@ -2735,7 +2735,7 @@
                 const dots = service.photos.map((_, i) =>
                     `<div id="slideDot${i}" onclick="event.stopPropagation();goToSlide(${i})" style="width:${i===0?'18px':'7px'};height:7px;border-radius:4px;background:${i===0?'white':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.25s;"></div>`
                 ).join('');
-                imageContent = `<div style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;">
+                imageContent = `<div id="slideContainer" style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;">
                     <div id="slideTrack" style="display:flex;height:100%;width:${service.photos.length*100}%;transition:transform 0.35s ease;">${slides}</div>
                     <button onclick="event.stopPropagation();goToSlide(window._slideIdx-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">‹</button>
                     <button onclick="event.stopPropagation();goToSlide(window._slideIdx+1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">›</button>
@@ -2847,6 +2847,7 @@
                         : `<button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
                 })()}`;
             modal.classList.add('active');
+            initSlideTouch();
         }
 
         function toggleMap(encodedLocation) {
@@ -4233,6 +4234,47 @@
                 }
             }, { passive: false });
         });
+
+        function initSlideTouch() {
+            const container = document.getElementById('slideContainer');
+            if (!container) return;
+            let startX = 0, startY = 0, swipeDir = null;
+
+            container.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                swipeDir = null;
+                const track = document.getElementById('slideTrack');
+                if (track) track.style.transition = 'none';
+            }, { passive: true });
+
+            container.addEventListener('touchmove', function(e) {
+                const diffX = e.touches[0].clientX - startX;
+                const diffY = e.touches[0].clientY - startY;
+                if (!swipeDir && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+                    swipeDir = Math.abs(diffX) > Math.abs(diffY) ? 'h' : 'v';
+                }
+                if (swipeDir === 'h') {
+                    e.preventDefault();
+                    const track = document.getElementById('slideTrack');
+                    if (track && window._slidePhotos) {
+                        const baseOffset = window._slideIdx * (100 / window._slidePhotos.length);
+                        track.style.transform = `translateX(calc(-${baseOffset}% + ${diffX}px))`;
+                    }
+                }
+            }, { passive: false });
+
+            container.addEventListener('touchend', function(e) {
+                const diffX = e.changedTouches[0].clientX - startX;
+                const track = document.getElementById('slideTrack');
+                if (track) track.style.transition = 'transform 0.35s ease';
+                if (swipeDir === 'h') {
+                    if (diffX < -40) goToSlide(window._slideIdx + 1);
+                    else if (diffX > 40) goToSlide(window._slideIdx - 1);
+                    else goToSlide(window._slideIdx);
+                }
+            });
+        }
 
         function goToSlide(idx) {
             const photos = window._slidePhotos;

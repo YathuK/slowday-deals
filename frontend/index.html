@@ -937,6 +937,7 @@
             padding-bottom: 80px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
         }
         #customerView #discoverTab {
             overflow: hidden;
@@ -2443,16 +2444,21 @@
 
             const pillsEl = document.getElementById('discoverPills');
             if (tab === 'discover') {
-                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navDiscover').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'block';
-                // Reset card-content scroll AFTER elements are visible —
-                // iOS Safari ignores scrollTop on display:none elements
+                // Double-rAF: kill any in-flight iOS momentum scroll on app-container,
+                // then reset card-content scroll after elements are visible
+                const ac = document.querySelector('.app-container');
+                ac.scrollTop = 0;
                 requestAnimationFrame(() => {
-                    document.querySelectorAll('#cardStack .card-content').forEach(el => el.scrollTop = 0);
+                    ac.scrollTop = 0;
+                    requestAnimationFrame(() => {
+                        ac.scrollTop = 0;
+                        document.querySelectorAll('#cardStack .card-content').forEach(el => el.scrollTop = 0);
+                    });
                 });
             } else if (tab === 'saved') {
                 document.querySelector('.app-container').scrollTop = 0;

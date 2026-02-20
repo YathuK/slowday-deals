@@ -3933,12 +3933,11 @@
                     document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>`;
                     return;
                 }
-                document.getElementById('myBookingsList').innerHTML = bookings.map(b => {
+                window._customerBookings = bookings;
+                document.getElementById('myBookingsList').innerHTML = bookings.map((b, idx) => {
                     const svc = b.service || {};
                     const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
-                        ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
-                    return `<div class="booking-card">
+                    return `<div class="booking-card" style="cursor:pointer;" onclick="showBookingDetail(${idx})">
                         <div class="booking-card-header">
                             <div>
                                 <div class="booking-card-title">${svc.serviceType || 'Service'}</div>
@@ -3950,7 +3949,6 @@
                         <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
                         <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
                         ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
-                        ${cancelBtn}
                     </div>`;
                 }).join('');
             } catch(e) {

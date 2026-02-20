@@ -3383,8 +3383,9 @@
             renderCalendar();
         }
 
-        function loadCalendar() {
+        async function loadCalendar() {
             calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth(), 1);
+            if (!allProviderBookings.length) await loadProviderBookings();
             renderCalendar();
         }
 

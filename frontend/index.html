@@ -2421,7 +2421,7 @@
             const b = (window._customerBookings || [])[idx];
             if (!b || !b.service) return;
             const canCancel = ['pending','confirmed','rescheduled'].includes(b.status);
-            showDetails(b.service, canCancel ? b._id : null, b.price);
+            showDetails(b.service, canCancel ? b._id : null, b.price, b.preferredTime);
         }
 
         function cancelBookingFromDetail(id, savings) {
@@ -2905,7 +2905,7 @@
         // ============================================
         // DETAILS & BOOKING
         // ============================================
-        function showDetails(svcOverride, cancelBookingId, bookingPrice) {
+        function showDetails(svcOverride, cancelBookingId, bookingPrice, bookingDate) {
             const service = svcOverride || services[currentCardIndex];
             if (!service) return;
             const serviceId = service._id || service.id;
@@ -2968,12 +2968,19 @@
                     ${(() => {
                         if (cancelBookingId && bookingPrice != null) {
                             const np = service.normalPrice;
-                            const savings = np && np > bookingPrice ? (np - bookingPrice).toFixed(2) : null;
-                            const discountPct = savings ? Math.round((1 - bookingPrice / np) * 100) : 0;
+                            const paid = parseFloat(bookingPrice);
+                            const savings = np && np > paid ? (np - paid).toFixed(2) : null;
+                            const discountPct = savings ? Math.round((1 - paid / np) * 100) : 0;
+                            const dateStr = bookingDate ? new Date(bookingDate).toLocaleString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' }) : null;
                             return `
                             <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:20px;color:white;">
+                                ${dateStr ? `
+                                <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.25);">
+                                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;opacity:0.7;margin-bottom:4px;">📅 Your Appointment</div>
+                                    <div style="font-size:16px;font-weight:700;">${dateStr}</div>
+                                </div>` : ''}
                                 <div style="font-size:12px;font-weight:700;text-transform:uppercase;opacity:0.8;margin-bottom:6px;">Price you're paying</div>
-                                <div style="font-size:36px;font-weight:800;line-height:1;">$${bookingPrice}</div>
+                                <div style="font-size:36px;font-weight:800;line-height:1;">$${paid}</div>
                                 ${savings ? `
                                 <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
                                     <div style="font-size:13px;opacity:0.65;text-decoration:line-through;">was $${np}</div>

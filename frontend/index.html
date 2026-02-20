@@ -2829,7 +2829,17 @@
                         </div>`;
                     })()}
                 </div>
-                <button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
+                ${(() => {
+                    const today = new Date().getDay();
+                    const isWknd = today === 0 || today === 6;
+                    const slots = isWknd ? service.weekendSlots : service.weekdaySlots;
+                    const used = isWknd ? (service.weekendSlotsUsed || 0) : (service.weekdaySlotsUsed || 0);
+                    const slotsLeft = slots != null ? slots - used : null;
+                    const unavailable = !service.dealActive || (slotsLeft !== null && slotsLeft <= 0);
+                    return unavailable
+                        ? `<button class="book-now-btn" disabled style="opacity:0.45;cursor:not-allowed;background:#9ca3af;box-shadow:none;">Deal Unavailable</button>`
+                        : `<button class="book-now-btn" onclick="openBookingModal('${serviceId}')">Book Now</button>`;
+                })()}`;
             modal.classList.add('active');
         }
 
@@ -2857,6 +2867,7 @@
             if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
             window._lastDetailDayType = dayType;
             currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
+            if (currentBookingService && !currentBookingService.dealActive) { showToast('This deal is currently unavailable.', true); return; }
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');
             document.getElementById('bookingSuccess').style.display = 'none';

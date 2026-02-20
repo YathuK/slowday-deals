@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="format-detection" content="telephone=no, address=no, email=no">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
     <script src="api.js"></script>
@@ -15,15 +14,10 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html {
-            overscroll-behavior: none;
-        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            overscroll-behavior: none;
             min-height: 100vh;
-            min-height: 100svh;
             touch-action: pan-y;
             -webkit-text-size-adjust: 100%;
         }
@@ -33,32 +27,24 @@
             margin: 0 auto;
             background: white;
             min-height: 100vh;
-            min-height: 100svh;
             position: relative;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow-x: clip;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 0 16px;
-            position: fixed;
+            position: sticky;
             top: 0;
-            top: env(safe-area-inset-top);
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 500px;
             z-index: 100;
             box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-            overflow: hidden;
+            overflow: visible;
             display: flex;
             align-items: center;
             justify-content: space-between;
             height: 58px;
-            flex-shrink: 0;
         }
 
         .header h1 { display: none; }
@@ -206,8 +192,7 @@
         /* Customer View Styles */
         .swipe-container {
             position: relative;
-            height: calc(100svh - 195px);
-            height: calc(100vh - 195px);
+            height: calc(100vh - 185px);
             min-height: 360px;
             padding: 12px 16px 16px;
             overflow: hidden;
@@ -228,10 +213,8 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             cursor: grab;
-            touch-action: none;
             transition: transform 0.3s, box-shadow 0.3s;
             user-select: none;
-            -webkit-user-select: none;
         }
 
         .service-card:active {
@@ -248,16 +231,14 @@
 
         .card-image {
             width: 100%;
-            height: 55%;
+            height: 60%;
             object-fit: cover;
-            touch-action: none;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 48px;
-            flex-shrink: 0;
         }
 
         .card-image img {
@@ -267,12 +248,9 @@
         }
 
         .card-content {
-            padding: 10px 14px 4px;
-            height: 45%;
+            padding: 20px;
+            height: 40%;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y;
-            overscroll-behavior-y: contain;
         }
 
         .service-header {
@@ -443,9 +421,9 @@
             display: flex;
             justify-content: center;
             gap: 24px;
-            padding: 8px 0 2px;
+            padding: 12px 0 4px;
             border-top: 1px solid #f0f0f0;
-            margin-top: 4px;
+            margin-top: 8px;
         }
 
         .card-btn {
@@ -894,58 +872,10 @@
             display: flex;
             border-bottom: 2px solid #f0f0f0;
             background: white;
-            position: fixed;
-            top: 58px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 500px;
-            z-index: 90;
-            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
-        #providerView .tab-content,
-        #ptabBookingsContent,
-        #ptabCalendarContent,
-        #ptabAnalyticsContent,
-        #ptabProfileContent {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 80px;
-        }
-
-        #customerView .tab-content {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
-            padding-top: 58px;
-            padding-bottom: 80px;
-        }
-        #savedTab {
-            padding-top: 0;
-        }
-        #savedListWrap, #myBookingsWrap {
-            padding-top: 33px;
-        }
-        #ptabProfileContent,
-        #ptabBookingsContent,
-        #ptabCalendarContent,
-        #ptabAnalyticsContent {
-            padding-top: 103px;
-            padding-bottom: 80px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        #customerView #discoverTab {
-            overflow: hidden;
-            height: calc(100svh - 200px);
-            height: calc(100vh - 200px);
-            margin-top: 130px;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            touch-action: none;
-            overscroll-behavior: none;
-        }
-
         .ptab-btn {
             flex: 1;
             padding: 14px 4px;
@@ -1017,7 +947,7 @@
         .status-cancelled { background: #f3f4f6; color: #6b7280; }
         .status-rescheduled { background: #dbeafe; color: #2563eb; }
         .status-completed { background: #ede9fe; color: #7c3aed; }
-        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; } .booking-meta a { text-decoration: none !important; color: inherit !important; } .no-link { -webkit-user-select: text; text-decoration: none !important; pointer-events: none; }
+        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; }
         .booking-meta span { color: #888; }
         .booking-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .action-btn {
@@ -1070,14 +1000,14 @@
         .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         /* ---- Saved sub-tabs ---- */
-        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: fixed; top: 58px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; z-index: 90; box-sizing: border-box; }
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; }
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
         .location-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             cursor: pointer;
             padding: 4px 0;
             border-radius: 8px;
@@ -1108,7 +1038,6 @@
         }
         .dt-date-input {
             width: 100%;
-            max-width: 100%;
             padding: 12px 14px;
             border: 1.5px solid #e0e0e0;
             border-radius: 10px;
@@ -1116,17 +1045,11 @@
             color: #333;
             background: white;
             box-sizing: border-box;
-            margin-bottom: 8px;
-            display: block;
-            -webkit-appearance: none;
-            appearance: none;
-            min-height: 46px;
         }
         .dt-date-input:focus { border-color: #667eea; outline: none; }
         .dt-time-row {
             display: flex;
             gap: 8px;
-            margin-top: 0;
         }
         .dt-select {
             flex: 1;
@@ -1152,14 +1075,6 @@
             padding: 12px 16px 8px;
             background: #f8f9ff;
             border-bottom: 1px solid #eee;
-            position: fixed;
-            top: 58px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 500px;
-            z-index: 200;
-            box-sizing: border-box;
         }
 
         .search-bar {
@@ -1214,9 +1129,9 @@
             display: flex;
             z-index: 200;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-            padding-bottom: env(safe-area-inset-bottom, 8px);
-            height: calc(65px + env(safe-area-inset-bottom, 0px));
-            overflow: hidden;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            height: 65px;
+            overflow: visible;
         }
 
         .nav-btn {
@@ -1300,9 +1215,30 @@
     <div class="app-container">
         <div class="header" id="mainHeader">
             <!-- Left: Logo directly on gradient -->
-            <div class="header-logo" style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showTab('discover')">
+            <div class="header-logo" style="display:flex;align-items:center;gap:10px;">
                 <!-- Icon: calendar + bolt on gradient -->
-                <img src="data:image/png;base64,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" onclick="showTab('discover')" style="width:38px;height:38px;flex-shrink:0;cursor:pointer;mix-blend-mode:screen;" />
+                <div style="width:40px;height:40px;position:relative;flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+                        <!-- Calendar body -->
+                        <rect x="3" y="8" width="34" height="28" rx="6" fill="white" opacity="0.95"/>
+                        <!-- Header bar -->
+                        <rect x="3" y="8" width="34" height="11" rx="6" fill="white"/>
+                        <rect x="3" y="14" width="34" height="5" fill="white"/>
+                        <!-- Binding pegs -->
+                        <rect x="11" y="4" width="5" height="9" rx="2.5" fill="white"/>
+                        <rect x="24" y="4" width="5" height="9" rx="2.5" fill="white"/>
+                        <!-- Calendar dots -->
+                        <circle cx="11" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
+                        <circle cx="20" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
+                        <circle cx="29" cy="26" r="2" fill="#c4b5fd" opacity="0.8"/>
+                        <circle cx="11" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
+                        <circle cx="20" cy="32" r="2" fill="#c4b5fd" opacity="0.8"/>
+                        <!-- Lightning glow -->
+                        <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24" opacity="0.35" transform="scale(1.12) translate(-2,-1)"/>
+                        <!-- Lightning bolt -->
+                        <path d="M21,5 L12,21 L18,21 L14,37 L29,18 L22,18 Z" fill="#fbbf24"/>
+                    </svg>
+                </div>
                 <!-- Wordmark -->
                 <div>
                     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;font-weight:800;color:white;letter-spacing:-0.3px;line-height:1.1;text-shadow:0 1px 4px rgba(0,0,0,0.15);">SlowDay</div>
@@ -1310,9 +1246,9 @@
                 </div>
             </div>
 
-            <!-- Right: savings badge + avatar / login -->
+            <!-- Right: savings tracker + avatar / login -->
             <div class="user-menu" id="userMenu" style="display: none;">
-                <div id="savingsBadge" onclick="showSavingsCelebration()" style="visibility:hidden;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:4px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                <div id="savingsBadge" onclick="showSavingsCelebration()" style="display:none;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);border-radius:16px;padding:4px 10px;margin-right:8px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                     <div style="font-size:9px;color:rgba(255,255,255,0.75);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Saved</div>
                     <div style="font-size:14px;color:white;font-weight:800;line-height:1;margin-top:1px;" id="savingsAmount">$0</div>
                     <div style="font-size:8px;color:#fbbf24;font-weight:700;margin-top:1px;" id="savingsRank">Top 1%</div>
@@ -1340,8 +1276,7 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
             <hr style="margin:4px 0 10px;border:none;border-top:1px solid #f0f0f0;">
-            <button class="dropdown-btn" onclick="document.getElementById('userDropdown').style.display='none'; switchToProvider();">💼 My Provider Profile</button>
-            <button onclick="document.getElementById('userDropdown').style.display='none'; showSlowDayPlusModal();" style="width:100%;padding:11px 14px;margin-top:8px;margin-bottom:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">⚡ SlowDay+</button>
+            <button class="dropdown-btn" onclick="switchToProvider(); toggleUserDropdown();">💼 My Provider Profile</button>
             <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
         </div>
 
@@ -1356,27 +1291,22 @@
             <div class="search-bar">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" id="searchInput" placeholder="Search services, location..." oninput="searchServices(this.value)">
-                <input type="hidden" id="filterType" value="">
-                <div class="custom-select-box filter-select-box" id="filterTypeBox" onclick="toggleCustomSelect('filterTypeBox')">
-                    <span id="filterTypeLabel">All types</span>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-                <div class="custom-select-dropdown" id="filterTypeDropdown" style="display:none;min-width:160px;right:0;left:auto;">
-                    <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
-                    <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
-                </div>
+                <select id="filterType" onchange="searchServices(document.getElementById('searchInput').value)">
+                    <option value="">All types</option>
+                    <option value="Haircut">Haircut</option>
+                    <option value="Barber">Barber</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Massage">Massage</option>
+                    <option value="Nails">Nails</option>
+                    <option value="Spa">Spa</option>
+                    <option value="Personal Training">Personal Training</option>
+                    <option value="Dog Walking">Dog Walking</option>
+                    <option value="Tutoring">Tutoring</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Car Detailing">Car Detailing</option>
+                    <option value="Laundry Service">Laundry Service</option>
+                    <option value="Other">Other</option>
+                </select>
             </div>
         </div>
 
@@ -1400,7 +1330,11 @@
                         <div class="empty-state"><div class="empty-emoji">📍</div><h3>No bookings yet</h3><p>Book a service to see your status here</p></div>
                     </div>
                 </div>
-                
+            </div>
+            <div id="bookingsTab" class="tab-content" style="display:none;">
+                <div style="padding:16px 16px 0;" id="bookingsList">
+                    <div class="empty-state"><div class="empty-emoji">📅</div><h3>No bookings yet</h3><p>Book a service to see your bookings here</p></div>
+                </div>
             </div>
         </div>
 
@@ -1410,7 +1344,6 @@
             <div class="provider-tabs">
                 <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')">👤 Profile</button>
                 <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')">📋 Bookings <span class="badge" id="pendingBadge" style="display:none"></span></button>
-                <button class="ptab-btn" id="ptabCalendar" onclick="switchProviderTab('calendar')">📅 Calendar</button>
                 <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')">📊 Analytics</button>
             </div>
 
@@ -1512,28 +1445,6 @@
                 </div>
             </div>
 
-            <!-- CALENDAR TAB -->
-            <div id="ptabCalendarContent" style="display:none;">
-                <div style="padding:16px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                        <button onclick="changeCalMonth(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;">‹</button>
-                        <div id="calMonthLabel" style="font-size:17px;font-weight:700;color:#333;"></div>
-                        <button onclick="changeCalMonth(1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #e0e0e0;background:white;font-size:18px;cursor:pointer;">›</button>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">S</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">M</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">T</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">W</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">T</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">F</div>
-                        <div style="text-align:center;font-size:11px;font-weight:700;color:#aaa;padding:4px 0;">S</div>
-                    </div>
-                    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:16px;"></div>
-                    <div id="calDayBookings"></div>
-                </div>
-            </div>
-
             <!-- ANALYTICS TAB -->
             <div id="ptabAnalyticsContent" style="display:none;">
                 <div style="padding:16px;" id="analyticsContent">
@@ -1563,9 +1474,6 @@
 
                     <hr style="border:none;border-top:1px solid #f0f0f0;margin-bottom:24px;">
 
-                    <!-- SlowDay+ Status -->
-                    <div id="slowdayPlusAccountSection" style="margin-bottom:24px;"></div>
-
                     <!-- Change Password -->
                     <div style="margin-bottom:24px;">
                         <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">🔒 Change Password</h3>
@@ -1581,17 +1489,6 @@
                         <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;">⚠️ Delete Account</h3>
                         <p style="font-size:13px;color:#888;margin-bottom:10px;">This permanently deletes your account and all your data. Cannot be undone.</p>
                         <button onclick="deleteAccount()" style="width:100%;padding:12px;background:#fee2e2;color:#e53e3e;border:1.5px solid #fca5a5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Delete My Account</button>
-                    </div>
-
-                    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
-
-                    <!-- Support Tickets -->
-                    <div>
-                        <h3 style="margin:0 0 12px;font-size:15px;color:#1a1a2e;">🎫 Support</h3>
-                        <div id="accountOpenTickets" style="margin-bottom:12px;"></div>
-                        <input type="text" id="ticketSubject" placeholder="Subject" style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
-                        <textarea id="ticketMessage" placeholder="Describe your issue..." style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;height:90px;resize:none;font-family:inherit;margin-bottom:8px;"></textarea>
-                        <button onclick="submitSupportTicket()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Submit Ticket</button>
                     </div>
 
                     <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
@@ -1653,9 +1550,9 @@
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 <span>Saved</span>
             </button>
-            <button class="nav-btn" id="navProvider" onclick="showTab('provider')">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                <span>My Profile</span>
+            <button class="nav-btn" id="navProvider" onclick="currentUser && currentUser.accountType === 'provider' ? showTab('provider') : showTab('bookings')">
+                <svg id="navProviderIcon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                <span id="navProviderLabel">My Profile</span>
             </button>
         </div>
 
@@ -1708,8 +1605,8 @@
                     <form id="forgotForm" class="auth-form" style="display:none;" onsubmit="sendResetEmail(event)">
                         <p style="color:#666;font-size:14px;margin-bottom:20px;line-height:1.5;">Enter your email address and we'll send you a link to reset your password.</p>
                         <div class="form-group">
-                            <label>Email or Phone Number</label>
-                            <input type="text" id="forgotEmail" required placeholder="email@example.com or +1234567890">
+                            <label>Email Address</label>
+                            <input type="email" id="forgotEmail" required placeholder="you@example.com">
                         </div>
                         <div id="forgotSuccess" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px;margin-bottom:16px;color:#166534;font-size:14px;text-align:center;">
                             ✅ Reset link sent! Check your inbox.
@@ -1740,15 +1637,10 @@
                     <form id="signupForm" class="auth-form" style="display: none;" onsubmit="signup(event)">
                         <div class="form-group">
                             <label>Account Type</label>
-                            <input type="hidden" id="signupAccountType" value="customer" required>
-                            <div class="custom-select-box" id="accountTypeBox" onclick="toggleCustomSelect('accountTypeBox')">
-                                <span id="accountTypeLabel">🛍️ Customer — I want to book services</span>
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                            </div>
-                            <div class="custom-select-dropdown" id="accountTypeDropdown" style="display:none;">
-                                <div class="custom-select-opt" onclick="pickAccountType('customer','🛍️ Customer — I want to book services')">🛍️ Customer — I want to book services</div>
-                                <div class="custom-select-opt" onclick="pickAccountType('provider','🔧 Provider — I offer services')">🔧 Provider — I offer services</div>
-                            </div>
+                            <select id="signupAccountType" required>
+                                <option value="customer">Customer - I want to book services</option>
+                                <option value="provider">Provider - I offer services</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Full Name</label>
@@ -1809,20 +1701,8 @@
                         <div class="form-group">
                             <label>Preferred Date & Time</label>
                             <!-- Standard picker (shown when no availability windows) -->
-                            <div id="standardPicker" class="custom-dt-picker" style="overflow:hidden;max-width:100%;">
-                                <input type="hidden" id="preferredDate">
-                                <div id="customDatePicker" class="custom-date-picker">
-                                    <div class="cdp-header">
-                                        <button type="button" class="cdp-nav" onclick="cdpChangeMonth(-1)">&#8249;</button>
-                                        <span id="cdpMonthLabel" class="cdp-month-label"></span>
-                                        <button type="button" class="cdp-nav" onclick="cdpChangeMonth(1)">&#8250;</button>
-                                    </div>
-                                    <div class="cdp-weekdays">
-                                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                                    </div>
-                                    <div class="cdp-grid" id="cdpGrid"></div>
-                                    <div id="cdpHint" class="cdp-hint"></div>
-                                </div>
+                            <div id="standardPicker" class="custom-dt-picker">
+                                <input type="date" id="preferredDate" class="dt-date-input">
                                 <div class="dt-time-row">
                                     <select id="preferredHour" class="dt-select">
                                         <option value="07">7 AM</option><option value="08">8 AM</option>
@@ -1899,19 +1779,6 @@
         // ============================================
         window.onload = async function() {
             checkResetToken();
-            // Check for deep-link tab param from email/SMS
-            const urlParams = new URLSearchParams(window.location.search);
-            const deepTab = urlParams.get('tab');
-            const subResult = urlParams.get('subscription');
-            if (subResult === 'success') {
-                sessionStorage.setItem('showPlusSuccess', '1');
-                window.history.replaceState({}, '', window.location.pathname);
-            }
-            if (deepTab) {
-                sessionStorage.setItem('deepLinkTab', deepTab);
-                // Clean URL
-                window.history.replaceState({}, '', window.location.pathname);
-            }
             showWakingUp();
             await wakeUpServer();
             const token = API.getToken();
@@ -1919,24 +1786,13 @@
                 try {
                     const response = await API.getCurrentUser();
                     currentUser = response.user;
-                    await showAuthenticatedView();
-                    // Handle deep link after login
-                    handleDeepLink();
+                    showAuthenticatedView();
                 } catch (error) {
                     API.removeToken();
                     await loadPublicServices();
-                    // If deep link present but not logged in, prompt login
-                    if (deepTab || sessionStorage.getItem('deepLinkTab')) {
-                        showToast('Please log in to view your bookings', false);
-                        showAuthModal();
-                    }
                 }
             } else {
                 await loadPublicServices();
-                if (deepTab || sessionStorage.getItem('deepLinkTab')) {
-                    showToast('Please log in to view your bookings', false);
-                    showAuthModal();
-                }
             }
         };
 
@@ -2037,12 +1893,12 @@
 
         async function sendResetEmail(e) {
             e.preventDefault();
-            const emailOrPhone = document.getElementById('forgotEmail').value.trim();
+            const email = document.getElementById('forgotEmail').value;
             const btn = document.getElementById('forgotBtn');
             btn.disabled = true;
             btn.textContent = 'Sending...';
             try {
-                await API.forgotPassword(emailOrPhone);
+                await API.forgotPassword(email);
                 document.getElementById('forgotSuccess').style.display = 'block';
                 btn.textContent = 'Resend Link';
             } catch (err) {
@@ -2063,9 +1919,7 @@
                 errorEl.style.display = 'block';
                 return;
             }
-            // Read token from sessionStorage (set by checkResetToken, works on Safari)
-            const token = sessionStorage.getItem('pendingResetToken')
-                || new URLSearchParams(window.location.search).get('resetToken');
+            const token = new URLSearchParams(window.location.search).get('resetToken');
             if (!token) {
                 errorEl.textContent = 'Invalid or expired reset link. Please request a new one.';
                 errorEl.style.display = 'block';
@@ -2073,9 +1927,8 @@
             }
             try {
                 await API.resetPassword(token, password);
-                showToast('✅ Password reset successfully! Please log in with your new password.', true);
+                alert('✅ Password reset successfully! Please log in with your new password.');
                 // Clear token from URL
-                sessionStorage.removeItem('pendingResetToken');
                 window.history.replaceState({}, '', window.location.pathname);
                 showLogin();
             } catch (err) {
@@ -2086,26 +1939,8 @@
 
         // Check for reset token in URL on page load
         function checkResetToken() {
-            // Robust token extraction - handles Safari URL quirks and Cloudflare rewrites
-            let token = null;
-            try {
-                token = new URLSearchParams(window.location.search).get('resetToken');
-            } catch(e) {}
-            // Fallback: manual parse
-            if (!token) {
-                const match = window.location.search.match(/[?&]resetToken=([^&]+)/);
-                if (match) token = decodeURIComponent(match[1]);
-            }
-            // Fallback: check hash (some email clients rewrite ? to #)
-            if (!token) {
-                const hashMatch = window.location.hash.match(/resetToken=([^&]+)/);
-                if (hashMatch) token = decodeURIComponent(hashMatch[1]);
-            }
+            const token = new URLSearchParams(window.location.search).get('resetToken');
             if (token) {
-                // Store in sessionStorage so it survives modal open
-                sessionStorage.setItem('pendingResetToken', token);
-                // Clean URL immediately (Safari sometimes re-reads it)
-                window.history.replaceState({}, '', window.location.pathname);
                 showAuthModal();
                 document.getElementById('authTitle').textContent = 'Set New Password';
                 document.getElementById('loginForm').style.display = 'none';
@@ -2117,23 +1952,22 @@
 
         async function login(e) {
             e.preventDefault();
-            const emailOrPhone = document.getElementById('loginEmail').value.trim();
+            const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             try {
-                const response = await API.login({ emailOrPhone, password });
+                const response = await API.login({ email, password });
                 if (response.success) {
                     API.setToken(response.token);
                     currentUser = response.user;
-                    await showAuthenticatedView();
+                    showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
-                    handleDeepLink();
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
+                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
                 } else {
-                    showToast(error.message || 'Login failed. Please check your credentials.', true);
+                    alert(error.message || 'Login failed. Please check your credentials.');
                 }
             }
         }
@@ -2155,51 +1989,23 @@
                     showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
-                    showToast(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`, false);
+                    alert(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`);
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
+                    alert('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!');
                 } else {
-                    showToast(error.message || 'Signup failed. Please try again.', true);
+                    alert(error.message || 'Signup failed. Please try again.');
                 }
             }
         }
 
         function logout() {
-            showConfirmModal('Log out of SlowDay?', 'Log Out', function() {
+            if (confirm('Are you sure you want to log out?')) {
                 currentUser = null;
                 API.removeToken();
                 location.reload();
-            });
-        }
-
-        function cancelMyBookingConfirm(id) {
-            showConfirmModal('Cancel this booking?', 'Cancel Booking', function() {
-                API.updateBookingStatus(id, 'cancelled')
-                    .then(() => loadMyBookings())
-                    .catch(() => showToast('Error cancelling booking', true));
-            });
-        }
-
-        function showConfirmModal(message, confirmLabel, onConfirm) {
-            const old = document.getElementById('confirmModal');
-            if (old) old.remove();
-            const overlay = document.createElement('div');
-            overlay.id = 'confirmModal';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-            overlay.innerHTML = `<div style="background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-                <p style="font-size:17px;font-weight:600;color:#1a1a2e;margin:0 0 24px;">${message}</p>
-                <div style="display:flex;gap:10px;">
-                    <button onclick="document.getElementById('confirmModal').remove()" style="flex:1;padding:13px;border:1.5px solid #e0e0e0;border-radius:12px;background:white;font-size:15px;font-weight:600;color:#555;cursor:pointer;">Cancel</button>
-                    <button id="confirmModalOk" style="flex:1;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:15px;font-weight:600;cursor:pointer;">${confirmLabel}</button>
-                </div>
-            </div>`;
-            document.querySelector('.app-container').appendChild(overlay);
-            document.getElementById('confirmModalOk').onclick = function() {
-                overlay.remove();
-                onConfirm();
-            };
+            }
         }
 
         async function showAuthenticatedView() {
@@ -2214,11 +2020,11 @@
             await loadPublicServices();
             renderSavedList();
             await loadMyProfile();
-            document.getElementById('savingsBadge').style.visibility = 'visible';
-            await updateSavingsTracker();
-            loadSubscriptionStatus();
-            // Start real-time polling
-            startRealtimePolling();
+            // Load savings tracker for customers only
+            if (currentUser && currentUser.accountType === 'customer') {
+                console.log('Loading savings tracker for customer:', currentUser.email);
+                await updateSavingsTracker();
+            }
         }
 
         function toggleUserDropdown() {
@@ -2235,9 +2041,63 @@
         });
 
         function switchToProvider() {
-            const dd = document.getElementById('userDropdown');
-            if (dd) dd.style.display = 'none';
+            document.getElementById('userDropdown').style.display = 'none';
             showTab('provider');
+        }
+
+        function updateAccountTypeUI() {
+            if (!currentUser) return;
+            const isProvider = currentUser.accountType === 'provider';
+            const navLabel = document.getElementById('navProviderLabel');
+            const navIcon = document.getElementById('navProviderIcon');
+            if (navLabel) navLabel.textContent = isProvider ? 'My Profile' : 'Bookings';
+            if (navIcon) {
+                navIcon.innerHTML = isProvider
+                    ? '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>'
+                    : '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>';
+            }
+            const dpBtn = document.getElementById('dropdownProviderBtn');
+            if (dpBtn) {
+                dpBtn.textContent = isProvider ? '💼 My Provider Profile' : '🚀 Become a Provider';
+                dpBtn.style.display = 'block';
+            }
+            const stabBookings = document.getElementById('stabMyBookings');
+            if (stabBookings) stabBookings.style.display = isProvider ? 'block' : 'none';
+        }
+
+        function handleProviderDropdown() {
+            document.getElementById('userDropdown').style.display = 'none';
+            showTab('provider');
+        }
+
+        function loadCustomerBookingsTab() {
+            const list = document.getElementById('bookingsList');
+            if (!list) return;
+            list.innerHTML = '<div class="empty-state"><div class="empty-emoji">\u23f3</div><h3>Loading...</h3></div>';
+            API.getCustomerBookings().then(res => {
+                const bookings = (res.bookings || []).sort((a,b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+                if (!bookings.length) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-emoji">\ud83d\udcc5</div><h3>No bookings yet</h3><p>Book a service to see your bookings here</p></div>';
+                    return;
+                }
+                list.innerHTML = bookings.map(b => {
+                    const svc = b.service || {};
+                    const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                    const canCancel = ['pending','confirmed','rescheduled'].includes(b.status);
+                    const cancelBtn = canCancel ? '<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking(\'' + b._id + '\')">Cancel Booking</button>' : '';
+                    return '<div class="booking-card">' +
+                        '<div class="booking-card-header"><div>' +
+                        '<div class="booking-card-title">' + (svc.serviceType || 'Service') + '</div>' +
+                        '<div class="booking-card-sub">by ' + (svc.providerName || '') + '</div>' +
+                        '</div><span class="status-pill status-' + b.status + '">' + b.status + '</span></div>' +
+                        '<div class="booking-meta">\ud83d\udcc5 <span>Date:</span> ' + date + '</div>' +
+                        '<div class="booking-meta">\ud83d\udcb0 <span>Price:</span> $' + b.price + '</div>' +
+                        (b.notes ? '<div class="booking-meta">\ud83d\udcdd <span>Notes:</span> ' + b.notes + '</div>' : '') +
+                        cancelBtn + '</div>';
+                }).join('');
+            }).catch(() => {
+                list.innerHTML = '<div class="empty-state"><div class="empty-emoji">\u274c</div><h3>Error loading bookings</h3></div>';
+            });
         }
 
         // ============================================
@@ -2258,12 +2118,21 @@
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
+                if (document.getElementById('bookingsTab')) document.getElementById('bookingsTab').style.display = 'none';
             } else if (tab === 'saved') {
                 document.getElementById('navSaved').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
+                if (document.getElementById('bookingsTab')) document.getElementById('bookingsTab').style.display = 'none';
                 renderSavedList();
+            } else if (tab === 'bookings') {
+                document.getElementById('navProvider').classList.add('active');
+                document.getElementById('customerView').style.display = 'block';
+                document.getElementById('discoverTab').style.display = 'none';
+                document.getElementById('savedTab').style.display = 'none';
+                if (document.getElementById('bookingsTab')) document.getElementById('bookingsTab').style.display = 'block';
+                loadCustomerBookingsTab();
             } else if (tab === 'provider') {
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('providerView').style.display = 'block';
@@ -2380,13 +2249,13 @@
                     myService.photos.forEach(photoSrc => {
                         const wrap = document.createElement('div');
                         wrap.className = 'photo-thumb';
-                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;overflow:hidden;border-radius:8px;';
+                        wrap.style.cssText = 'position:relative;display:inline-block;margin:4px;';
                         const imgEl = document.createElement('img');
                         imgEl.src = photoSrc;
                         imgEl.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;';
                         const xBtn = document.createElement('button');
                         xBtn.type = 'button'; xBtn.textContent = '×';
-                        xBtn.style.cssText = 'position:absolute;top:0;right:0;width:22px;height:22px;background:rgba(220,38,38,0.9);color:white;border:none;border-radius:0 0 0 8px;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+                        xBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#e53e3e;color:white;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
                         xBtn.onclick = () => wrap.remove();
                         wrap.appendChild(imgEl); wrap.appendChild(xBtn);
                         preview.appendChild(wrap);
@@ -2403,8 +2272,8 @@
                 document.getElementById('myProfileView').style.display = 'none';
                 document.querySelector('.provider-form').style.display = 'block';
                 document.getElementById('providerSubmitBtn').textContent = 'Create My Profile';
-                showToast('Profile deleted.', false);
-            } catch (e) { showToast('Error deleting profile.', true); }
+                alert('Profile deleted.');
+            } catch (e) { alert('Error deleting profile.'); }
         }
 
         // ============================================
@@ -2418,7 +2287,7 @@
                 document.getElementById('customerView').classList.add('active');
             } else {
                 if (!currentUser) {
-                    showToast('Please log in to access provider features.', true);
+                    alert('Please log in to access provider features.');
                     showAuthModal();
                     document.querySelectorAll('.mode-btn')[0].classList.add('active');
                     document.getElementById('customerView').classList.add('active');
@@ -2587,11 +2456,11 @@
 
             if (stackPosition !== 0) return card;
 
-            let startX, startY, currentX, isDragging = false;
+            let startX, currentX, isDragging = false;
             card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.clientX; card.style.transition = 'none'; });
-            card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY; card.style.transition = 'none'; }, { passive: true });
+            card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; startX = e.touches[0].clientX; card.style.transition = 'none'; });
             document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
-            document.addEventListener('touchmove', e => { if (!isDragging) return; const inScrollable = e.target.closest('.card-content'); if (!inScrollable) { e.preventDefault(); } currentX = e.touches[0].clientX; const diffX = currentX - startX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: false });
+            document.addEventListener('touchmove', e => { if (!isDragging) return; currentX = e.touches[0].clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
             const endDrag = () => { if (!isDragging) return; isDragging = false; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
@@ -2603,7 +2472,7 @@
 
         async function handleSwipeRight() {
             if (!currentUser) {
-                showToast('Please log in to save services!', true);
+                alert('Please log in to save services!');
                 showAuthModal();
                 swipeCard('right');
                 return;
@@ -2637,30 +2506,9 @@
             const service = services[currentCardIndex];
             const serviceId = service._id || service.id;
             const modal = document.getElementById('detailModal');
-            // Photo slideshow (multiple photos) or single image
-            let imageContent;
-            if (service.photos && service.photos.length > 1) {
-                window._slidePhotos = service.photos;
-                window._slideIdx = 0;
-                const pct = (100 / service.photos.length);
-                const slides = service.photos.map(p =>
-                    `<img src="${p}" alt="" style="width:${pct}%;height:100%;object-fit:cover;flex-shrink:0;">`
-                ).join('');
-                const dots = service.photos.map((_, i) =>
-                    `<div id="slideDot${i}" onclick="event.stopPropagation();goToSlide(${i})" style="width:${i===0?'18px':'7px'};height:7px;border-radius:4px;background:${i===0?'white':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.25s;"></div>`
-                ).join('');
-                imageContent = `<div style="position:relative;overflow:hidden;border-radius:15px;margin-bottom:20px;height:250px;background:#000;">
-                    <div id="slideTrack" style="display:flex;height:100%;width:${service.photos.length*100}%;transition:transform 0.35s ease;">${slides}</div>
-                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx-1)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">‹</button>
-                    <button onclick="event.stopPropagation();goToSlide(window._slideIdx+1)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);color:white;font-size:20px;cursor:pointer;line-height:1;">›</button>
-                    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;">${dots}</div>
-                    <div id="slideCounter" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;">1 / ${service.photos.length}</div>
-                </div>`;
-            } else if (service.photos && service.photos.length === 1) {
-                imageContent = `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`;
-            } else {
-                imageContent = `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
-            }
+            const imageContent = service.photos && service.photos[0]
+                ? `<img src="${service.photos[0]}" alt="${service.serviceType}" class="detail-image">`
+                : `<div class="detail-image" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:80px;">${getServiceEmoji(service.serviceType)}</div>`;
             const encodedLocation = encodeURIComponent(service.location);
             const mapsUrl = `https://maps.apple.com/?q=${encodedLocation}`;
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
@@ -2669,7 +2517,7 @@
                 <div class="detail-section"><h3>${service.serviceType}</h3><p style="color:#666;font-size:14px;margin-bottom:10px;">by ${service.providerName}</p><p style="color:#555;line-height:1.6;">${service.description}</p></div>
                 <div class="detail-section">
                     <div class="location-header" onclick="toggleMap('${encodedLocation}')">
-                        <h3 style="margin:0;white-space:nowrap;flex-shrink:0;">📍 Location</h3>
+                        <h3 style="margin:0;">📍 Location</h3>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="color:#555;font-size:14px;">${service.location}</span>
                             <svg viewBox="0 0 24 24" width="18" height="18" id="mapChevron" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -2736,14 +2584,14 @@
                         <div style="display:flex;gap:10px;">
                             <div onclick="${wdDisabled ? '' : `openBookingModal('${serviceId}', 'weekday')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#667eea,#764ba2)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(102,126,234,0.3);animation:dealPulse 2s ease-in-out infinite;'}${wdDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${wdDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(102,126,234,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(102,126,234,0.3)\';"'}>
                                 ${slotBadge(wdLeft)}
-                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKDAYS</div>
-                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekdayPrice) : service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKDAYS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekdayPrice}${pctBadge(service.normalPrice, service.weekdayPrice)}</div>
                                 ${normalLine(service.normalPrice, service.weekdayPrice)}
                             </div>
                             <div onclick="${weDisabled ? '' : `openBookingModal('${serviceId}', 'weekend')`}" style="position:relative;flex:1;background:${dealOff?'#f3f4f6':'linear-gradient(135deg,#764ba2,#f093fb)'};border-radius:12px;padding:14px;text-align:center;${dealOff?'filter:grayscale(1);opacity:0.6;':'box-shadow:0 4px 15px rgba(118,75,162,0.3);animation:dealPulse 2s ease-in-out infinite;'}${weDisabled?'':'cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;'}" ${weDisabled?'':'onmouseenter="this.style.transform=\'scale(1.03)\';this.style.boxShadow=\'0 6px 25px rgba(118,75,162,0.5)\';" onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 4px 15px rgba(118,75,162,0.3)\';"'}>
                                 ${slotBadge(weLeft)}
-                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;padding-top:22px;">WEEKENDS</div>
-                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${currentUserIsPlus ? getPlusDiscount(service.weekendPrice) : service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}${currentUserIsPlus ? '<span style="display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);margin-top:2px;">👑 Members price</span>' : ''}</div>
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:${dealOff?'#9ca3af':'rgba(255,255,255,0.8)'};margin-bottom:4px;">WEEKENDS</div>
+                                <div style="font-size:26px;font-weight:800;color:${dealOff?'#6b7280':'white'};line-height:1;">$${service.weekendPrice}${pctBadge(service.normalPrice, service.weekendPrice)}</div>
                                 ${normalLine(service.normalPrice, service.weekendPrice)}
                             </div>
                         </div>`;
@@ -2774,8 +2622,7 @@
         function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
 
         async function openBookingModal(serviceId, dayType) {
-            if (!currentUser) { showToast('Please log in to book services', true); showAuthModal(); return; }
-            window._lastDetailDayType = dayType;
+            if (!currentUser) { alert('Please log in to book services'); showAuthModal(); return; }
             currentBookingService = services.find(s => (s._id || s.id) === serviceId) || savedServices.find(s => (s._id || s.id) === serviceId);
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');
@@ -2794,49 +2641,30 @@
                 // Show standard picker
                 document.getElementById('standardPicker').style.display = 'block';
                 document.getElementById('slotPicker').style.display = 'none';
-                // Pre-select the first valid date
                 const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-                let firstValid = new Date(tomorrow);
-                if (dayType === 'weekend' || dayType === 'weekday') {
+                
+                // If dayType specified, find the next matching day
+                if (dayType === 'weekday' || dayType === 'weekend') {
+                    let d = new Date(tomorrow);
                     for (let i = 0; i < 14; i++) {
-                        const dow = firstValid.getDay();
+                        const dow = d.getDay();
                         const isWknd = dow === 0 || dow === 6;
-                        if ((dayType === 'weekend' && isWknd) || (dayType === 'weekday' && !isWknd)) break;
-                        firstValid.setDate(firstValid.getDate() + 1);
+                        if ((dayType === 'weekend' && isWknd) || (dayType === 'weekday' && !isWknd)) {
+                            break;
+                        }
+                        d.setDate(d.getDate() + 1);
                     }
+                    const tStr = d.toISOString().split('T')[0];
+                    document.getElementById('preferredDate').value = tStr;
+                    document.getElementById('preferredDate').min = tomorrow.toISOString().split('T')[0];
+                } else {
+                    const tStr = tomorrow.toISOString().split('T')[0];
+                    document.getElementById('preferredDate').min = tStr;
+                    document.getElementById('preferredDate').value = tStr;
                 }
-                document.getElementById('preferredDate').value = firstValid.toISOString().split('T')[0];
+                
                 document.getElementById('preferredHour').value = '09';
                 document.getElementById('preferredMinute').value = '00';
-                // Init custom calendar with day type restriction
-                cdpInit(dayType);
-            }
-        }
-
-        function validateBookingDate(input) {
-            const dayType = window._bookingDayType;
-            if (!dayType || (!input.value)) return;
-            const d = new Date(input.value + 'T12:00:00');
-            const dow = d.getDay(); // 0=Sun, 6=Sat
-            const isWknd = dow === 0 || dow === 6;
-            if (dayType === 'weekend' && !isWknd) {
-                // Jump to next weekend day
-                let next = new Date(d);
-                for (let i = 1; i <= 7; i++) {
-                    next.setDate(next.getDate() + 1);
-                    if (next.getDay() === 0 || next.getDay() === 6) break;
-                }
-                input.value = next.toISOString().split('T')[0];
-                showToast('Weekend bookings only: Sat & Sun', false);
-            } else if (dayType === 'weekday' && isWknd) {
-                // Jump to next weekday
-                let next = new Date(d);
-                for (let i = 1; i <= 7; i++) {
-                    next.setDate(next.getDate() + 1);
-                    if (next.getDay() !== 0 && next.getDay() !== 6) break;
-                }
-                input.value = next.toISOString().split('T')[0];
-                showToast('Weekday bookings only: Mon–Fri', false);
             }
         }
 
@@ -2853,21 +2681,13 @@
                 const d = new Date(today); d.setDate(today.getDate() + i);
                 const dayName = DAY_ORDER[d.getDay() === 0 ? 6 : d.getDay() - 1];
                 
-                // Filter dates by dayType
+                // Filter by dayType if specified
                 const dow = d.getDay();
                 const isWknd = dow === 0 || dow === 6;
                 if (dayType === 'weekday' && isWknd) continue;
                 if (dayType === 'weekend' && !isWknd) continue;
-
-                // Also filter windows: weekday booking only uses Mon-Fri windows, weekend only Sat-Sun
-                const WEEKEND_DAYS = ['Saturday','Sunday'];
-                const WEEKDAY_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
-                const matchingWindows = windows.filter(w => {
-                    if (w.day !== dayName) return false;
-                    if (dayType === 'weekday' && !WEEKDAY_DAYS.includes(w.day)) return false;
-                    if (dayType === 'weekend' && !WEEKEND_DAYS.includes(w.day)) return false;
-                    return true;
-                });
+                
+                const matchingWindows = windows.filter(w => w.day === dayName);
                 if (matchingWindows.length === 0) continue;
                 const dateStr = d.toISOString().split('T')[0];
                 daySlots[dateStr] = daySlots[dateStr] || [];
@@ -2942,7 +2762,7 @@
 
         async function submitBooking(e) {
             e.preventDefault();
-            if (!currentUser) { showToast('Please log in', true); showAuthModal(); return; }
+            if (!currentUser) { alert('Please log in'); showAuthModal(); return; }
             try {
                 const serviceId = currentBookingService._id || currentBookingService.id;
                 let preferredTime;
@@ -2951,14 +2771,14 @@
                 if (windows && windows.length > 0) {
                     // Slot picker mode
                     preferredTime = document.getElementById('selectedSlotTime').value;
-                    if (!preferredTime) { showToast('Please select a time slot', true); return; }
+                    if (!preferredTime) { alert('Please select a time slot'); return; }
                     preferredTime = new Date(preferredTime).toISOString();
                 } else {
                     // Standard picker mode
                     const date = document.getElementById('preferredDate').value;
                     const hour = document.getElementById('preferredHour').value;
                     const minute = document.getElementById('preferredMinute').value;
-                    if (!date) { showToast('Please select a date', true); return; }
+                    if (!date) { alert('Please select a date'); return; }
                     preferredTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
                 }
 
@@ -2986,7 +2806,7 @@
                         swipeCard('right'); // Move to next card
                     }, 1500);
                 }
-            } catch (error) { showToast(error.message || 'Error creating booking.', true); }
+            } catch (error) { alert(error.message || 'Error creating booking.'); }
         }
 
         // ============================================
@@ -3031,7 +2851,7 @@
                 const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#e5e7eb;color:#6b7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-bottom:4px;">⏰ Deal Ended</div>` : '';
                 const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
                 const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
-                return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
+                return `<div class="saved-card" style="${endedStyle}">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
             }).join('');
         }
 
@@ -3040,7 +2860,7 @@
                 await API.removeSavedService(serviceId);
                 await loadSavedServices();
                 renderSavedList();
-            } catch (error) { showToast('Error removing service.', true); }
+            } catch (error) { alert('Error removing service.'); }
         }
 
         // ============================================
@@ -3078,12 +2898,8 @@
             div.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;';
             div.innerHTML = `
                 <div style="position:absolute;top:8px;right:8px;display:flex;gap:4px;">
-                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
-                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:28px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                    </button>
+                    <button type="button" onclick="duplicateAvWindow(this)" title="Duplicate" style="background:#667eea;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">⎘</button>
+                    <button type="button" onclick="this.closest('[style*=grid]').remove()" title="Remove" style="background:#ef4444;border:none;color:white;width:24px;height:24px;border-radius:50%;font-size:16px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">🗑️</button>
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="font-size:12px;font-weight:600;color:#444;">Day</label>
@@ -3130,7 +2946,7 @@
 
         async function submitProvider(e) {
             e.preventDefault();
-            if (!currentUser) { showToast('Please log in', true); return; }
+            if (!currentUser) { alert('Please log in'); return; }
             
             const photoImgs = document.querySelectorAll('#photoPreview .photo-thumb img');
             const photos = Array.from(photoImgs).map(img => img.src);
@@ -3166,8 +2982,8 @@
                 renderMyProfile();
                 await loadPublicServices();
                 currentCardIndex = 0;
-                showToast('✅ Profile saved successfully!', false);
-            } catch (error) { showToast(error.message || 'Error saving profile.', true); }
+                alert('✅ Profile saved successfully!');
+            } catch (error) { alert(error.message || 'Error saving profile.'); }
         }
 
         function previewPhotos(e) {
@@ -3222,8 +3038,6 @@
             document.getElementById('newPassword').value = '';
             document.getElementById('profileMsg').style.display = 'none';
             document.getElementById('userProfileModal').classList.add('active');
-            loadMyTickets();
-            loadSubscriptionStatus();
         }
 
         function showProfileMsg(msg, isError) {
@@ -3267,166 +3081,19 @@
             try {
                 await API.deleteAccount();
                 logout();
-                showToast('Your account has been deleted.', false);
+                alert('Your account has been deleted.');
             } catch(e) { showProfileMsg(e.message || 'Error deleting account', true); }
-        }
-
-        // ============================================
-        // CALENDAR VIEW
-        // ============================================
-        let calCurrentDate = new Date();
-
-        function changeCalMonth(delta) {
-            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth() + delta, 1);
-            renderCalendar();
-        }
-
-        function loadCalendar() {
-            calCurrentDate = new Date(calCurrentDate.getFullYear(), calCurrentDate.getMonth(), 1);
-            renderCalendar();
-        }
-
-        function renderCalendar() {
-            const year = calCurrentDate.getFullYear();
-            const month = calCurrentDate.getMonth();
-            const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            document.getElementById('calMonthLabel').textContent = monthNames[month] + ' ' + year;
-
-            const bookingsByDate = {};
-            allProviderBookings.forEach(b => {
-                const d = new Date(b.preferredTime);
-                const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                if (!bookingsByDate[key]) bookingsByDate[key] = [];
-                bookingsByDate[key].push(b);
-            });
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const grid = document.getElementById('calGrid');
-            let html = '';
-
-            for (let i = 0; i < firstDay; i++) html += '<div></div>';
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-                const bks = bookingsByDate[dateStr] || [];
-                const isToday = dateStr === todayStr;
-                const hasPending = bks.some(b => b.status === 'pending');
-                const hasConfirmed = bks.some(b => b.status === 'confirmed');
-                const dotColor = hasPending ? '#f59e0b' : hasConfirmed ? '#22c55e' : bks.length ? '#667eea' : 'transparent';
-                const bgStyle = isToday ? 'background:linear-gradient(135deg,#667eea,#764ba2);' : bks.length ? 'background:rgba(102,126,234,0.1);' : '';
-                const textColor = isToday ? 'color:white;' : 'color:#333;';
-                const dot = bks.length ? '<div style="width:5px;height:5px;border-radius:50%;background:' + dotColor + ';margin:1px auto 0;"></div>' : '';
-                html += '<div onclick="showCalDay(&quot;' + dateStr + '&quot;)" style="text-align:center;padding:6px 2px;border-radius:10px;cursor:' + (bks.length?'pointer':'default') + ';' + bgStyle + '">' +
-                    '<div style="font-size:13px;font-weight:' + (isToday?700:400) + ';' + textColor + 'line-height:1.2;">' + d + '</div>' + dot + '</div>';
-            }
-
-            grid.innerHTML = html;
-            document.getElementById('calDayBookings').innerHTML = '';
-        }
-
-        function showCalDay(dateStr) {
-            const bks = allProviderBookings.filter(function(b) {
-                const d = new Date(b.preferredTime);
-                const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-                return key === dateStr;
-            });
-            if (!bks.length) return;
-            const el = document.getElementById('calDayBookings');
-            const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
-            let html = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;">📅 ' + label + '</div>';
-            bks.sort(function(a,b){ return new Date(a.preferredTime)-new Date(b.preferredTime); }).forEach(function(b) {
-                const svc = b.service || {};
-                const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-                const bid = b._id;
-                let actions = '';
-                if (b.status === 'pending') {
-                    actions = '<div style="display:flex;gap:6px;margin-top:8px;">'
-                        + '<button class="action-btn btn-confirm" onclick="updateBooking(\''+bid+'\',\'confirmed\')">✅ Confirm</button>'
-                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'rejected\')">❌ Reject</button>'
-                        + '</div>';
-                } else if (b.status === 'confirmed') {
-                    actions = '<div style="margin-top:8px;">'
-                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'cancelled\')">Cancel</button>'
-                        + '</div>';
-                }
-                html += '<div class="booking-card" style="margin-bottom:8px;">'
-                    + '<div style="display:flex;justify-content:space-between;align-items:center;">'
-                    + '<div>'
-                    + '<div style="font-size:15px;font-weight:700;color:#333;">' + time + ' — ' + (svc.serviceType||'Service') + '</div>'
-                    + '<div style="font-size:13px;color:#888;margin-top:2px;">' + (b.customerName||'') + ' · ' + (b.customerContact||'') + '</div>'
-                    + '</div>'
-                    + '<span class="status-pill status-' + b.status + '">' + b.status + '</span>'
-                    + '</div>'
-                    + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;">📝 ' + b.notes + '</div>' : '')
-                    + actions
-                    + '</div>';
-            });
-            el.innerHTML = html;
-        }
-
-        // ============================================
-        // REAL-TIME POLLING
-        // ============================================
-        let realtimeInterval = null;
-
-        function startRealtimePolling() {
-            if (realtimeInterval) return;
-            realtimeInterval = setInterval(async () => {
-                if (!currentUser) return;
-                const activeBtn = document.querySelector('#providerView .ptab-btn.active');
-                if (!activeBtn) return;
-                const tabId = activeBtn.id;
-                if (tabId !== 'ptabBookings' && tabId !== 'ptabCalendar') return;
-                try {
-                    const res = await API.getProviderBookings();
-                    const fresh = res.bookings || [];
-                    const prevSig = allProviderBookings.map(b => b._id + b.status).join();
-                    const newSig  = fresh.map(b => b._id + b.status).join();
-                    if (newSig === prevSig) return;
-                    const prevPending = allProviderBookings.filter(b => b.status === 'pending').length;
-                    const newPending  = fresh.filter(b => b.status === 'pending').length;
-                    allProviderBookings = fresh;
-                    if (tabId === 'ptabBookings') {
-                        const activeFilter = document.querySelector('.filter-btn.active');
-                        const status = activeFilter ? activeFilter.textContent.trim().replace(/[^a-zA-Z]/g,'').toLowerCase() : 'all';
-                        const filtered = status === 'all' ? allProviderBookings : allProviderBookings.filter(b => b.status === status);
-                        renderProviderBookings(filtered);
-                    } else {
-                        renderCalendar();
-                    }
-                    const badge = document.getElementById('pendingBadge');
-                    if (newPending > 0) { badge.textContent = newPending; badge.style.display = 'inline'; }
-                    else badge.style.display = 'none';
-                    if (newPending > prevPending) showRealtimeToast('🔔 New booking request!');
-                } catch(e) {}
-            }, 15000);
-        }
-
-        function showRealtimeToast(msg) {
-            const old = document.getElementById('realtimeToast');
-            if (old) old.remove();
-            const t = document.createElement('div');
-            t.id = 'realtimeToast';
-            t.textContent = msg;
-            t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px 20px;border-radius:25px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(102,126,234,0.5);';
-            document.querySelector('.app-container').appendChild(t);
-            setTimeout(() => t.remove(), 4000);
         }
 
         // ============================================
         // PROVIDER TABS
         // ============================================
         function switchProviderTab(tab) {
-            ['profile','bookings','calendar','analytics'].forEach(t => {
-                const btn = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`);
-                const cnt = document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`);
-                if (btn) btn.classList.toggle('active', t === tab);
-                if (cnt) cnt.style.display = t === tab ? 'block' : 'none';
+            ['profile','bookings','analytics'].forEach(t => {
+                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
+                document.getElementById(`ptab${t.charAt(0).toUpperCase()+t.slice(1)}Content`).style.display = t === tab ? 'block' : 'none';
             });
             if (tab === 'bookings') loadProviderBookings();
-            if (tab === 'calendar') loadCalendar();
             if (tab === 'analytics') loadAnalytics();
         }
 
@@ -3471,7 +3138,6 @@
         }
 
         function renderProviderBookings(bookings) {
-            bookings = [...bookings].sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
             const el = document.getElementById('providerBookingsList');
             if (!bookings.length) {
                 el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings here</h3></div>`;
@@ -3509,7 +3175,7 @@
             try {
                 await API.updateBookingStatus(id, status);
                 await loadProviderBookings();
-            } catch(e) { showToast('Error updating booking', true); }
+            } catch(e) { alert('Error updating booking'); }
         }
 
         function openReschedule(id) {
@@ -3527,16 +3193,16 @@
             const date = document.getElementById('rescheduleDate').value;
             const hour = document.getElementById('rescheduleHour').value;
             const minute = document.getElementById('rescheduleMinute').value;
-            if (!date) { showToast('Please select a date', true); return; }
+            if (!date) { alert('Please select a date'); return; }
             const newTime = new Date(`${date}T${hour}:${minute}:00`).toISOString();
             try {
                 await API.updateBookingStatus(rescheduleBookingId, 'rescheduled', newTime);
                 document.getElementById('rescheduleModal').classList.remove('active');
                 await loadProviderBookings();
-                showToast('✅ Booking rescheduled! Customer has been notified.', false);
+                alert('✅ Booking rescheduled! Customer has been notified.');
             } catch(e) {
                 console.error('Reschedule error:', e);
-                showToast('Error rescheduling: ' + (e.message || 'Please try again'), true);
+                alert('Error rescheduling: ' + (e.message || 'Please try again'));
             }
         }
 
@@ -3625,7 +3291,7 @@
                 document.getElementById('savingsRank').textContent = rank;
                 
                 // Always show badge for customers
-                document.getElementById('savingsBadge').style.visibility = 'visible';
+                document.getElementById('savingsBadge').style.display = 'block';
                 
                 // Store for celebration modal
                 savingsCelebrationData = { totalSaved, rank, percentile };
@@ -3634,7 +3300,7 @@
                 // Still show badge even on error, just with $0
                 document.getElementById('savingsAmount').textContent = '$0';
                 document.getElementById('savingsRank').textContent = 'Start saving!';
-                document.getElementById('savingsBadge').style.visibility = 'visible';
+                document.getElementById('savingsBadge').style.display = 'block';
             }
         }
 
@@ -3642,7 +3308,7 @@
             document.getElementById('myBookingsList').innerHTML = `<div class="empty-state"><div class="empty-emoji">⏳</div><h3>Loading...</h3></div>`;
             try {
                 const res = await API.getCustomerBookings();
-                const bookings = (res.bookings || []).sort((a, b) => new Date(b.preferredTime) - new Date(a.preferredTime));
+                const bookings = res.bookings || [];
                 
                 // Update savings tracker
                 await updateSavingsTracker();
@@ -3654,7 +3320,7 @@
                 document.getElementById('myBookingsList').innerHTML = bookings.map(b => {
                     const svc = b.service || {};
                     const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-                    const cancelBtn = ['pending','confirmed','rescheduled'].includes(b.status)
+                    const cancelBtn = ['pending','confirmed'].includes(b.status)
                         ? `<button class="action-btn btn-cancel" style="margin-top:10px;" onclick="cancelMyBooking('${b._id}')">Cancel Booking</button>` : '';
                     return `<div class="booking-card">
                         <div class="booking-card-header">
@@ -3665,7 +3331,7 @@
                             <span class="status-pill status-${b.status}">${b.status}</span>
                         </div>
                         <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
-                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
+                        <div class="booking-meta">📍 <span>Location:</span> ${svc.location || ''}</div>
                         <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
                         ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
                         ${cancelBtn}
@@ -3677,423 +3343,16 @@
         }
 
         async function cancelMyBooking(id) {
-            cancelMyBookingConfirm(id);
+            if (!confirm('Cancel this booking?')) return;
+            try {
+                await API.updateBookingStatus(id, 'cancelled');
+                loadMyBookings();
+            } catch(e) { alert('Error cancelling booking'); }
         }
 
         // ============================================
         // UTILS
         // ============================================
-        // ============================================
-        // TOAST — replaces all alert() calls
-        // ============================================
-        function showToast(msg, isError) {
-            const old = document.getElementById('appToast');
-            if (old) old.remove();
-            const t = document.createElement('div');
-            t.id = 'appToast';
-            t.textContent = msg;
-            const bg = isError
-                ? 'linear-gradient(135deg,#ef4444,#dc2626)'
-                : 'linear-gradient(135deg,#667eea,#764ba2)';
-            t.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:' + bg + ';color:white;padding:13px 22px;border-radius:25px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,0.25);max-width:320px;text-align:center;line-height:1.4;';
-            document.querySelector('.app-container').appendChild(t);
-            setTimeout(() => { if (t.parentNode) t.remove(); }, 3500);
-        }
-
-
-        // ============================================
-        // CUSTOM SELECT DROPDOWNS
-        // ============================================
-        function toggleCustomSelect(boxId) {
-            const dropId = boxId.replace('Box', 'Dropdown');
-            const drop = document.getElementById(dropId);
-            const box = document.getElementById(boxId);
-            const isOpen = drop.style.display !== 'none';
-            document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
-            if (!isOpen) {
-                drop.style.display = 'block';
-                const boxRect = box.getBoundingClientRect();
-                const appRect = document.querySelector('.app-container').getBoundingClientRect();
-                const topPos = box.offsetTop + box.offsetHeight + 2;
-                drop.style.top = topPos + 'px';
-                // For filter dropdown: anchor to right edge so it doesn't overflow left
-                if (boxId === 'filterTypeBox') {
-                    drop.style.right = '0px';
-                    drop.style.left = 'auto';
-                    drop.style.width = '190px';
-                } else {
-                    drop.style.left = box.offsetLeft + 'px';
-                    drop.style.right = 'auto';
-                    drop.style.width = box.offsetWidth + 'px';
-                }
-            }
-        }
-
-        function pickAccountType(value, label) {
-            document.getElementById('signupAccountType').value = value;
-            document.getElementById('accountTypeLabel').textContent = label;
-            document.getElementById('accountTypeDropdown').style.display = 'none';
-        }
-
-        function pickFilterType(value, label) {
-            document.getElementById('filterType').value = value;
-            document.getElementById('filterTypeLabel').textContent = label || 'All types';
-            document.getElementById('filterTypeDropdown').style.display = 'none';
-            searchServices(document.getElementById('searchInput').value);
-        }
-
-        // Close custom dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-select-box') && !e.target.closest('.custom-select-dropdown')) {
-                document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
-            }
-        });
-
-        // ============================================
-        // SHOW DETAIL FROM SAVED LIST
-        // ============================================
-        function showDetailFromSaved(serviceId) {
-            const service = allServices.find(s => (s._id || s.id) === serviceId)
-                || savedServices.find(s => (s._id || s.id) === serviceId);
-            if (!service) return;
-            // Temporarily set as current service for showDetails
-            const prevIdx = currentCardIndex;
-            const prevServices = services;
-            services = [service];
-            currentCardIndex = 0;
-            showDetails();
-            // Restore after modal is shown
-            services = prevServices;
-            currentCardIndex = prevIdx;
-        }
-
-
-        // ============================================
-        // CUSTOM DATE PICKER
-        // ============================================
-        let _cdpYear, _cdpMonth, _cdpDayType;
-
-        function cdpInit(dayType) {
-            _cdpDayType = dayType; // 'weekday', 'weekend', or null
-            const now = new Date();
-            _cdpYear = now.getFullYear();
-            _cdpMonth = now.getMonth();
-            // Advance to next month if we're near the end and it helps show valid dates
-            cdpRender();
-            // Set hint
-            const hint = document.getElementById('cdpHint');
-            if (dayType === 'weekend') hint.textContent = 'Weekends only — Sat & Sun';
-            else if (dayType === 'weekday') hint.textContent = 'Weekdays only — Mon to Fri';
-            else hint.textContent = '';
-        }
-
-        function cdpChangeMonth(dir) {
-            _cdpMonth += dir;
-            if (_cdpMonth > 11) { _cdpMonth = 0; _cdpYear++; }
-            if (_cdpMonth < 0)  { _cdpMonth = 11; _cdpYear--; }
-            cdpRender();
-        }
-
-        function cdpRender() {
-            const months = ['January','February','March','April','May','June',
-                            'July','August','September','October','November','December'];
-            document.getElementById('cdpMonthLabel').textContent = months[_cdpMonth] + ' ' + _cdpYear;
-            const grid = document.getElementById('cdpGrid');
-            grid.innerHTML = '';
-            const today = new Date(); today.setHours(0,0,0,0);
-            const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-            const firstDay = new Date(_cdpYear, _cdpMonth, 1).getDay(); // 0=Sun
-            const daysInMonth = new Date(_cdpYear, _cdpMonth + 1, 0).getDate();
-            const selectedVal = document.getElementById('preferredDate').value;
-
-            // Empty cells before first day
-            for (let i = 0; i < firstDay; i++) {
-                const blank = document.createElement('div');
-                blank.className = 'cdp-day cdp-empty';
-                grid.appendChild(blank);
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const date = new Date(_cdpYear, _cdpMonth, d);
-                const dow = date.getDay(); // 0=Sun, 6=Sat
-                const isWknd = dow === 0 || dow === 6;
-                const isPast = date < tomorrow;
-                const dateStr = date.toISOString().split('T')[0];
-
-                let disabled = false;
-                if (_cdpDayType === 'weekend' && !isWknd) disabled = true;
-                if (_cdpDayType === 'weekday' && isWknd) disabled = true;
-
-                const el = document.createElement('div');
-                el.textContent = d;
-                el.className = 'cdp-day';
-                if (isPast || disabled) {
-                    el.classList.add(isPast ? 'cdp-past' : 'cdp-disabled');
-                } else {
-                    el.onclick = () => cdpSelect(dateStr, el);
-                }
-                if (dateStr === selectedVal) el.classList.add('cdp-selected');
-                grid.appendChild(el);
-            }
-        }
-
-        function cdpSelect(dateStr, el) {
-            document.getElementById('preferredDate').value = dateStr;
-            document.querySelectorAll('.cdp-day.cdp-selected').forEach(d => d.classList.remove('cdp-selected'));
-            el.classList.add('cdp-selected');
-        }
-
-        // ============================================
-        // DEEP LINK HANDLER — email/SMS redirect to tab
-        // ============================================
-        function handleDeepLink() {
-            if (sessionStorage.getItem('showPlusSuccess')) {
-                sessionStorage.removeItem('showPlusSuccess');
-                showToast('🎉 Welcome to SlowDay+! Enjoy your 14-day free trial.', false);
-                loadSubscriptionStatus();
-            }
-            const tab = sessionStorage.getItem('deepLinkTab');
-            if (!tab || !currentUser) return;
-            sessionStorage.removeItem('deepLinkTab');
-            if (tab === 'bookings') {
-                showTab('saved');
-                // Switch to My Bookings subtab
-                setTimeout(() => {
-                    const mybookingsBtn = document.getElementById('stabMyBookings');
-                    if (mybookingsBtn) mybookingsBtn.click();
-                }, 200);
-            } else if (tab === 'provider') {
-                showTab('provider');
-                // Switch to Bookings subtab inside provider view
-                setTimeout(() => {
-                    const provBookingsBtn = document.querySelector('.ptab-btn[onclick*="bookings"]');
-                    if (provBookingsBtn) provBookingsBtn.click();
-                }, 200);
-            }
-        }
-
-
-        // ============================================
-        // SUPPORT TICKETS
-        // ============================================
-        async function loadMyTickets() {
-            const list = document.getElementById('accountOpenTickets');
-            if (!list) return;
-            try {
-                const res = await API.call('/support/my');
-                if (!res.tickets || res.tickets.length === 0) {
-                    list.innerHTML = '';
-                    return;
-                }
-                list.innerHTML = res.tickets.map(t => `
-                    <div style="background:white;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:12px;border-left:4px solid #f59e0b;">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-                            <div>
-                                <div style="font-weight:700;font-size:15px;color:#1a1a2e;">${t.subject}</div>
-                                <div style="font-size:11px;color:#aaa;margin-top:2px;">Ticket #${t._id.slice(-8).toUpperCase()} • ${new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
-                            </div>
-                            <span style="background:#fef3c7;color:#d97706;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">OPEN</span>
-                        </div>
-                        <div style="font-size:13px;color:#555;line-height:1.5;">${t.message}</div>
-                    </div>`).join('');
-            } catch(e) {
-                list.innerHTML = '';
-            }
-        }
-
-        async function submitSupportTicket() {
-            const subject = document.getElementById('ticketSubject').value.trim();
-            const message = document.getElementById('ticketMessage').value.trim();
-            if (!subject) { showToast('Please enter a subject', true); return; }
-            if (!message) { showToast('Please describe your issue', true); return; }
-            try {
-                await API.call('/support', 'POST', { subject, message });
-                showToast('✅ Ticket submitted! We will get back to you soon.', false);
-                document.getElementById('ticketSubject').value = '';
-                document.getElementById('ticketMessage').value = '';
-                loadMyTickets();
-            } catch(e) {
-                showToast(e.message || 'Failed to submit ticket', true);
-            }
-        }
-
-
-        // ============================================
-        // SLOWDAY+ SUBSCRIPTION
-        // ============================================
-        let currentUserIsPlus = false;
-        let plusStatus = null;
-
-        async function loadSubscriptionStatus() {
-            try {
-                const res = await API.getSubscriptionStatus();
-                plusStatus = res;
-                currentUserIsPlus = res.isPlus || false;
-                renderPlusAccountSection();
-                updateCardBadges();
-            } catch(e) {
-                // Subscription service not available yet
-                currentUserIsPlus = false;
-                plusStatus = null;
-            }
-        }
-
-        function renderPlusAccountSection() {
-            const el = document.getElementById('slowdayPlusAccountSection');
-            if (!el) return;
-            if (!plusStatus || !plusStatus.isPlus) {
-                el.innerHTML = `
-                    <div onclick="showSlowDayPlusModal()" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:14px;padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-                        <div>
-                            <div style="font-weight:800;font-size:15px;color:#92400e;">⚡ SlowDay<span style="color:#d97706;">+</span></div>
-                            <div style="font-size:12px;color:#a16207;margin-top:2px;">14-day free trial • $4.99/mo after</div>
-                        </div>
-                        <div style="background:#d97706;color:white;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;">Upgrade →</div>
-                    </div>`;
-            } else {
-                const isTrial = plusStatus.status === 'trialing';
-                const endDate = isTrial
-                    ? new Date(plusStatus.trialEnds).toLocaleDateString('en-US',{month:'short',day:'numeric'})
-                    : new Date(plusStatus.currentPeriodEnd).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-                const cancelText = plusStatus.cancelAtPeriodEnd
-                    ? `<div style="font-size:11px;color:#e53e3e;margin-top:4px;">Cancels ${endDate}</div>`
-                    : `<button onclick="cancelSlowDayPlus()" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;padding:0;margin-top:4px;text-decoration:underline;">Cancel subscription</button>`;
-                el.innerHTML = `
-                    <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:14px;padding:16px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                            <div style="font-weight:800;font-size:15px;color:white;">⚡ SlowDay<span style="color:#fbbf24;">+</span> Active</div>
-                            <div style="background:#fbbf24;color:#1a1a2e;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;">${isTrial ? 'FREE TRIAL' : 'ACTIVE'}</div>
-                        </div>
-                        <div style="font-size:12px;color:rgba(255,255,255,0.7);">${isTrial ? 'Trial ends' : 'Renews'} ${endDate} • 10% off all bookings</div>
-                        ${cancelText}
-                    </div>`;
-            }
-        }
-
-        function showSlowDayPlusModal() {
-            // Update modal CTA based on status
-            const action = document.getElementById('plusModalAction');
-            if (action && plusStatus && plusStatus.isPlus) {
-                action.innerHTML = `<div style="text-align:center;padding:8px;background:#d1fae5;border-radius:12px;color:#065f46;font-weight:700;">✅ You are already a SlowDay+ member!</div>`;
-            }
-            document.getElementById('slowdayPlusModal').classList.add('active');
-        }
-
-        async function startSlowDayPlus() {
-            const btn = document.querySelector('#plusModalAction button');
-            if (btn) { btn.textContent = 'Redirecting to payment...'; btn.disabled = true; }
-            try {
-                const res = await API.startSubscription();
-                if (res.url) {
-                    window.location.href = res.url;
-                } else {
-                    showToast(res.message || 'Could not start subscription', true);
-                    if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
-                }
-            } catch(e) {
-                const msg = e.message || '';
-                if (msg.includes('not found') || msg.includes('404')) {
-                    showToast('Subscription service is still deploying. Try again in 1 minute.', true);
-                } else {
-                    showToast(msg || 'Payment system not ready yet', true);
-                }
-                if (btn) { btn.textContent = 'Start Free Trial →'; btn.disabled = false; }
-            }
-        }
-
-        async function cancelSlowDayPlus() {
-            showConfirmModal('Cancel your SlowDay+ subscription?\nYou keep access until the end of your billing period.', 'Yes, Cancel', async () => {
-                try {
-                    await API.cancelSubscription();
-                    showToast('Subscription cancelled. You keep access until period end.', false);
-                    await loadSubscriptionStatus();
-                    renderPlusAccountSection();
-                } catch(e) {
-                    showToast(e.message || 'Failed to cancel', true);
-                }
-            });
-        }
-
-        function updateCardBadges() {
-            // Re-render cards to show/hide member badge - triggers on next render cycle
-            if (typeof renderSavedList === 'function') renderSavedList();
-        }
-
-        function getPlusBadge() {
-            if (!currentUserIsPlus) return '';
-            return '<span style="display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">👑 PLUS</span>';
-        }
-
-        function getPlusDiscount(price) {
-            if (!currentUserIsPlus) return price;
-            return Math.round(price * 0.9 * 100) / 100; // 10% off, rounded to cents
-        }
-
-        function getPlusDiscountLabel(price) {
-            if (!currentUserIsPlus) return '';
-            const discounted = getPlusDiscount(price);
-            return `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;margin-left:4px;">👑 $${discounted}</span>`;
-        }
-
-        // Prevent iOS pull-to-expand on bottom nav only
-        document.addEventListener('DOMContentLoaded', function() {
-            const bottomNav = document.querySelector('.bottom-nav');
-            if (bottomNav) {
-                bottomNav.addEventListener('touchmove', function(e) {
-                    e.preventDefault();
-                }, { passive: false });
-            }
-        });
-
-        // Prevent iOS overscroll/bounce on discover tab only
-        document.addEventListener('DOMContentLoaded', function() {
-            const discoverTab = document.getElementById('discoverTab');
-            if (!discoverTab) return;
-            let startY = 0;
-            discoverTab.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-            }, { passive: true });
-            discoverTab.addEventListener('touchmove', function(e) {
-                // Find scrollable parent
-                let el = e.target;
-                let scrollable = null;
-                while (el && el !== discoverTab) {
-                    if (el.scrollHeight > el.clientHeight + 2) {
-                        scrollable = el;
-                        break;
-                    }
-                    el = el.parentElement;
-                }
-                if (!scrollable) {
-                    e.preventDefault();
-                    return;
-                }
-                const deltaY = e.touches[0].clientY - startY;
-                const atTop = scrollable.scrollTop <= 0;
-                const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 2;
-                // Block if trying to scroll past top or bottom boundary
-                if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-        });
-
-        function goToSlide(idx) {
-            const photos = window._slidePhotos;
-            if (!photos) return;
-            window._slideIdx = ((idx % photos.length) + photos.length) % photos.length;
-            const track = document.getElementById('slideTrack');
-            if (track) track.style.transform = 'translateX(-' + (window._slideIdx * (100/photos.length)) + '%)';
-            const counter = document.getElementById('slideCounter');
-            if (counter) counter.textContent = (window._slideIdx+1) + ' / ' + photos.length;
-            photos.forEach((_, i) => {
-                const dot = document.getElementById('slideDot' + i);
-                if (!dot) return;
-                dot.style.width = i === window._slideIdx ? '18px' : '7px';
-                dot.style.background = i === window._slideIdx ? 'white' : 'rgba(255,255,255,0.5)';
-            });
-        }
-
         function getServiceEmoji(serviceType) {
             const emojis = { 'Haircut':'✂️','Barber':'💈','Cleaning':'🧹','Massage':'💆','Nails':'💅','Spa':'🧖','Personal Training':'💪','Dog Walking':'🐕','Tutoring':'📚','Photography':'📸','Car Detailing':'🚗','Laundry Service':'🧺','Other':'⭐' };
             return emojis[serviceType] || '⭐';
@@ -4147,139 +3406,6 @@
     </script>
 
     <style>
-
-        /* Custom Select Dropdowns */
-        .custom-select-box {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            color: #333;
-            user-select: none;
-            position: relative;
-        }
-        .custom-select-box:active { background: #f8f9ff; }
-        .filter-select-box {
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #667eea;
-            border: none;
-            background: transparent;
-        }
-        #filterTypeDropdown {
-            right: 0 !important;
-            left: auto !important;
-            width: 180px !important;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        .custom-select-dropdown {
-            position: absolute;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-            z-index: 9999;
-            overflow: hidden;
-            min-width: 100%;
-        }
-        .custom-select-opt {
-            padding: 13px 16px;
-            font-size: 15px;
-            color: #333;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .custom-select-opt:last-child { border-bottom: none; }
-        .custom-select-opt:active, .custom-select-opt:hover { background: #f0f4ff; color: #667eea; }
-        .form-group { position: relative; }
-        .search-bar { position: relative; }
-
-        /* Custom Date Picker */
-        .custom-date-picker {
-            border: 1.5px solid #e0e0e0;
-            border-radius: 12px;
-            background: white;
-            padding: 12px;
-            margin-bottom: 8px;
-            user-select: none;
-        }
-        .cdp-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .cdp-nav {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #667eea;
-            cursor: pointer;
-            padding: 0 8px;
-            line-height: 1;
-        }
-        .cdp-month-label {
-            font-weight: 700;
-            font-size: 15px;
-            color: #1a1a2e;
-        }
-        .cdp-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: #aaa;
-            margin-bottom: 4px;
-        }
-        .cdp-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-        .cdp-day {
-            text-align: center;
-            padding: 8px 2px;
-            font-size: 13px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: #333;
-            transition: background 0.15s;
-        }
-        .cdp-day:hover:not(.cdp-disabled):not(.cdp-past) {
-            background: #f0f4ff;
-            color: #667eea;
-        }
-        .cdp-day.cdp-selected {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-weight: 700;
-        }
-        .cdp-day.cdp-disabled {
-            color: #ddd;
-            cursor: not-allowed;
-            background: none;
-        }
-        .cdp-day.cdp-past {
-            color: #ddd;
-            cursor: not-allowed;
-        }
-        .cdp-day.cdp-empty { background: none; cursor: default; }
-        .cdp-hint {
-            text-align: center;
-            font-size: 11px;
-            color: #667eea;
-            font-weight: 600;
-            margin-top: 6px;
-            min-height: 16px;
-        }
         @keyframes confettiFall {
             to {
                 top: 100%;
@@ -4367,55 +3493,4 @@
                 <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">7. Third-Party Services</h3>
                 <p style="color:#555;font-size:14px;line-height:1.7;">We use SendGrid for email and Twilio for SMS. These services have their own privacy policies.</p>
                 <h3 style="font-size:16px;font-weight:700;margin:20px 0 10px;">8. Contact Us</h3>
-                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660e030a0a0926150a091102071f0203070a154805090b">[email protected]</a>.
-                </p>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-        <!-- SlowDay+ Upgrade Modal -->
-        <div id="slowdayPlusModal" class="modal">
-            <div class="modal-content" style="max-width:380px;padding:0;overflow:hidden;border-radius:24px;">
-                <!-- Header gradient -->
-                <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:28px 24px 20px;text-align:center;position:relative;">
-                    <button onclick="document.getElementById('slowdayPlusModal').classList.remove('active')" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.2);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
-                    <div style="font-size:44px;margin-bottom:8px;">⚡</div>
-                    <h2 style="color:white;margin:0;font-size:24px;font-weight:800;">SlowDay<span style="color:#fef3c7;">+</span></h2>
-                    <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:14px;">Members-only perks, every day</p>
-                </div>
-                <!-- Body -->
-                <div style="padding:24px;">
-                    <!-- Perks -->
-                    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👑</div>
-                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">Members-Only Badge</div><div style="font-size:12px;color:#888;">Stand out on every service card</div></div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💸</div>
-                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">10% Off All Deals</div><div style="font-size:12px;color:#888;">Extra discount on every booking</div></div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <div style="width:36px;height:36px;border-radius:10px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎟️</div>
-                            <div><div style="font-weight:700;font-size:14px;color:#1a1a2e;">First Access to Slots</div><div style="font-size:12px;color:#888;">See available spots before anyone else</div></div>
-                        </div>
-                    </div>
-                    <!-- Pricing -->
-                    <div style="background:#f8f9ff;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;">
-                        <div style="font-size:13px;color:#888;margin-bottom:4px;">Only</div>
-                        <div style="font-size:36px;font-weight:800;color:#1a1a2e;">$4.99<span style="font-size:16px;font-weight:500;color:#888;">/mo</span></div>
-                        <div style="display:inline-block;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:6px;">✨ 14-day free trial — cancel anytime</div>
-                    </div>
-                    <!-- CTA -->
-                    <div id="plusModalAction">
-                        <button onclick="startSlowDayPlus()" style="width:100%;padding:15px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:0.3px;">Start Free Trial →</button>
-                        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">No charge for 14 days. $4.99/mo after.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </body>
-</html>
+                <p style="color:#555;font-size:14px;line-height:1.7;">For privacy questions, contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="660e030a0a0926150a091102071f0203070a154805090b">[ema

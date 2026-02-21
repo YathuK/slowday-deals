@@ -2455,7 +2455,12 @@
 
         function toggleUserDropdown() {
             const dropdown = document.getElementById('userDropdown');
-            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            const pillsEl = document.getElementById('discoverPills');
+            const opening = dropdown.style.display === 'none';
+            dropdown.style.display = opening ? 'block' : 'none';
+            // Pills live outside .app-container (body direct child) so iOS stacking
+            // contexts can put them above the dropdown. Hide them while dropdown is open.
+            if (pillsEl) pillsEl.style.display = opening ? 'none' : (document.getElementById('discoverTab').style.display !== 'none' ? 'block' : 'none');
         }
 
         document.addEventListener('click', function(e) {
@@ -2463,6 +2468,10 @@
             const dropdown = document.getElementById('userDropdown');
             if (dropdown && avatar && !avatar.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.style.display = 'none';
+                const pillsEl = document.getElementById('discoverPills');
+                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none') {
+                    pillsEl.style.display = 'block';
+                }
             }
         });
 

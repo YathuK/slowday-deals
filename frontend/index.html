@@ -315,6 +315,12 @@
             border-radius: 15px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
         }
 
         .provider-name {
@@ -328,6 +334,10 @@
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .price-display {
@@ -1043,11 +1053,10 @@
             padding-top: 58px;
             padding-bottom: 80px;
         }
-        /* !important needed: #customerView .tab-content (specificity 1-1-0) beats
-           plain #savedTab (1-0-0). padding-top: 45px clears the fixed .saved-subtabs bar
-           (same height as .provider-tabs) so content starts below it. */
+        /* Provider: JS sets padding-top: 45px !important to clear the fixed .saved-subtabs bar.
+           Customer: JS sets padding-top: 0 !important (no subtabs). */
         #savedTab {
-            padding-top: 45px !important;
+            padding-top: 0 !important;
         }
         #savedListWrap, #myBookingsWrap {
             padding-top: 0;
@@ -1090,6 +1099,7 @@
             height: calc(100svh - 145px);
             height: calc(100vh - 145px);
             margin-top: 58px;
+            padding-top: 0 !important;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
@@ -2869,7 +2879,7 @@
                 document.getElementById('bookingsTab').style.display = 'none';
                 const isProvider = currentUser && currentUser.accountType === 'provider';
                 if (savedSubtabs) savedSubtabs.style.display = isProvider ? 'flex' : 'none';
-                document.getElementById('savedTab').style.paddingTop = isProvider ? '45px' : '0';
+                document.getElementById('savedTab').style.setProperty('padding-top', isProvider ? '45px' : '0', 'important');
                 if (pillsEl) pillsEl.style.display = 'none';
                 renderSavedList();
             } else if (tab === 'bookings') {

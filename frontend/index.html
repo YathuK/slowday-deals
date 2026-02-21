@@ -2469,7 +2469,8 @@
             if (dropdown && avatar && !avatar.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.style.display = 'none';
                 const pillsEl = document.getElementById('discoverPills');
-                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none') {
+                const detailModal = document.getElementById('detailModal');
+                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none' && !detailModal.classList.contains('active')) {
                     pillsEl.style.display = 'block';
                 }
             }

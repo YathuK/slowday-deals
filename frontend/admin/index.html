@@ -1546,7 +1546,8 @@ function renderSavedLeads(leads) {
             <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
                 onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
             <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
-            <td class="lead-email">${l.email ? `<a href="mailto:${esc(l.email)}" style="color:var(--accent);">${esc(l.email)}</a>` : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-email"><input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
+                onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;"></td>
             <td class="lead-addr" style="font-size:12px;color:var(--text2);">${esc(l.city || '')}</td>
             <td class="lead-service"><span class="pill purple">${esc(l.serviceType)}</span></td>
             <td>

@@ -311,10 +311,11 @@ router.get('/leads/saved', adminAuth, async (req, res) => {
 // @desc  Update status, contactName, or notes on a saved lead
 router.patch('/leads/saved/:id', adminAuth, async (req, res) => {
     try {
-        const { status, contactName, notes } = req.body;
+        const { status, contactName, email, notes } = req.body;
         const update = {};
         if (status      !== undefined) update.status      = status;
         if (contactName !== undefined) update.contactName = contactName;
+        if (email       !== undefined) update.email       = email;
         if (notes       !== undefined) update.notes       = notes;
         const lead = await Lead.findByIdAndUpdate(req.params.id, update, { new: true });
         if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });

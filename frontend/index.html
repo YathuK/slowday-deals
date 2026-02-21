@@ -716,24 +716,21 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
+            align-items: flex-start;
             gap: 15px;
-            position: relative;
         }
         .saved-share-icon {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 28px;
-            height: 28px;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.92);
+            background: #f5f5ff;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-            z-index: 1;
+            margin-top: 2px;
         }
 
         .saved-card img {
@@ -3772,7 +3769,7 @@
                 const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:4px;letter-spacing:0.5px;text-transform:uppercase;">Deal Ended</div>` : '';
                 const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
                 const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
-                return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')"><button class="saved-share-icon" onclick="event.stopPropagation();shareDeal('${serviceId}')" title="Share"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;
+                return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div><button class="saved-share-icon" onclick="event.stopPropagation();shareDeal('${serviceId}')" title="Share"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button></div>`;
             }).join('');
         }
 

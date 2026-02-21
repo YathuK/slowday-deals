@@ -162,18 +162,27 @@ router.get('/saved-services', auth, async (req, res) => {
 router.put('/password', auth, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ success: false, message: 'Both fields required' });
+        if (!newPassword) {
+            return res.status(400).json({ success: false, message: 'New password is required' });
         }
         if (newPassword.length < 6) {
             return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
         }
         const bcrypt = require('bcryptjs');
         const user = await User.findById(req.user._id);
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+
+        // If user has an existing password, require current password
+        if (user.password) {
+            if (!currentPassword) {
+                return res.status(400).json({ success: false, message: 'Current password is required' });
+            }
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+            }
         }
+        // SSO users without a password can set one without providing current
+
         user.password = newPassword;
         await user.save();
         res.json({ success: true, message: 'Password changed successfully' });

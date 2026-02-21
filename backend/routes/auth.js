@@ -8,6 +8,8 @@ const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 const sgMail = require('@sendgrid/mail');
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const { OAuth2Client } = require('google-auth-library');
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -15,6 +17,47 @@ const generateToken = (userId) => {
         expiresIn: '30d'
     });
 };
+
+// Shared SSO user resolution: find-or-create user, link social IDs
+async function findOrCreateSSOUser({ email, name, socialIdField, socialIdValue, avatar }) {
+    // 1. Check if user exists by social ID (returning SSO user)
+    let user = await User.findOne({ [socialIdField]: socialIdValue });
+    if (user) return user;
+
+    // 2. Check if user exists by email (account linking)
+    if (email) {
+        user = await User.findOne({ email: email.toLowerCase() });
+        if (user) {
+            user[socialIdField] = socialIdValue;
+            if (!user.avatar && avatar) user.avatar = avatar;
+            await user.save();
+            return user;
+        }
+    }
+
+    // 3. New user — create account
+    user = new User({
+        name: name || 'SlowDay User',
+        email: email ? email.toLowerCase() : undefined,
+        [socialIdField]: socialIdValue,
+        accountType: 'customer',
+        authProvider: socialIdField === 'googleId' ? 'google' : 'facebook',
+        avatar: avatar || null,
+        isVerified: true
+    });
+
+    try {
+        await user.save();
+    } catch (err) {
+        if (err.code === 11000) {
+            // Race condition — another request just created this user
+            user = await User.findOne({ [socialIdField]: socialIdValue });
+            if (user) return user;
+        }
+        throw err;
+    }
+    return user;
+}
 
 // @route   POST /api/auth/signup
 // @desc    Register new user
@@ -30,10 +73,10 @@ router.post('/signup', [
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
                 message: 'Validation failed',
-                errors: errors.array() 
+                errors: errors.array()
             });
         }
 
@@ -49,9 +92,9 @@ router.post('/signup', [
         if (phone) query.push({ phone });
         const existingUser = query.length > 0 ? await User.findOne({ $or: query }) : null;
         if (existingUser) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'An account with this email or phone already exists' 
+                message: 'An account with this email or phone already exists'
             });
         }
 
@@ -78,15 +121,16 @@ router.post('/signup', [
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                accountType: user.accountType
+                accountType: user.accountType,
+                authProvider: user.authProvider || 'local'
             }
         });
     } catch (error) {
         console.error('Signup error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: 'Error creating account',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -112,9 +156,17 @@ router.post('/login', [
         const isEmail = emailOrPhone.includes('@');
         const user = await User.findOne(isEmail ? { email: emailOrPhone.toLowerCase() } : { phone: emailOrPhone });
         if (!user) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
-                message: 'Invalid email/phone or password' 
+                message: 'Invalid email/phone or password'
+            });
+        }
+
+        // SSO-only users have no password — they must use Google/Facebook
+        if (!user.password) {
+            return res.status(401).json({
+                success: false,
+                message: 'This account uses social sign-in. Please use Google or Facebook to log in.'
             });
         }
 
@@ -140,15 +192,16 @@ router.post('/login', [
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                accountType: user.accountType
+                accountType: user.accountType,
+                authProvider: user.authProvider || 'local'
             }
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: 'Error logging in',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -163,10 +216,10 @@ router.get('/me', auth, async (req, res) => {
             user: req.user
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             message: 'Error fetching user data',
-            error: error.message 
+            error: error.message
         });
     }
 });
@@ -290,13 +343,125 @@ router.post('/reset-password', async (req, res) => {
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
-                accountType: user.accountType
+                accountType: user.accountType,
+                authProvider: user.authProvider || 'local'
             },
             _build: 'v98'
         });
     } catch (error) {
         console.error('Reset password error:', error);
         res.status(500).json({ success: false, message: 'Error resetting password.' });
+    }
+});
+
+// @route   POST /api/auth/google
+// @desc    Sign in / sign up with Google
+// @access  Public
+router.post('/google', async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) {
+            return res.status(400).json({ success: false, message: 'Google ID token is required' });
+        }
+
+        // Verify the Google ID token
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        const { sub: googleId, email, name, picture } = payload;
+
+        if (!googleId) {
+            return res.status(400).json({ success: false, message: 'Invalid Google token' });
+        }
+
+        const user = await findOrCreateSSOUser({
+            email,
+            name,
+            socialIdField: 'googleId',
+            socialIdValue: googleId,
+            avatar: picture
+        });
+
+        const token = generateToken(user._id);
+
+        res.json({
+            success: true,
+            message: 'Google sign-in successful',
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                accountType: user.accountType,
+                authProvider: user.authProvider || 'google'
+            }
+        });
+    } catch (error) {
+        console.error('Google auth error:', error);
+        if (error.message?.includes('Token used too late') || error.message?.includes('Invalid token')) {
+            return res.status(401).json({ success: false, message: 'Google token expired or invalid. Please try again.' });
+        }
+        res.status(500).json({ success: false, message: 'Google sign-in failed', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/facebook
+// @desc    Sign in / sign up with Facebook
+// @access  Public
+router.post('/facebook', async (req, res) => {
+    try {
+        const { accessToken } = req.body;
+        if (!accessToken) {
+            return res.status(400).json({ success: false, message: 'Facebook access token is required' });
+        }
+
+        // Verify the Facebook access token by calling the Graph API
+        const fbResponse = await fetch(
+            `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${accessToken}`
+        );
+        const fbData = await fbResponse.json();
+
+        if (fbData.error) {
+            console.error('Facebook token verification failed:', fbData.error);
+            return res.status(401).json({ success: false, message: 'Invalid Facebook token' });
+        }
+
+        const { id: facebookId, name, email, picture } = fbData;
+        const avatar = picture?.data?.url || null;
+
+        if (!facebookId) {
+            return res.status(400).json({ success: false, message: 'Could not retrieve Facebook user info' });
+        }
+
+        const user = await findOrCreateSSOUser({
+            email,
+            name,
+            socialIdField: 'facebookId',
+            socialIdValue: facebookId,
+            avatar
+        });
+
+        const token = generateToken(user._id);
+
+        res.json({
+            success: true,
+            message: 'Facebook sign-in successful',
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                accountType: user.accountType,
+                authProvider: user.authProvider || 'facebook'
+            }
+        });
+    } catch (error) {
+        console.error('Facebook auth error:', error);
+        res.status(500).json({ success: false, message: 'Facebook sign-in failed', error: error.message });
     }
 });
 

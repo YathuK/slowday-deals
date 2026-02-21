@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: [true, 'Email is required'],
+        sparse: true,
         unique: true,
         lowercase: true,
         trim: true,
@@ -17,12 +17,10 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
         minlength: [6, 'Password must be at least 6 characters']
     },
     phone: {
-        type: String,
-        required: [true, 'Phone number is required']
+        type: String
     },
     accountType: {
         type: String,
@@ -48,6 +46,23 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpires: {
         type: Date,
         default: null
+    },
+    googleId: {
+        type: String,
+        default: null,
+        sparse: true,
+        unique: true
+    },
+    facebookId: {
+        type: String,
+        default: null,
+        sparse: true,
+        unique: true
+    },
+    authProvider: {
+        type: String,
+        enum: ['local', 'google', 'facebook'],
+        default: 'local'
     }
 }, {
     timestamps: true
@@ -56,9 +71,10 @@ const userSchema = new mongoose.Schema({
 // Hash password before saving
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
+    if (!this.password) return next();
 
     // Safety guard: never re-hash an already-hashed bcrypt password
-    if (this.password && this.password.startsWith('$2')) return next();
+    if (this.password.startsWith('$2')) return next();
 
     try {
         const salt = await bcrypt.genSalt(10);
@@ -71,13 +87,16 @@ userSchema.pre('save', async function(next) {
 
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
+    if (!this.password) return false;
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Remove password from JSON output
+// Remove sensitive fields from JSON output
 userSchema.methods.toJSON = function() {
     const obj = this.toObject();
     delete obj.password;
+    delete obj.googleId;
+    delete obj.facebookId;
     return obj;
 };
 

@@ -20,7 +20,11 @@ const API_CONFIG = {
         
         // Users
         PROFILE: '/users/profile',
-        SAVED_SERVICES: '/users/saved-services'
+        SAVED_SERVICES: '/users/saved-services',
+
+        // SSO
+        GOOGLE_AUTH: '/auth/google',
+        FACEBOOK_AUTH: '/auth/facebook'
     }
 };
 
@@ -205,5 +209,14 @@ const API = {
 
     async cancelSubscription() {
         return await this.call('/subscription/cancel', 'POST');
+    },
+
+    // SSO methods
+    async googleAuth(idToken) {
+        return await this.call(API_CONFIG.ENDPOINTS.GOOGLE_AUTH, 'POST', { idToken }, false);
+    },
+
+    async facebookAuth(accessToken) {
+        return await this.call(API_CONFIG.ENDPOINTS.FACEBOOK_AUTH, 'POST', { accessToken }, false);
     }
 };

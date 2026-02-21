@@ -993,8 +993,11 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 
 <script>
 const API_BASE = 'https://slowday-deals.onrender.com/api';
-let adminKey = '';
+let adminKey = sessionStorage.getItem('adminKey') || '';
 let cachedData = null;
+
+// Auto-restore session on page load
+if (adminKey) loadData(true);
 
 const CATEGORY_ICONS = {
     'Haircut': '✂️', 'Barber': '💈', 'Cleaning': '🧹', 'Massage': '💆',
@@ -1007,6 +1010,7 @@ function doLogin() {
     const pass = document.getElementById('adminPass').value.trim();
     if (!pass) return;
     adminKey = pass;
+    sessionStorage.setItem('adminKey', adminKey);
     document.getElementById('loginError').style.display = 'none';
     loadData(true);
 }
@@ -1014,6 +1018,7 @@ function doLogin() {
 function doLogout() {
     adminKey = '';
     cachedData = null;
+    sessionStorage.removeItem('adminKey');
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('adminPass').value = '';
@@ -1025,16 +1030,15 @@ async function loadData(isLogin = false) {
             headers: { 'x-admin-key': adminKey }
         });
         if (res.status === 401) {
+            sessionStorage.removeItem('adminKey');
             document.getElementById('loginError').style.display = 'block';
             return;
         }
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
         cachedData = data;
-        if (isLogin) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-        }
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
         renderAll(data);
     } catch (err) {
         console.error(err);

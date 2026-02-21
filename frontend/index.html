@@ -140,6 +140,19 @@
             border-color: #667eea;
         }
 
+        .pw-eye {
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .form-group textarea {
             resize: vertical;
             min-height: 100px;
@@ -1912,9 +1925,10 @@
                             <label>Email or Phone Number</label>
                             <input type="text" id="loginEmail" required placeholder="email@example.com or +1234567890">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="position:relative;">
                             <label>Password</label>
-                            <input type="password" id="loginPassword" required>
+                            <input type="password" id="loginPassword" required style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                         </div>
                         <div style="text-align:right;margin-top:-8px;margin-bottom:12px;">
                             <a href="#" onclick="showForgotPassword(); return false;" style="color:#667eea;font-size:13px;font-weight:500;">Forgot password?</a>
@@ -1946,13 +1960,15 @@
                     <!-- Reset Password Form (shown when token is in URL) -->
                     <form id="resetForm" class="auth-form" style="display:none;" onsubmit="resetPassword(event)">
                         <p style="color:#666;font-size:14px;margin-bottom:20px;">Enter your new password below.</p>
-                        <div class="form-group">
+                        <div class="form-group" style="position:relative;">
                             <label>New Password</label>
-                            <input type="password" id="resetPassword" required minlength="6" placeholder="At least 6 characters">
+                            <input type="password" id="resetPassword" required minlength="6" placeholder="At least 6 characters" style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="position:relative;">
                             <label>Confirm New Password</label>
-                            <input type="password" id="resetPasswordConfirm" required minlength="6" placeholder="Repeat new password">
+                            <input type="password" id="resetPasswordConfirm" required minlength="6" placeholder="Repeat new password" style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                         </div>
                         <div id="resetError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:16px;color:#991b1b;font-size:14px;text-align:center;"></div>
                         <button type="submit" class="submit-btn">Reset Password</button>
@@ -1980,9 +1996,10 @@
                             <label>Email</label>
                             <input type="email" id="signupEmail" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="position:relative;">
                             <label>Password</label>
-                            <input type="password" id="signupPassword" required minlength="6">
+                            <input type="password" id="signupPassword" required minlength="6" style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                         </div>
                         <div class="form-group">
                             <label>Phone Number</label>
@@ -2262,6 +2279,15 @@
         // ============================================
         // AUTH MODAL
         // ============================================
+        function togglePwVis(btn) {
+            const input = btn.parentElement.querySelector('input');
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.innerHTML = isHidden
+                ? '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path></svg>'
+                : '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        }
+
         function showAuthModal() {
             document.getElementById('authModal').classList.add('active');
             const p = document.getElementById('discoverPills'); if (p) p.style.display = 'none';

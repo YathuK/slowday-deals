@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
@@ -119,10 +120,11 @@ router.post('/login', [
 
         // Check password
         const isMatch = await user.comparePassword(password);
+        console.log('[login] User:', user.email, '| Password match:', isMatch, '| Hash prefix:', user.password?.substring(0, 7));
         if (!isMatch) {
-            return res.status(401).json({ 
+            return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password' 
+                message: 'Invalid email or password'
             });
         }
 
@@ -188,10 +190,10 @@ router.post('/forgot-password', async (req, res) => {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-        // Save hashed token + expiry (1 hour) to user
-        user.resetPasswordToken = resetTokenHash;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-        await user.save();
+        // Save hashed token + expiry (1 hour) — use updateOne to avoid triggering pre-save hook
+        await User.updateOne({ _id: user._id }, {
+            $set: { resetPasswordToken: resetTokenHash, resetPasswordExpires: Date.now() + 3600000 }
+        });
 
         // Build reset URL
         const resetUrl = `${process.env.FRONTEND_URL || 'https://www.slowdaydeals.com'}?resetToken=${resetToken}`;
@@ -260,11 +262,18 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
         }
 
-        // Set new password (model will hash it via pre-save hook)
-        user.password = password;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
-        await user.save();
+        // Hash password manually and use updateOne to bypass pre-save hook entirely
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        await User.updateOne({ _id: user._id }, {
+            $set: { password: hashedPassword },
+            $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 }
+        });
+
+        // Verify the password was saved correctly
+        const verify = await User.findById(user._id);
+        const verifyMatch = await bcrypt.compare(password, verify.password);
+        console.log('[reset-password] Password verified after save:', verifyMatch);
 
         // Auto-login: return JWT so user doesn't have to log in manually
         const autoToken = generateToken(user._id);

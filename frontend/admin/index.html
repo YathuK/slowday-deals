@@ -718,6 +718,22 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 }
 .lead-notes-input:focus { border-bottom-color: var(--accent); }
 .lead-notes-input::placeholder { color: var(--text3); font-style: italic; }
+.lead-price-input {
+    background: none; border: none;
+    border-bottom: 1px solid var(--border-bright);
+    color: var(--green); font-family: var(--mono); font-size: 12px;
+    padding: 3px 0; outline: none; width: 70px; transition: border-color 0.2s;
+}
+.lead-price-input:focus { border-bottom-color: var(--green); }
+.lead-price-input::placeholder { color: var(--text3); }
+.lead-day-chips { display: flex; flex-wrap: wrap; gap: 3px; min-width: 160px; }
+.lead-day-chip {
+    font-size: 10px; font-family: var(--mono); font-weight: 600;
+    padding: 2px 6px; border-radius: 4px; cursor: pointer;
+    border: 1px solid var(--border-bright); color: var(--text3);
+    background: none; transition: all 0.15s; user-select: none;
+}
+.lead-day-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
 
 /* LEAD SAVE + DELETE */
 .lead-save-btn {
@@ -976,6 +992,9 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>City</th>
                                 <th>Service</th>
                                 <th>Status</th>
+                                <th>Price</th>
+                                <th>Deal Price</th>
+                                <th>Days</th>
                                 <th>Notes</th>
                                 <th></th>
                             </tr>
@@ -1534,12 +1553,18 @@ async function loadSavedLeads() {
 const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected' };
 
 function renderSavedLeads(leads) {
+    const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const tbody = document.getElementById('savedLeadsBody');
     if (!leads.length) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
         return;
     }
-    tbody.innerHTML = leads.map((l, i) => `
+    tbody.innerHTML = leads.map((l, i) => {
+        const activeDays = new Set(l.days || []);
+        const dayChips = DAYS.map(d =>
+            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}" onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')">${d}</span>`
+        ).join('');
+        return `
         <tr id="srow-${esc(l._id)}">
             <td>${i + 1}</td>
             <td class="lead-name">${esc(l.businessName)}</td>
@@ -1555,11 +1580,16 @@ function renderSavedLeads(leads) {
                     ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
                 </select>
             </td>
+            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.price != null ? l.price : ''}"
+                onchange="updateLeadField('${esc(l._id)}','price',this.value===''?null:Number(this.value))"></td>
+            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.discountPrice != null ? l.discountPrice : ''}"
+                onchange="updateLeadField('${esc(l._id)}','discountPrice',this.value===''?null:Number(this.value))" style="color:var(--accent2);"></td>
+            <td><div class="lead-day-chips" id="daychips-${esc(l._id)}">${dayChips}</div></td>
             <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
                 onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
             <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 async function updateLeadField(id, field, value) {
@@ -1570,6 +1600,13 @@ async function updateLeadField(id, field, value) {
             body: JSON.stringify({ [field]: value })
         });
     } catch { /* silent — UI already updated */ }
+}
+
+function toggleLeadDay(id, chip, day) {
+    chip.classList.toggle('active');
+    const container = document.getElementById(`daychips-${id}`);
+    const days = [...container.querySelectorAll('.lead-day-chip.active')].map(c => c.textContent);
+    updateLeadField(id, 'days', days);
 }
 
 async function deleteLead(id, btn) {

@@ -266,7 +266,20 @@ router.post('/reset-password', async (req, res) => {
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        res.json({ success: true, message: 'Password reset successfully.' });
+        // Auto-login: return JWT so user doesn't have to log in manually
+        const autoToken = generateToken(user._id);
+        res.json({
+            success: true,
+            message: 'Password reset successfully.',
+            token: autoToken,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                accountType: user.accountType
+            }
+        });
     } catch (error) {
         console.error('Reset password error:', error);
         res.status(500).json({ success: false, message: 'Error resetting password.' });

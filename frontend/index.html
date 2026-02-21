@@ -2620,12 +2620,18 @@
             });
 
             if (locationFilter.lat !== null) {
+                // City name used as text-match fallback when geocoding fails
+                const filterCity = locationFilter.name.split(',')[0].toLowerCase().trim();
                 const withGeo = await Promise.all(filtered.map(async s => {
                     if (s._isPlusCard) return { s, ok: true };
                     const coords = await geocodeAddress(s.location, s._id || s.id);
-                    if (!coords) return { s, ok: true };
-                    const dist = haversineKm(locationFilter.lat, locationFilter.lng, coords.lat, coords.lng);
-                    return { s, ok: dist <= locationFilter.radius };
+                    if (coords) {
+                        const dist = haversineKm(locationFilter.lat, locationFilter.lng, coords.lat, coords.lng);
+                        return { s, ok: dist <= locationFilter.radius };
+                    }
+                    // Geocoding failed — fall back to checking if city name appears in the service location
+                    const ok = filterCity.length > 0 && (s.location || '').toLowerCase().includes(filterCity);
+                    return { s, ok };
                 }));
                 filtered = withGeo.filter(x => x.ok).map(x => x.s);
             }
@@ -2649,20 +2655,40 @@
             if (!address) return null;
             const key = cacheKey || address;
             if (serviceGeoCache.hasOwnProperty(key)) return serviceGeoCache[key];
-            if (!window.google || !google.maps || !google.maps.Geocoder) return null;
-            return new Promise(resolve => {
-                new google.maps.Geocoder().geocode({ address }, (results, status) => {
-                    if (status === 'OK' && results[0]) {
-                        const loc = results[0].geometry.location;
-                        const coords = { lat: loc.lat(), lng: loc.lng() };
-                        serviceGeoCache[key] = coords;
-                        resolve(coords);
-                    } else {
-                        serviceGeoCache[key] = null;
-                        resolve(null);
-                    }
+            if (!window.google || !google.maps) { serviceGeoCache[key] = null; return null; }
+
+            // Try Geocoder first (requires Geocoding API to be enabled on the key)
+            if (google.maps.Geocoder) {
+                const r = await new Promise(resolve => {
+                    new google.maps.Geocoder().geocode({ address }, (results, status) => {
+                        if (status === 'OK' && results[0]) {
+                            const loc = results[0].geometry.location;
+                            resolve({ lat: loc.lat(), lng: loc.lng() });
+                        } else resolve(null);
+                    });
                 });
-            });
+                if (r) { serviceGeoCache[key] = r; return r; }
+            }
+
+            // Fallback: Places findPlaceFromQuery (uses Places API, no Geocoding API needed)
+            if (google.maps.places && google.maps.places.PlacesService) {
+                const r = await new Promise(resolve => {
+                    const div = document.createElement('div');
+                    new google.maps.places.PlacesService(div).findPlaceFromQuery(
+                        { query: address, fields: ['geometry'] },
+                        (results, status) => {
+                            if (status === 'OK' && results && results[0] && results[0].geometry) {
+                                const loc = results[0].geometry.location;
+                                resolve({ lat: loc.lat(), lng: loc.lng() });
+                            } else resolve(null);
+                        }
+                    );
+                });
+                if (r) { serviceGeoCache[key] = r; return r; }
+            }
+
+            serviceGeoCache[key] = null;
+            return null;
         }
 
         function injectPlusCard() {

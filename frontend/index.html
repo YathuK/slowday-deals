@@ -226,7 +226,10 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             cursor: grab;
-            touch-action: none;
+            /* pan-y: lets .card-content scroll vertically via native browser scroll;
+               the parent discoverTab also has pan-y so the chain is consistent.
+               Horizontal swipes are still handled by JS (e.preventDefault on touchmove). */
+            touch-action: pan-y;
             transition: transform 0.3s, box-shadow 0.3s;
             user-select: none;
             -webkit-user-select: none;
@@ -953,7 +956,7 @@
             padding-top: 0;
         }
         #savedListWrap, #myBookingsWrap {
-            padding-top: 33px;
+            padding-top: 0;
         }
         #ptabProfileContent,
         #ptabBookingsContent,
@@ -987,7 +990,7 @@
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
             box-sizing: border-box;
-            padding-bottom: 20px;
+            padding-bottom: 80px;
         }
         #bookingsTab {
             height: calc(100svh - 145px);
@@ -997,7 +1000,7 @@
             -webkit-overflow-scrolling: touch;
             overscroll-behavior-y: contain;
             box-sizing: border-box;
-            padding-bottom: 20px;
+            padding-bottom: 80px;
         }
 
         .ptab-btn {
@@ -1124,7 +1127,12 @@
         .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         /* ---- Saved sub-tabs ---- */
-        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: fixed; top: 58px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; z-index: 90; box-sizing: border-box; }
+        /* sticky keeps the sub-tab bar pinned at the top of the savedTab scroll area
+           (which starts at y=58px due to savedTab's margin-top).  Using sticky instead
+           of fixed avoids the iOS Safari "fixed inside overflow:auto" repaint bug and
+           correctly participates in document flow so no extra padding-top is needed
+           on the list below. */
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: sticky; top: 0; width: 100%; background: white; z-index: 90; }
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 

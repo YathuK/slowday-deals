@@ -718,6 +718,77 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 }
 .lead-notes-input:focus { border-bottom-color: var(--accent); }
 .lead-notes-input::placeholder { color: var(--text3); font-style: italic; }
+.lead-price-input {
+    background: none; border: none;
+    border-bottom: 1px solid var(--border-bright);
+    color: var(--green); font-family: var(--mono); font-size: 12px;
+    padding: 3px 0; outline: none; width: 70px; transition: border-color 0.2s;
+}
+.lead-price-input:focus { border-bottom-color: var(--green); }
+.lead-price-input::placeholder { color: var(--text3); }
+.lead-day-chips { display: flex; flex-wrap: wrap; gap: 3px; min-width: 160px; }
+.lead-day-chip {
+    font-size: 10px; font-family: var(--mono); font-weight: 600;
+    padding: 2px 6px; border-radius: 4px; cursor: pointer;
+    border: 1px solid var(--border-bright); color: var(--text3);
+    background: none; transition: all 0.15s; user-select: none;
+}
+.lead-day-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* ADD LEAD MODAL */
+.lead-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    z-index: 999; align-items: center; justify-content: center;
+}
+.lead-modal-overlay.open { display: flex; }
+.lead-modal {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 18px; padding: 32px 36px; width: 560px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+}
+.lead-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+}
+.lead-modal-title { font-size: 18px; font-weight: 700; }
+.lead-modal-close {
+    background: none; border: none; color: var(--text2);
+    font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+    transition: color 0.15s;
+}
+.lead-modal-close:hover { color: var(--red); }
+.lead-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.lead-modal-field { display: flex; flex-direction: column; gap: 6px; }
+.lead-modal-field.full { grid-column: 1 / -1; }
+.lead-modal-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text2);
+}
+.lead-modal-input {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 8px; padding: 9px 12px; color: var(--text);
+    font-family: var(--sans); font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+}
+.lead-modal-input:focus { border-color: var(--accent); }
+.lead-modal-input::placeholder { color: var(--text3); }
+.lead-modal-days { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.lead-modal-submit {
+    width: 100%; margin-top: 24px;
+    background: linear-gradient(135deg, var(--accent), #5a3dcc);
+    border: none; border-radius: 10px; padding: 13px;
+    color: white; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans); transition: opacity 0.2s;
+}
+.lead-modal-submit:hover { opacity: 0.85; }
+.lead-modal-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+.lead-add-btn {
+    background: var(--accent); border: none; border-radius: 8px;
+    padding: 8px 14px; color: white; font-size: 18px; font-weight: 600;
+    cursor: pointer; line-height: 1; transition: opacity 0.15s;
+}
+.lead-add-btn:hover { opacity: 0.85; }
 
 /* LEAD SAVE + DELETE */
 .lead-save-btn {
@@ -962,6 +1033,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                     </select>
                     <button class="lead-toggle-btn" onclick="loadSavedLeads()">Apply</button>
                     <span class="lead-saved-count" id="savedLeadsCount"></span>
+                    <button class="lead-add-btn" onclick="openAddLeadModal()" title="Add lead manually">＋</button>
                 </div>
                 <div id="savedLeadsStatus" class="lead-status" style="display:none;"></div>
                 <div class="lead-table-wrap">
@@ -976,6 +1048,9 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>City</th>
                                 <th>Service</th>
                                 <th>Status</th>
+                                <th>Price</th>
+                                <th>Deal Price</th>
+                                <th>Days</th>
                                 <th>Notes</th>
                                 <th></th>
                             </tr>
@@ -988,6 +1063,93 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="lead-modal-overlay" id="addLeadOverlay" onclick="if(event.target===this)closeAddLeadModal()">
+    <div class="lead-modal">
+        <div class="lead-modal-header">
+            <div class="lead-modal-title">Add Lead Manually</div>
+            <button class="lead-modal-close" onclick="closeAddLeadModal()">✕</button>
+        </div>
+        <div class="lead-modal-grid">
+            <div class="lead-modal-field full">
+                <label class="lead-modal-label">Business Name *</label>
+                <input class="lead-modal-input" id="mlBusinessName" placeholder="e.g. Tony's Barbershop">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Contact Name</label>
+                <input class="lead-modal-input" id="mlContactName" placeholder="e.g. Tony Romano">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Phone</label>
+                <input class="lead-modal-input" id="mlPhone" placeholder="e.g. (416) 555-0123">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Email</label>
+                <input class="lead-modal-input" id="mlEmail" type="email" placeholder="e.g. tony@example.com">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">City</label>
+                <input class="lead-modal-input" id="mlCity" placeholder="e.g. Toronto, ON">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Address</label>
+                <input class="lead-modal-input" id="mlAddress" placeholder="e.g. 123 Main St">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Website</label>
+                <input class="lead-modal-input" id="mlWebsite" placeholder="e.g. tonysbarbershop.com">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Service Type</label>
+                <select class="lead-modal-input" id="mlServiceType">
+                    <option value="">— Select —</option>
+                    <option>Haircut</option><option>Barber</option>
+                    <option>Cleaning Service</option><option>Massage</option>
+                    <option>Nail Service</option><option>Spa Treatment</option>
+                    <option>Personal Training</option><option>Dog Walking</option>
+                    <option>Tutoring</option><option>Photography</option>
+                    <option>Car Detailing</option><option>Laundry Service</option>
+                </select>
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Status</label>
+                <select class="lead-modal-input" id="mlStatus">
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="interested">Interested</option>
+                    <option value="onboarded">Onboarded</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Price ($)</label>
+                <input class="lead-modal-input" id="mlPrice" type="number" placeholder="0.00">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Deal Price ($)</label>
+                <input class="lead-modal-input" id="mlDiscountPrice" type="number" placeholder="0.00">
+            </div>
+            <div class="lead-modal-field full">
+                <label class="lead-modal-label">Days Available</label>
+                <div class="lead-modal-days" id="mlDays">
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Mon</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Tue</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Wed</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Thu</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Fri</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Sat</span>
+                    <span class="lead-day-chip" onclick="this.classList.toggle('active')">Sun</span>
+                </div>
+            </div>
+            <div class="lead-modal-field full">
+                <label class="lead-modal-label">Notes</label>
+                <input class="lead-modal-input" id="mlNotes" placeholder="Any notes…">
+            </div>
+        </div>
+        <button class="lead-modal-submit" id="mlSubmitBtn" onclick="submitManualLead()">Add Lead</button>
     </div>
 </div>
 
@@ -1534,12 +1696,18 @@ async function loadSavedLeads() {
 const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected' };
 
 function renderSavedLeads(leads) {
+    const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const tbody = document.getElementById('savedLeadsBody');
     if (!leads.length) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
         return;
     }
-    tbody.innerHTML = leads.map((l, i) => `
+    tbody.innerHTML = leads.map((l, i) => {
+        const activeDays = new Set(l.days || []);
+        const dayChips = DAYS.map(d =>
+            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}" onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')">${d}</span>`
+        ).join('');
+        return `
         <tr id="srow-${esc(l._id)}">
             <td>${i + 1}</td>
             <td class="lead-name">${esc(l.businessName)}</td>
@@ -1555,11 +1723,16 @@ function renderSavedLeads(leads) {
                     ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
                 </select>
             </td>
+            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.price != null ? l.price : ''}"
+                onchange="updateLeadField('${esc(l._id)}','price',this.value===''?null:Number(this.value))"></td>
+            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.discountPrice != null ? l.discountPrice : ''}"
+                onchange="updateLeadField('${esc(l._id)}','discountPrice',this.value===''?null:Number(this.value))" style="color:var(--accent2);"></td>
+            <td><div class="lead-day-chips" id="daychips-${esc(l._id)}">${dayChips}</div></td>
             <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
                 onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
             <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 async function updateLeadField(id, field, value) {
@@ -1570,6 +1743,77 @@ async function updateLeadField(id, field, value) {
             body: JSON.stringify({ [field]: value })
         });
     } catch { /* silent — UI already updated */ }
+}
+
+function toggleLeadDay(id, chip, day) {
+    chip.classList.toggle('active');
+    const container = document.getElementById(`daychips-${id}`);
+    const days = [...container.querySelectorAll('.lead-day-chip.active')].map(c => c.textContent);
+    updateLeadField(id, 'days', days);
+}
+
+function openAddLeadModal() {
+    // Reset all fields
+    ['mlBusinessName','mlContactName','mlPhone','mlEmail','mlCity',
+     'mlAddress','mlWebsite','mlNotes','mlPrice','mlDiscountPrice'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('mlStatus').value = 'new';
+    document.getElementById('mlServiceType').value = '';
+    document.querySelectorAll('#mlDays .lead-day-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('mlSubmitBtn').disabled = false;
+    document.getElementById('mlSubmitBtn').textContent = 'Add Lead';
+    document.getElementById('addLeadOverlay').classList.add('open');
+}
+
+function closeAddLeadModal() {
+    document.getElementById('addLeadOverlay').classList.remove('open');
+}
+
+async function submitManualLead() {
+    const businessName = document.getElementById('mlBusinessName').value.trim();
+    if (!businessName) { alert('Business Name is required.'); return; }
+
+    const days = [...document.querySelectorAll('#mlDays .lead-day-chip.active')].map(c => c.textContent);
+    const priceVal = document.getElementById('mlPrice').value;
+    const discountVal = document.getElementById('mlDiscountPrice').value;
+
+    const lead = {
+        businessName,
+        contactName:   document.getElementById('mlContactName').value.trim(),
+        phone:         document.getElementById('mlPhone').value.trim(),
+        email:         document.getElementById('mlEmail').value.trim(),
+        city:          document.getElementById('mlCity').value.trim(),
+        address:       document.getElementById('mlAddress').value.trim(),
+        website:       document.getElementById('mlWebsite').value.trim(),
+        serviceType:   document.getElementById('mlServiceType').value,
+        status:        document.getElementById('mlStatus').value,
+        price:         priceVal !== '' ? Number(priceVal) : null,
+        discountPrice: discountVal !== '' ? Number(discountVal) : null,
+        days,
+        notes:         document.getElementById('mlNotes').value.trim()
+    };
+
+    const btn = document.getElementById('mlSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/save`, {
+            method: 'POST',
+            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ leads: [lead], city: lead.city })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        closeAddLeadModal();
+        loadSavedLeads();
+        refreshSavedBadge();
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Add Lead';
+        alert(`Failed to save: ${err.message}`);
+    }
 }
 
 async function deleteLead(id, btn) {

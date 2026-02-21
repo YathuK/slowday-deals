@@ -2336,12 +2336,20 @@
                 return;
             }
             try {
-                await API.resetPassword(token, password);
-                showToast('Password reset successfully! Please log in with your new password.');
-                // Clear token from URL
+                const response = await API.resetPassword(token, password);
                 sessionStorage.removeItem('pendingResetToken');
                 window.history.replaceState({}, '', window.location.pathname);
-                showLogin();
+                // Auto-login with the token returned from reset
+                if (response.token && response.user) {
+                    API.setToken(response.token);
+                    currentUser = response.user;
+                    closeAuthModal();
+                    try { await showAuthenticatedView(); } catch(e) {}
+                    showToast('Password reset and logged in!');
+                } else {
+                    showToast('Password reset successfully! Please log in.');
+                    showLogin();
+                }
             } catch (err) {
                 errorEl.textContent = err.message || 'Reset failed. Link may have expired. Please request a new one.';
                 errorEl.style.display = 'block';

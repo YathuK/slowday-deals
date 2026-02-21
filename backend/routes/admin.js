@@ -53,7 +53,7 @@ function extractEmail(html) {
     ) || '';
 }
 
-async function getPlaceLeads(industry, city, apiKey, limit = 10) {
+async function getPlaceLeads(industry, city, apiKey, limit = 20) {
     const query = encodeURIComponent(`${industry} in ${city}`);
     const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
     const searchData = await gFetch(searchUrl);
@@ -222,11 +222,25 @@ router.get('/leads', adminAuth, async (req, res) => {
 
     try {
         const allLeads = [];
+        let totalSkipped = 0;
+
         for (const industry of industryList) {
-            const leads = await getPlaceLeads(industry, city.trim(), apiKey, 10);
-            allLeads.push(...leads);
+            const leads = await getPlaceLeads(industry, city.trim(), apiKey, 20);
+
+            // Filter out businesses already saved in the CRM
+            const names = leads.map(l => l.businessName.trim().toLowerCase());
+            const existing = await Lead.find({
+                serviceType: industry,
+                businessName: { $in: leads.map(l => new RegExp(`^${l.businessName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) }
+            }).select('businessName').lean();
+            const savedNames = new Set(existing.map(e => e.businessName.trim().toLowerCase()));
+
+            const fresh = leads.filter(l => !savedNames.has(l.businessName.trim().toLowerCase()));
+            totalSkipped += leads.length - fresh.length;
+            allLeads.push(...fresh);
         }
-        res.json({ success: true, total: allLeads.length, leads: allLeads });
+
+        res.json({ success: true, total: allLeads.length, skipped: totalSkipped, leads: allLeads });
     } catch (err) {
         console.error('Lead finder error:', err);
         res.status(500).json({ success: false, message: err.message });

@@ -1406,9 +1406,15 @@ async function searchLeads() {
         }
 
         leadsData = data.leads || [];
+        const skipped = data.skipped || 0;
+        const skipNote = skipped ? ` (${skipped} already in My Leads — skipped)` : '';
         renderLeads(leadsData, city);
-        setLeadStatus(`✅ Found ${leadsData.length} business${leadsData.length === 1 ? '' : 'es'} — fetching emails…`, true);
-        scrapeEmails();
+        if (!leadsData.length) {
+            setLeadStatus(`✅ No new businesses found in ${city}${skipNote}.`);
+        } else {
+            setLeadStatus(`✅ Found ${leadsData.length} new business${leadsData.length === 1 ? '' : 'es'}${skipNote} — fetching emails…`, true);
+            scrapeEmails();
+        }
     } catch (err) {
         setLeadStatus(`❌ Request failed: ${err.message}`);
     } finally {

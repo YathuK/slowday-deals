@@ -2337,7 +2337,7 @@
             }
             try {
                 await API.resetPassword(token, password);
-                showToast('✅ Password reset successfully! Please log in with your new password.', true);
+                showToast('Password reset successfully! Please log in with your new password.');
                 // Clear token from URL
                 sessionStorage.removeItem('pendingResetToken');
                 window.history.replaceState({}, '', window.location.pathname);
@@ -2383,23 +2383,31 @@
             e.preventDefault();
             const emailOrPhone = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const btn = e.target.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.textContent = 'Logging in...'; }
             try {
                 const response = await API.login({ emailOrPhone, password });
                 if (response.success) {
                     API.setToken(response.token);
                     currentUser = response.user;
-                    await showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
+                    try {
+                        await showAuthenticatedView();
+                    } catch (viewErr) {
+                        console.error('Post-login view error:', viewErr);
+                    }
                     handleDeepLink();
+                    handleDealDeepLink();
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
+                    showToast('Server is waking up — please wait 30 seconds and try again.', true);
                 } else {
                     showToast(error.message || 'Login failed. Please check your credentials.', true);
                 }
             }
+            if (btn) { btn.disabled = false; btn.textContent = 'Log In'; }
         }
 
         async function signup(e) {
@@ -2411,23 +2419,30 @@
                 phone: document.getElementById('signupPhone').value,
                 accountType: document.getElementById('signupAccountType').value
             };
+            const btn = e.target.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
             try {
                 const response = await API.signup(userData);
                 if (response.success) {
                     API.setToken(response.token);
                     currentUser = response.user;
-                    showAuthenticatedView();
                     closeAuthModal();
                     e.target.reset();
-                    showToast(`🎉 Welcome to SlowDay Deals, ${currentUser.name}!`, false);
+                    try {
+                        await showAuthenticatedView();
+                    } catch (viewErr) {
+                        console.error('Post-signup view error:', viewErr);
+                    }
+                    showToast(`Welcome to SlowDay Deals, ${currentUser.name}!`);
                 }
             } catch (error) {
                 if (error.message === 'Failed to fetch') {
-                    showToast('⏳ Server is waking up (free tier). Please wait 30 seconds and try again!', true);
+                    showToast('Server is waking up — please wait 30 seconds and try again.', true);
                 } else {
                     showToast(error.message || 'Signup failed. Please try again.', true);
                 }
             }
+            if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
         }
 
         function logout() {

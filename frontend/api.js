@@ -66,7 +66,7 @@ const API = {
             headers: this.getHeaders(includeAuth)
         };
         
-        if (data && (method === 'POST' || method === 'PUT')) {
+        if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
             options.body = JSON.stringify(data);
         }
         

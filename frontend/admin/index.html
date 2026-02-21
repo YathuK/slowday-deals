@@ -660,6 +660,82 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 .lead-contact-input:focus { border-bottom-color: var(--accent); }
 .lead-contact-input::placeholder { color: var(--text3); font-style: italic; }
 .lead-empty { color: var(--text3); font-style: italic; }
+
+/* LEAD TABS */
+.lead-tabs {
+    display: flex; gap: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px;
+    width: fit-content; margin-bottom: 24px;
+}
+.lead-tab-btn {
+    background: none; border: none; border-radius: 9px;
+    padding: 8px 22px; color: var(--text2);
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px;
+}
+.lead-tab-btn:hover { color: var(--text); }
+.lead-tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.lead-tab-badge {
+    background: var(--accent); color: white;
+    font-size: 11px; font-family: var(--mono);
+    padding: 1px 7px; border-radius: 20px; min-width: 20px; text-align: center;
+}
+
+/* LEAD FILTER BAR */
+.lead-filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.lead-filter-select, .lead-filter-input {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 8px; padding: 8px 12px;
+    color: var(--text); font-family: var(--sans); font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+}
+.lead-filter-select { min-width: 150px; cursor: pointer; }
+.lead-filter-input { min-width: 180px; }
+.lead-filter-select:focus, .lead-filter-input:focus { border-color: var(--accent); }
+
+/* LEAD STATUS SELECT */
+.lead-status-select {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 6px; padding: 4px 8px;
+    color: var(--text); font-family: var(--sans); font-size: 12px;
+    cursor: pointer; outline: none; width: 130px;
+}
+.lead-status-select.s-new       { border-color: var(--accent); color: var(--accent); }
+.lead-status-select.s-contacted { border-color: var(--yellow); color: var(--yellow); }
+.lead-status-select.s-interested{ border-color: var(--green);  color: var(--green);  }
+.lead-status-select.s-onboarded { border-color: #9d7dff;       color: #9d7dff;       }
+.lead-status-select.s-rejected  { border-color: var(--red);    color: var(--red);    }
+
+/* LEAD NOTES INPUT */
+.lead-notes-input {
+    background: none; border: none;
+    border-bottom: 1px solid var(--border-bright);
+    color: var(--text2); font-family: var(--sans); font-size: 12px;
+    padding: 3px 0; outline: none; width: 150px; transition: border-color 0.2s;
+}
+.lead-notes-input:focus { border-bottom-color: var(--accent); }
+.lead-notes-input::placeholder { color: var(--text3); font-style: italic; }
+
+/* LEAD SAVE + DELETE */
+.lead-save-btn {
+    background: linear-gradient(135deg, var(--green), #0fa87a);
+    border: none; border-radius: 8px; padding: 8px 18px;
+    color: #051a10; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans); transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 6px;
+}
+.lead-save-btn:hover { opacity: 0.85; }
+.lead-save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lead-delete-btn {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    font-size: 15px; transition: color 0.15s; line-height: 1;
+}
+.lead-delete-btn:hover { color: var(--red); }
+.lead-saved-count { font-size: 13px; color: var(--text2); margin-left: auto; }
 </style>
 </head>
 <body>
@@ -787,51 +863,109 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             <div class="page-header">
                 <div>
                     <div class="page-title">Lead Finder</div>
-                    <div class="page-sub">Find local businesses to onboard as providers</div>
+                    <div class="page-sub">Find &amp; track outreach to local service businesses</div>
                 </div>
-                <button class="refresh-btn" id="leadExportBtn" onclick="exportLeadsCSV()" style="display:none;">↓ Export CSV</button>
             </div>
 
-            <div class="lead-search-box">
-                <div class="lead-field-row">
+            <!-- Tab switcher -->
+            <div class="lead-tabs">
+                <button class="lead-tab-btn active" id="leadTabSearch" onclick="switchLeadTab('search')">Search</button>
+                <button class="lead-tab-btn" id="leadTabSaved" onclick="switchLeadTab('saved')">
+                    My Leads
+                    <span class="lead-tab-badge" id="leadSavedBadge" style="display:none">0</span>
+                </button>
+            </div>
+
+            <!-- ── SEARCH VIEW ── -->
+            <div id="leadSearchView">
+                <div class="lead-search-box">
+                    <div class="lead-field-row">
+                        <div class="lead-field">
+                            <label class="lead-label">Town / City</label>
+                            <input type="text" id="leadCity" placeholder="e.g. Toronto, ON" class="lead-input" onkeydown="if(event.key==='Enter')searchLeads()">
+                        </div>
+                    </div>
                     <div class="lead-field">
-                        <label class="lead-label">Town / City</label>
-                        <input type="text" id="leadCity" placeholder="e.g. Toronto, ON" class="lead-input" onkeydown="if(event.key==='Enter')searchLeads()">
+                        <label class="lead-label">Industries</label>
+                        <div class="lead-industry-actions">
+                            <button class="lead-toggle-btn" onclick="selectAllIndustries()">Select All</button>
+                            <button class="lead-toggle-btn" onclick="clearAllIndustries()">Clear</button>
+                        </div>
+                        <div class="lead-industries" id="leadIndustries">
+                            <label class="lead-check"><input type="checkbox" value="Haircut" checked> Haircut</label>
+                            <label class="lead-check"><input type="checkbox" value="Barber" checked> Barber</label>
+                            <label class="lead-check"><input type="checkbox" value="Cleaning Service" checked> Cleaning Service</label>
+                            <label class="lead-check"><input type="checkbox" value="Massage" checked> Massage</label>
+                            <label class="lead-check"><input type="checkbox" value="Nail Service" checked> Nail Service</label>
+                            <label class="lead-check"><input type="checkbox" value="Spa Treatment" checked> Spa Treatment</label>
+                            <label class="lead-check"><input type="checkbox" value="Personal Training" checked> Personal Training</label>
+                            <label class="lead-check"><input type="checkbox" value="Dog Walking" checked> Dog Walking</label>
+                            <label class="lead-check"><input type="checkbox" value="Tutoring" checked> Tutoring</label>
+                            <label class="lead-check"><input type="checkbox" value="Photography" checked> Photography</label>
+                            <label class="lead-check"><input type="checkbox" value="Car Detailing" checked> Car Detailing</label>
+                            <label class="lead-check"><input type="checkbox" value="Laundry Service" checked> Laundry Service</label>
+                        </div>
+                    </div>
+                    <button class="lead-search-btn" onclick="searchLeads()" id="leadSearchBtn">🔍 Find Leads</button>
+                </div>
+
+                <div id="leadStatus" class="lead-status" style="display:none;"></div>
+
+                <div id="leadResults" style="display:none;">
+                    <div class="lead-results-header">
+                        <span id="leadCount" class="lead-count"></span>
+                        <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+                            <button class="lead-save-btn" id="leadSaveBtn" onclick="saveLeadsToDb()">＋ Save to My Leads</button>
+                            <button class="refresh-btn" id="leadExportBtn" onclick="exportLeadsCSV()">↓ CSV</button>
+                        </div>
+                    </div>
+                    <div class="lead-table-wrap">
+                        <table class="lead-table" id="leadTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Business Name</th>
+                                    <th>Contact Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Address</th>
+                                    <th>Website</th>
+                                    <th>Service</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leadTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="lead-field">
-                    <label class="lead-label">Industries</label>
-                    <div class="lead-industry-actions">
-                        <button class="lead-toggle-btn" onclick="selectAllIndustries()">Select All</button>
-                        <button class="lead-toggle-btn" onclick="clearAllIndustries()">Clear</button>
-                    </div>
-                    <div class="lead-industries" id="leadIndustries">
-                        <label class="lead-check"><input type="checkbox" value="Haircut" checked> Haircut</label>
-                        <label class="lead-check"><input type="checkbox" value="Barber" checked> Barber</label>
-                        <label class="lead-check"><input type="checkbox" value="Cleaning Service" checked> Cleaning Service</label>
-                        <label class="lead-check"><input type="checkbox" value="Massage" checked> Massage</label>
-                        <label class="lead-check"><input type="checkbox" value="Nail Service" checked> Nail Service</label>
-                        <label class="lead-check"><input type="checkbox" value="Spa Treatment" checked> Spa Treatment</label>
-                        <label class="lead-check"><input type="checkbox" value="Personal Training" checked> Personal Training</label>
-                        <label class="lead-check"><input type="checkbox" value="Dog Walking" checked> Dog Walking</label>
-                        <label class="lead-check"><input type="checkbox" value="Tutoring" checked> Tutoring</label>
-                        <label class="lead-check"><input type="checkbox" value="Photography" checked> Photography</label>
-                        <label class="lead-check"><input type="checkbox" value="Car Detailing" checked> Car Detailing</label>
-                        <label class="lead-check"><input type="checkbox" value="Laundry Service" checked> Laundry Service</label>
-                    </div>
-                </div>
-                <button class="lead-search-btn" onclick="searchLeads()" id="leadSearchBtn">🔍 Find Leads</button>
             </div>
 
-            <div id="leadStatus" class="lead-status" style="display:none;"></div>
-
-            <div id="leadResults" style="display:none;">
-                <div class="lead-results-header">
-                    <span id="leadCount" class="lead-count"></span>
-                    <span class="lead-note">✏️ Contact Name column is editable — fill it in as you research</span>
+            <!-- ── MY LEADS VIEW ── -->
+            <div id="leadSavedView" style="display:none;">
+                <div class="lead-filter-bar">
+                    <select class="lead-filter-select" id="savedFilterStatus" onchange="loadSavedLeads()">
+                        <option value="">All Statuses</option>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="interested">Interested</option>
+                        <option value="onboarded">Onboarded</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <input class="lead-filter-input" id="savedFilterCity" placeholder="Filter by city…" onkeydown="if(event.key==='Enter')loadSavedLeads()">
+                    <select class="lead-filter-select" id="savedFilterService" onchange="loadSavedLeads()">
+                        <option value="">All Services</option>
+                        <option>Haircut</option><option>Barber</option>
+                        <option>Cleaning Service</option><option>Massage</option>
+                        <option>Nail Service</option><option>Spa Treatment</option>
+                        <option>Personal Training</option><option>Dog Walking</option>
+                        <option>Tutoring</option><option>Photography</option>
+                        <option>Car Detailing</option><option>Laundry Service</option>
+                    </select>
+                    <button class="lead-toggle-btn" onclick="loadSavedLeads()">Apply</button>
+                    <span class="lead-saved-count" id="savedLeadsCount"></span>
                 </div>
+                <div id="savedLeadsStatus" class="lead-status" style="display:none;"></div>
                 <div class="lead-table-wrap">
-                    <table class="lead-table" id="leadTable">
+                    <table class="lead-table" id="savedLeadsTable">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -839,12 +973,16 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>Contact Name</th>
                                 <th>Phone</th>
                                 <th>Email</th>
-                                <th>Address</th>
-                                <th>Website</th>
+                                <th>City</th>
                                 <th>Service</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th></th>
                             </tr>
                         </thead>
-                        <tbody id="leadTableBody"></tbody>
+                        <tbody id="savedLeadsBody">
+                            <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">Click "My Leads" tab to load saved leads.</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -1194,9 +1332,10 @@ function showPage(name) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(`page-${name}`).classList.add('active');
     document.getElementById(`nav-${name}`).classList.add('active');
+    if (name === 'leads') refreshSavedBadge();
 }
 
-// ── LEAD FINDER ─────────────────────────────────────────────────────────────
+// ── LEAD FINDER / CRM ────────────────────────────────────────────────────────
 
 let leadsData = [];
 
@@ -1207,8 +1346,25 @@ function clearAllIndustries() {
     document.querySelectorAll('#leadIndustries input[type=checkbox]').forEach(c => c.checked = false);
 }
 
+function switchLeadTab(tab) {
+    const isSearch = tab === 'search';
+    document.getElementById('leadSearchView').style.display = isSearch ? 'block' : 'none';
+    document.getElementById('leadSavedView').style.display  = isSearch ? 'none'  : 'block';
+    document.getElementById('leadTabSearch').classList.toggle('active', isSearch);
+    document.getElementById('leadTabSaved').classList.toggle('active', !isSearch);
+    if (!isSearch) loadSavedLeads();
+}
+
 function setLeadStatus(msg, loading = false) {
     const el = document.getElementById('leadStatus');
+    el.style.display = 'flex';
+    el.innerHTML = loading
+        ? `<div class="spinner" style="width:16px;height:16px;border-width:2px;flex-shrink:0;"></div><span>${msg}</span>`
+        : `<span>${msg}</span>`;
+}
+
+function setSavedStatus(msg, loading = false) {
+    const el = document.getElementById('savedLeadsStatus');
     el.style.display = 'flex';
     el.innerHTML = loading
         ? `<div class="spinner" style="width:16px;height:16px;border-width:2px;flex-shrink:0;"></div><span>${msg}</span>`
@@ -1226,7 +1382,6 @@ async function searchLeads() {
     btn.disabled = true;
     btn.textContent = '⏳ Searching…';
     document.getElementById('leadResults').style.display = 'none';
-    document.getElementById('leadExportBtn').style.display = 'none';
 
     const industries = checked.map(c => c.value);
     const total = industries.length;
@@ -1249,7 +1404,6 @@ async function searchLeads() {
         leadsData = data.leads || [];
         renderLeads(leadsData, city);
         setLeadStatus(`✅ Done — found ${leadsData.length} business${leadsData.length === 1 ? '' : 'es'} across ${industries.length} categor${industries.length === 1 ? 'y' : 'ies'} in ${city}.`);
-        document.getElementById('leadExportBtn').style.display = 'block';
     } catch (err) {
         setLeadStatus(`❌ Request failed: ${err.message}`);
     } finally {
@@ -1284,6 +1438,132 @@ function renderLeads(leads, city) {
     document.getElementById('leadResults').style.display = 'block';
 }
 
+async function saveLeadsToDb() {
+    if (!leadsData.length) return;
+    const city = document.getElementById('leadCity').value.trim();
+    const btn = document.getElementById('leadSaveBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Saving…';
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/save`, {
+            method: 'POST',
+            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ leads: leadsData, city })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        btn.textContent = `✅ ${data.saved} saved!`;
+        setTimeout(() => { btn.disabled = false; btn.textContent = '＋ Save to My Leads'; }, 2500);
+        // Update badge
+        refreshSavedBadge();
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '＋ Save to My Leads';
+        setLeadStatus(`❌ Save failed: ${err.message}`);
+    }
+}
+
+async function refreshSavedBadge() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/saved`, { headers: { 'x-admin-key': adminKey } });
+        const data = await res.json();
+        if (data.success) {
+            const badge = document.getElementById('leadSavedBadge');
+            badge.textContent = data.total;
+            badge.style.display = data.total ? 'inline-block' : 'none';
+        }
+    } catch { /* silent */ }
+}
+
+async function loadSavedLeads() {
+    const status   = document.getElementById('savedFilterStatus').value;
+    const city     = document.getElementById('savedFilterCity').value.trim();
+    const service  = document.getElementById('savedFilterService').value;
+    setSavedStatus('Loading…', true);
+    try {
+        const params = new URLSearchParams();
+        if (status)  params.set('status', status);
+        if (city)    params.set('city', city);
+        if (service) params.set('serviceType', service);
+        const res = await fetch(`${API_BASE}/admin/leads/saved?${params}`, {
+            headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        document.getElementById('savedLeadsStatus').style.display = 'none';
+        renderSavedLeads(data.leads);
+        document.getElementById('savedLeadsCount').textContent = `${data.total} lead${data.total === 1 ? '' : 's'}`;
+        // Sync badge
+        const badge = document.getElementById('leadSavedBadge');
+        badge.textContent = data.total;
+        badge.style.display = data.total ? 'inline-block' : 'none';
+    } catch (err) {
+        setSavedStatus(`❌ ${err.message}`);
+    }
+}
+
+const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected' };
+
+function renderSavedLeads(leads) {
+    const tbody = document.getElementById('savedLeadsBody');
+    if (!leads.length) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = leads.map((l, i) => `
+        <tr id="srow-${esc(l._id)}">
+            <td>${i + 1}</td>
+            <td class="lead-name">${esc(l.businessName)}</td>
+            <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
+                onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
+            <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-email">${l.email ? `<a href="mailto:${esc(l.email)}" style="color:var(--accent);">${esc(l.email)}</a>` : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-addr" style="font-size:12px;color:var(--text2);">${esc(l.city || '')}</td>
+            <td class="lead-service"><span class="pill purple">${esc(l.serviceType)}</span></td>
+            <td>
+                <select class="lead-status-select s-${esc(l.status)}" onchange="updateLeadField('${esc(l._id)}','status',this.value);this.className='lead-status-select s-'+this.value">
+                    ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
+                </select>
+            </td>
+            <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
+                onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
+            <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
+        </tr>
+    `).join('');
+}
+
+async function updateLeadField(id, field, value) {
+    try {
+        await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
+            method: 'PATCH',
+            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        });
+    } catch { /* silent — UI already updated */ }
+}
+
+async function deleteLead(id, btn) {
+    if (!confirm('Delete this lead?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
+            method: 'DELETE',
+            headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        const row = document.getElementById(`srow-${id}`);
+        if (row) row.remove();
+        // recount
+        const rows = document.querySelectorAll('#savedLeadsBody tr[id^="srow-"]');
+        document.getElementById('savedLeadsCount').textContent = `${rows.length} lead${rows.length === 1 ? '' : 's'}`;
+        const badge = document.getElementById('leadSavedBadge');
+        badge.textContent = rows.length;
+        badge.style.display = rows.length ? 'inline-block' : 'none';
+    } catch (err) {
+        alert(`Delete failed: ${err.message}`);
+    }
+}
+
 function esc(s) {
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1293,14 +1573,7 @@ function exportLeadsCSV() {
     if (!leadsData.length) return;
     const headers = ['#','Business Name','Contact Name','Phone','Email','Address','Website','Service Type'];
     const rows = leadsData.map((l, i) => [
-        i + 1,
-        l.businessName,
-        l.contactName,
-        l.phone,
-        l.email,
-        l.address,
-        l.website,
-        l.serviceType
+        i + 1, l.businessName, l.contactName, l.phone, l.email, l.address, l.website, l.serviceType
     ]);
     const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });

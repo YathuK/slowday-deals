@@ -5,6 +5,7 @@ const http = require('http');
 const User = require('../models/User');
 const Service = require('../models/Service');
 const Booking = require('../models/Booking');
+const Lead = require('../models/Lead');
 
 // ── Lead Finder helpers ──────────────────────────────────────────────────────
 
@@ -229,6 +230,76 @@ router.get('/leads', adminAuth, async (req, res) => {
         res.json({ success: true, total: allLeads.length, leads: allLeads });
     } catch (err) {
         console.error('Lead finder error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/leads/save
+// @desc  Persist search results to the Lead CRM
+router.post('/leads/save', adminAuth, async (req, res) => {
+    const { leads, city } = req.body;
+    if (!Array.isArray(leads) || !leads.length) {
+        return res.status(400).json({ success: false, message: 'leads array is required' });
+    }
+    try {
+        const docs = leads.map(l => ({
+            businessName: l.businessName || '',
+            contactName:  l.contactName  || '',
+            phone:        l.phone        || '',
+            email:        l.email        || '',
+            address:      l.address      || '',
+            website:      l.website      || '',
+            serviceType:  l.serviceType  || '',
+            city:         city           || '',
+            status: 'new'
+        }));
+        const saved = await Lead.insertMany(docs);
+        res.json({ success: true, saved: saved.length });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route GET /api/admin/leads/saved
+// @desc  Fetch all saved leads (optional query filters: status, city, serviceType)
+router.get('/leads/saved', adminAuth, async (req, res) => {
+    try {
+        const filter = {};
+        if (req.query.status)      filter.status      = req.query.status;
+        if (req.query.city)        filter.city        = new RegExp(req.query.city, 'i');
+        if (req.query.serviceType) filter.serviceType = req.query.serviceType;
+        const leads = await Lead.find(filter).sort({ createdAt: -1 });
+        res.json({ success: true, total: leads.length, leads });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route PATCH /api/admin/leads/saved/:id
+// @desc  Update status, contactName, or notes on a saved lead
+router.patch('/leads/saved/:id', adminAuth, async (req, res) => {
+    try {
+        const { status, contactName, notes } = req.body;
+        const update = {};
+        if (status      !== undefined) update.status      = status;
+        if (contactName !== undefined) update.contactName = contactName;
+        if (notes       !== undefined) update.notes       = notes;
+        const lead = await Lead.findByIdAndUpdate(req.params.id, update, { new: true });
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+        res.json({ success: true, lead });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route DELETE /api/admin/leads/saved/:id
+// @desc  Delete a saved lead
+router.delete('/leads/saved/:id', adminAuth, async (req, res) => {
+    try {
+        const lead = await Lead.findByIdAndDelete(req.params.id);
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+        res.json({ success: true });
+    } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });

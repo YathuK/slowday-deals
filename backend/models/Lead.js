@@ -14,7 +14,10 @@ const leadSchema = new mongoose.Schema({
         enum: ['new', 'contacted', 'interested', 'onboarded', 'rejected'],
         default: 'new'
     },
-    notes: { type: String, default: '' }
+    notes:         { type: String, default: '' },
+    price:         { type: Number, default: null },
+    discountPrice: { type: Number, default: null },
+    days:          [{ type: String, enum: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Lead', leadSchema);

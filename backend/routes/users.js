@@ -173,7 +173,7 @@ router.put('/password', auth, async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ success: false, message: 'Current password is incorrect' });
         }
-        user.password = await bcrypt.hash(newPassword, 12);
+        user.password = newPassword;
         await user.save();
         res.json({ success: true, message: 'Password changed successfully' });
     } catch (error) {

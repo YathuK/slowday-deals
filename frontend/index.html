@@ -409,23 +409,37 @@
             100%      { opacity:0; transform: translate(var(--sx,−20px), var(--sy,−40px)) scale(1.1) rotate(30deg); }
         }
 
-        /* Grayed out deal card */
+        /* Ended deal card — visible but clearly marked */
         .deal-ended-overlay {
-            position:absolute;
-            inset:0;
-            background:rgba(255,255,255,0.75);
-            backdrop-filter:blur(2px);
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            z-index:5;
-            border-radius:inherit;
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 7px 12px;
+            z-index: 5;
+            border-radius: inherit;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
-        .deal-ended-overlay .ended-icon { font-size:48px; margin-bottom:8px; filter:grayscale(1); }
-        .deal-ended-overlay .ended-text { font-size:18px; font-weight:800; color:#6b7280; }
-        .deal-ended-overlay .ended-sub  { font-size:13px; color:#9ca3af; margin-top:4px; }
-        .service-card.deal-ended { filter: grayscale(0.5); }
+        .deal-ended-overlay .ended-text {
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .deal-ended-overlay .ended-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 500;
+        }
+        .service-card.deal-ended {
+            filter: grayscale(0.2);
+            border-color: rgba(220,38,38,0.35) !important;
+        }
 
         .swipe-indicator {
             position: absolute;
@@ -3032,12 +3046,11 @@
                     </div>`;
             }
 
-            // Grayed-out overlay
+            // Ended banner — card stays visible, banner makes it obvious
             const endedOverlay = dealEnded ? `
                 <div class="deal-ended-overlay">
-                    <div class="ended-icon">⏰</div>
                     <div class="ended-text">Deal Ended</div>
-                    <div class="ended-sub">You missed this one</div>
+                    <div class="ended-sub">· Stay tuned for the next one</div>
                 </div>` : '';
 
 
@@ -3647,8 +3660,8 @@
                 const slotsUsed2 = isWknd2 ? service.weekendSlotsUsed : service.weekdaySlotsUsed;
                 const slotsLeft2 = dealSlots2 != null ? dealSlots2 - (slotsUsed2 || 0) : null;
                 const dealEnded2 = !service.dealActive || (slotsLeft2 !== null && slotsLeft2 <= 0);
-                const endedStyle = dealEnded2 ? 'filter:grayscale(1);opacity:0.6;' : '';
-                const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#e5e7eb;color:#6b7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-bottom:4px;">⏰ Deal Ended</div>` : '';
+                const endedStyle = dealEnded2 ? 'filter:grayscale(0.2);border-color:rgba(220,38,38,0.35);' : '';
+                const endedBadge = dealEnded2 ? `<div style="display:inline-block;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;margin-bottom:4px;letter-spacing:0.5px;text-transform:uppercase;">Deal Ended</div>` : '';
                 const bookBtn = dealEnded2 ? `<button class="book-btn-small" disabled style="opacity:0.4;cursor:not-allowed;">Unavailable</button>` : `<button class="book-btn-small" onclick="openBookingModal('${serviceId}')">Book</button>`;
                 const normalPriceStr = service.normalPrice ? `<span style="text-decoration:line-through;color:#aaa;margin-right:4px;">$${service.normalPrice}</span>` : '';
                 return `<div class="saved-card" style="${endedStyle}cursor:pointer;" onclick="showDetailFromSaved('${serviceId}')">${img}<div class="saved-card-content"><h3>${service.serviceType}</h3>${endedBadge}<p>${service.providerName} • ${service.location}</p><p style="color:#667eea;font-weight:600;">${normalPriceStr}$${dealPrice2} deal</p><div class="saved-card-actions" onclick="event.stopPropagation();">${bookBtn}<button class="remove-btn" onclick="removeSaved('${serviceId}')">Remove</button></div></div></div>`;

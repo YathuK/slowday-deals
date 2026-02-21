@@ -492,6 +492,174 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 /* TWO COL GRID */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
 @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── LEAD FINDER ────────────────────────────────────────────────────────── */
+.lead-search-box {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+}
+.lead-field-row { display: flex; gap: 16px; margin-bottom: 20px; }
+.lead-field { flex: 1; }
+.lead-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    margin-bottom: 8px;
+}
+.lead-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 11px 16px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.lead-input:focus { border-color: var(--accent); }
+.lead-industry-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+.lead-toggle-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+.lead-toggle-btn:hover { color: var(--accent); border-color: var(--accent); }
+.lead-industries {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.lead-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    user-select: none;
+}
+.lead-check:has(input:checked) { border-color: var(--accent); color: var(--text); }
+.lead-check input { accent-color: var(--accent); cursor: pointer; }
+.lead-search-btn {
+    margin-top: 20px;
+    background: linear-gradient(135deg, var(--accent), #5a3dcc);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-family: var(--sans);
+}
+.lead-search-btn:hover { opacity: 0.85; }
+.lead-search-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.lead-status {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.lead-results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.lead-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 600;
+}
+.lead-note {
+    font-size: 12px;
+    color: var(--text3);
+}
+.lead-table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+.lead-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.lead-table th {
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 12px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+}
+.lead-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+    max-width: 200px;
+}
+.lead-table tr:last-child td { border-bottom: none; }
+.lead-table tr:hover td { background: var(--surface2); }
+.lead-table td:first-child { color: var(--text3); font-family: var(--mono); width: 40px; }
+.lead-name { font-weight: 600; }
+.lead-phone { font-family: var(--mono); color: var(--green); white-space: nowrap; }
+.lead-email { font-family: var(--mono); font-size: 12px; color: var(--accent); word-break: break-all; }
+.lead-addr { font-size: 12px; color: var(--text2); }
+.lead-web a { color: var(--accent2); font-size: 12px; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; max-width: 140px; }
+.lead-web a:hover { text-decoration: underline; }
+.lead-service { }
+.lead-service .pill { font-size: 11px; }
+.lead-contact-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border-bright);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 2px 4px;
+    width: 100%;
+    outline: none;
+    min-width: 120px;
+}
+.lead-contact-input:focus { border-bottom-color: var(--accent); }
+.lead-contact-input::placeholder { color: var(--text3); font-style: italic; }
+.lead-empty { color: var(--text3); font-style: italic; }
 </style>
 </head>
 <body>
@@ -533,6 +701,9 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
         </div>
         <div class="nav-item" onclick="showPage('bookings')" id="nav-bookings">
             <span class="nav-icon">📅</span> Bookings
+        </div>
+        <div class="nav-item" onclick="showPage('leads')" id="nav-leads">
+            <span class="nav-icon">🎯</span> Lead Finder
         </div>
         <div class="sidebar-bottom">
             <button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button>
@@ -608,6 +779,74 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             </div>
             <div id="bookingsContent">
                 <div class="loading"><div class="spinner"></div> Loading...</div>
+            </div>
+        </div>
+
+        <!-- LEAD FINDER PAGE -->
+        <div class="page" id="page-leads">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Lead Finder</div>
+                    <div class="page-sub">Find local businesses to onboard as providers</div>
+                </div>
+                <button class="refresh-btn" id="leadExportBtn" onclick="exportLeadsCSV()" style="display:none;">↓ Export CSV</button>
+            </div>
+
+            <div class="lead-search-box">
+                <div class="lead-field-row">
+                    <div class="lead-field">
+                        <label class="lead-label">Town / City</label>
+                        <input type="text" id="leadCity" placeholder="e.g. Toronto, ON" class="lead-input" onkeydown="if(event.key==='Enter')searchLeads()">
+                    </div>
+                </div>
+                <div class="lead-field">
+                    <label class="lead-label">Industries</label>
+                    <div class="lead-industry-actions">
+                        <button class="lead-toggle-btn" onclick="selectAllIndustries()">Select All</button>
+                        <button class="lead-toggle-btn" onclick="clearAllIndustries()">Clear</button>
+                    </div>
+                    <div class="lead-industries" id="leadIndustries">
+                        <label class="lead-check"><input type="checkbox" value="Haircut" checked> Haircut</label>
+                        <label class="lead-check"><input type="checkbox" value="Barber" checked> Barber</label>
+                        <label class="lead-check"><input type="checkbox" value="Cleaning Service" checked> Cleaning Service</label>
+                        <label class="lead-check"><input type="checkbox" value="Massage" checked> Massage</label>
+                        <label class="lead-check"><input type="checkbox" value="Nail Service" checked> Nail Service</label>
+                        <label class="lead-check"><input type="checkbox" value="Spa Treatment" checked> Spa Treatment</label>
+                        <label class="lead-check"><input type="checkbox" value="Personal Training" checked> Personal Training</label>
+                        <label class="lead-check"><input type="checkbox" value="Dog Walking" checked> Dog Walking</label>
+                        <label class="lead-check"><input type="checkbox" value="Tutoring" checked> Tutoring</label>
+                        <label class="lead-check"><input type="checkbox" value="Photography" checked> Photography</label>
+                        <label class="lead-check"><input type="checkbox" value="Car Detailing" checked> Car Detailing</label>
+                        <label class="lead-check"><input type="checkbox" value="Laundry Service" checked> Laundry Service</label>
+                    </div>
+                </div>
+                <button class="lead-search-btn" onclick="searchLeads()" id="leadSearchBtn">🔍 Find Leads</button>
+            </div>
+
+            <div id="leadStatus" class="lead-status" style="display:none;"></div>
+
+            <div id="leadResults" style="display:none;">
+                <div class="lead-results-header">
+                    <span id="leadCount" class="lead-count"></span>
+                    <span class="lead-note">✏️ Contact Name column is editable — fill it in as you research</span>
+                </div>
+                <div class="lead-table-wrap">
+                    <table class="lead-table" id="leadTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Business Name</th>
+                                <th>Contact Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Website</th>
+                                <th>Service</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -955,6 +1194,123 @@ function showPage(name) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(`page-${name}`).classList.add('active');
     document.getElementById(`nav-${name}`).classList.add('active');
+}
+
+// ── LEAD FINDER ─────────────────────────────────────────────────────────────
+
+let leadsData = [];
+
+function selectAllIndustries() {
+    document.querySelectorAll('#leadIndustries input[type=checkbox]').forEach(c => c.checked = true);
+}
+function clearAllIndustries() {
+    document.querySelectorAll('#leadIndustries input[type=checkbox]').forEach(c => c.checked = false);
+}
+
+function setLeadStatus(msg, loading = false) {
+    const el = document.getElementById('leadStatus');
+    el.style.display = 'flex';
+    el.innerHTML = loading
+        ? `<div class="spinner" style="width:16px;height:16px;border-width:2px;flex-shrink:0;"></div><span>${msg}</span>`
+        : `<span>${msg}</span>`;
+}
+
+async function searchLeads() {
+    const city = document.getElementById('leadCity').value.trim();
+    if (!city) { setLeadStatus('⚠️ Please enter a town or city.'); return; }
+
+    const checked = [...document.querySelectorAll('#leadIndustries input[type=checkbox]:checked')];
+    if (!checked.length) { setLeadStatus('⚠️ Please select at least one industry.'); return; }
+
+    const btn = document.getElementById('leadSearchBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Searching…';
+    document.getElementById('leadResults').style.display = 'none';
+    document.getElementById('leadExportBtn').style.display = 'none';
+
+    const industries = checked.map(c => c.value);
+    const total = industries.length;
+    setLeadStatus(`Searching ${total} industr${total === 1 ? 'y' : 'ies'} in "${city}" — this may take up to ${total * 6}s…`, true);
+
+    try {
+        const params = new URLSearchParams({ city });
+        industries.forEach(i => params.append('industries', i));
+
+        const res = await fetch(`${API_BASE}/admin/leads?${params}`, {
+            headers: { 'x-admin-key': adminKey }
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            setLeadStatus(`❌ ${data.message}`);
+            return;
+        }
+
+        leadsData = data.leads || [];
+        renderLeads(leadsData, city);
+        setLeadStatus(`✅ Done — found ${leadsData.length} business${leadsData.length === 1 ? '' : 'es'} across ${industries.length} categor${industries.length === 1 ? 'y' : 'ies'} in ${city}.`);
+        document.getElementById('leadExportBtn').style.display = 'block';
+    } catch (err) {
+        setLeadStatus(`❌ Request failed: ${err.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Find Leads';
+    }
+}
+
+function renderLeads(leads, city) {
+    const tbody = document.getElementById('leadTableBody');
+    if (!leads.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">No businesses found for the selected criteria in ${city}.</td></tr>`;
+        document.getElementById('leadCount').textContent = '0 results';
+        document.getElementById('leadResults').style.display = 'block';
+        return;
+    }
+
+    tbody.innerHTML = leads.map((l, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td class="lead-name">${esc(l.businessName)}</td>
+            <td><input class="lead-contact-input" data-idx="${i}" placeholder="Enter name…" value="${esc(l.contactName)}" oninput="leadsData[${i}].contactName=this.value"></td>
+            <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-email">${l.email ? `<a href="mailto:${esc(l.email)}" style="color:var(--accent);">${esc(l.email)}</a>` : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-addr">${esc(l.address)}</td>
+            <td class="lead-web">${l.website ? `<a href="${esc(l.website)}" target="_blank" title="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/,'').split('/')[0])}</a>` : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-service"><span class="pill purple">${esc(l.serviceType)}</span></td>
+        </tr>
+    `).join('');
+
+    document.getElementById('leadCount').textContent = `${leads.length} business${leads.length === 1 ? '' : 'es'} found`;
+    document.getElementById('leadResults').style.display = 'block';
+}
+
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function exportLeadsCSV() {
+    if (!leadsData.length) return;
+    const headers = ['#','Business Name','Contact Name','Phone','Email','Address','Website','Service Type'];
+    const rows = leadsData.map((l, i) => [
+        i + 1,
+        l.businessName,
+        l.contactName,
+        l.phone,
+        l.email,
+        l.address,
+        l.website,
+        l.serviceType
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const city = document.getElementById('leadCity').value.trim().replace(/\s+/g, '_') || 'leads';
+    a.href = url;
+    a.download = `slowday_leads_${city}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 </script>
 </body>

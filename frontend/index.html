@@ -1384,6 +1384,8 @@
         .radius-btn.active { background:#667eea; color:white; border-color:#667eea; }
         .city-chip { font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px; cursor:pointer; border:1.5px solid #e5e7eb; background:white; color:#666; transition:all 0.2s; }
         .city-chip.active { background:#ede9fe; color:#667eea; border-color:#667eea; }
+        /* Google Places autocomplete dropdown — must sit above everything */
+        .pac-container { z-index: 100001 !important; }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzFOIKj0VhPwBjEV2IQljeZ3Yw6l99jWI&libraries=places&callback=initPlaces" async defer></script>
 </head>
@@ -4345,14 +4347,32 @@
             }
         }
 
+        function extractCityFromAddress(location) {
+            if (!location) return null;
+            const parts = location.split(',').map(p => p.trim()).filter(Boolean);
+            // Find the province/state: a part that starts with exactly 2 uppercase letters (e.g. "ON", "ON M5V 1A1", "BC V6B 1A1")
+            const provinceIdx = parts.findIndex(p => /^[A-Z]{2}(\s|$)/.test(p));
+            if (provinceIdx > 0) {
+                const candidate = parts[provinceIdx - 1];
+                // Make sure we didn't accidentally grab a street address (contains digits)
+                if (!/\d/.test(candidate)) return candidate;
+            }
+            // Fallback: find the first part that has no digits and is not a country name
+            const skip = new Set(['canada', 'united states', 'usa', 'us']);
+            for (let i = 1; i < parts.length; i++) {
+                const p = parts[i];
+                if (!/\d/.test(p) && !skip.has(p.toLowerCase()) && !/^[A-Z]{2}(\s|$)/.test(p)) return p;
+            }
+            return parts[0];
+        }
+
         function populateCityChips() {
             const container = document.getElementById('locationCityChips');
             if (!container) return;
             const seen = new Set();
             const cities = [];
             allServices.filter(s => !s._isPlusCard && s.location).forEach(s => {
-                const parts = s.location.split(',').map(p => p.trim());
-                const city = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+                const city = extractCityFromAddress(s.location);
                 if (city && !seen.has(city)) { seen.add(city); cities.push(city); }
             });
             if (cities.length === 0) {
@@ -4367,12 +4387,12 @@
 
         async function selectCity(city, e) {
             if (e) e.stopPropagation();
-            showToast('Locating ' + city + '...', true);
-            const coords = await geocodeAddress(city, 'city_' + city);
+            // Append province hint for better geocoding accuracy
+            const coords = await geocodeAddress(city + ', Canada', 'city_' + city);
             if (coords) {
-                setLocationFilter(city, coords.lat, coords.lng, locationFilter.radius);
+                await setLocationFilter(city, coords.lat, coords.lng, locationFilter.radius);
             } else {
-                showToast('Could not locate ' + city, false);
+                showToast('Could not locate ' + city + ' — try the search box', false);
             }
         }
 
@@ -4392,12 +4412,18 @@
             });
         }
 
-        function setLocationFilter(name, lat, lng, radius) {
+        async function setLocationFilter(name, lat, lng, radius) {
             locationFilter = { name, lat, lng, radius: radius || locationFilter.radius };
             localStorage.setItem('locationFilter', JSON.stringify(locationFilter));
             updateLocationPillLabel();
             document.getElementById('locationPanel').style.display = 'none';
-            applyCurrentFilters();
+            await applyCurrentFilters();
+            const count = services.filter(s => !s._isPlusCard).length;
+            if (count === 0) {
+                showToast('No deals found within ' + locationFilter.radius + 'km', false);
+            } else {
+                showToast('📍 ' + count + ' deal' + (count === 1 ? '' : 's') + ' within ' + locationFilter.radius + 'km of ' + name.split(',')[0], true);
+            }
         }
 
         function clearLocationFilter(e) {
@@ -4434,12 +4460,11 @@
             const input = document.getElementById('locationSearchInput');
             const query = input ? input.value.trim() : '';
             if (!query) return;
-            showToast('Searching ' + query + '...', true);
             const coords = await geocodeAddress(query, 'custom_' + query);
             if (coords) {
-                setLocationFilter(query, coords.lat, coords.lng, locationFilter.radius);
+                await setLocationFilter(query, coords.lat, coords.lng, locationFilter.radius);
             } else {
-                showToast('Location not found. Try a city name.', false);
+                showToast('Location not found — try a city name', false);
             }
         }
 
@@ -4451,23 +4476,36 @@
             showToast('Getting your location...', true);
             navigator.geolocation.getCurrentPosition(
                 async pos => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    let name = 'My Location';
-                    if (window.google && google.maps && google.maps.Geocoder) {
-                        await new Promise(resolve => {
-                            new google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
-                                if (status === 'OK' && results[0]) {
-                                    const city = results[0].address_components.find(c => c.types.includes('locality'));
-                                    name = city ? city.long_name : results[0].formatted_address.split(',')[0];
-                                }
-                                resolve();
+                    try {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        let name = 'My Location';
+                        if (window.google && google.maps && google.maps.Geocoder) {
+                            await new Promise(resolve => {
+                                new google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
+                                    if (status === 'OK' && results[0]) {
+                                        const cityComp = results[0].address_components.find(c => c.types.includes('locality'));
+                                        const sublocal = results[0].address_components.find(c => c.types.includes('sublocality'));
+                                        name = (cityComp || sublocal)
+                                            ? (cityComp || sublocal).long_name
+                                            : results[0].formatted_address.split(',')[0];
+                                    }
+                                    resolve();
+                                });
                             });
-                        });
+                        }
+                        await setLocationFilter(name, lat, lng, locationFilter.radius);
+                    } catch(e) {
+                        showToast('Could not apply location filter', false);
                     }
-                    setLocationFilter(name, lat, lng, locationFilter.radius);
                 },
-                err => { showToast('Could not get your location', false); }
+                err => {
+                    const msg = err.code === 1 ? 'Location permission denied'
+                              : err.code === 2 ? 'Location unavailable'
+                              : 'Location request timed out';
+                    showToast(msg, false);
+                },
+                { timeout: 10000, maximumAge: 60000 }
             );
         }
 

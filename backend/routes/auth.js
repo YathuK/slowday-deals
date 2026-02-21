@@ -118,8 +118,8 @@ router.post('/login', [
             });
         }
 
-        // Check password
-        const isMatch = await user.comparePassword(password);
+        // Check password — use direct bcrypt.compare for safety
+        const isMatch = await bcrypt.compare(password, user.password);
         console.log('[login] User:', user.email, '| Password match:', isMatch, '| Hash prefix:', user.password?.substring(0, 7));
         if (!isMatch) {
             return res.status(401).json({

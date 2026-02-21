@@ -73,23 +73,26 @@ router.post('/saved-services/:serviceId', auth, async (req, res) => {
             });
         }
 
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('savedServices');
 
         // Check if already saved
         if (user.savedServices.includes(req.params.serviceId)) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Service already saved' 
+                message: 'Service already saved'
             });
         }
 
-        user.savedServices.push(req.params.serviceId);
-        await user.save();
+        const updated = await User.findByIdAndUpdate(
+            req.user._id,
+            { $addToSet: { savedServices: req.params.serviceId } },
+            { new: true }
+        ).select('savedServices');
 
         res.json({
             success: true,
             message: 'Service saved successfully',
-            savedServices: user.savedServices
+            savedServices: updated.savedServices
         });
     } catch (error) {
         console.error('Save service error:', error);
@@ -106,18 +109,16 @@ router.post('/saved-services/:serviceId', auth, async (req, res) => {
 // @access  Private
 router.delete('/saved-services/:serviceId', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
-
-        user.savedServices = user.savedServices.filter(
-            id => id.toString() !== req.params.serviceId
-        );
-
-        await user.save();
+        const updated = await User.findByIdAndUpdate(
+            req.user._id,
+            { $pull: { savedServices: req.params.serviceId } },
+            { new: true }
+        ).select('savedServices');
 
         res.json({
             success: true,
             message: 'Service removed from saved',
-            savedServices: user.savedServices
+            savedServices: updated.savedServices
         });
     } catch (error) {
         console.error('Remove saved service error:', error);

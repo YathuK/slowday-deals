@@ -1,8 +1,94 @@
 const express = require('express');
 const router = express.Router();
+const https = require('https');
+const http = require('http');
 const User = require('../models/User');
 const Service = require('../models/Service');
 const Booking = require('../models/Booking');
+
+// ── Lead Finder helpers ──────────────────────────────────────────────────────
+
+function gFetch(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, res => {
+            let d = '';
+            res.on('data', c => d += c);
+            res.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+        }).on('error', reject);
+    });
+}
+
+function fetchWebsite(rawUrl, redirectsLeft = 3) {
+    return new Promise(resolve => {
+        if (!rawUrl || redirectsLeft === 0) return resolve('');
+        let url = rawUrl;
+        if (!url.startsWith('http')) url = 'https://' + url;
+        try {
+            const mod = url.startsWith('https') ? https : http;
+            const req = mod.get(url, { timeout: 5000, headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
+                if ([301,302,303,307,308].includes(res.statusCode) && res.headers.location) {
+                    res.resume();
+                    return fetchWebsite(res.headers.location, redirectsLeft - 1).then(resolve);
+                }
+                let d = '';
+                res.on('data', c => { d += c; if (d.length > 100000) { res.destroy(); } });
+                res.on('end', () => resolve(d));
+                res.on('error', () => resolve(''));
+            });
+            req.setTimeout(5000, () => { req.destroy(); resolve(''); });
+            req.on('error', () => resolve(''));
+        } catch { resolve(''); }
+    });
+}
+
+function extractEmail(html) {
+    if (!html) return '';
+    const matches = html.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || [];
+    return matches.find(e =>
+        !e.match(/\.(png|jpg|jpeg|gif|svg|webp|css|js|woff|ttf)$/i) &&
+        !e.includes('example.') && !e.includes('sentry') &&
+        !e.includes('wixpress') && !e.includes('@2x') &&
+        !e.includes('youremail') && e.length < 80
+    ) || '';
+}
+
+async function getPlaceLeads(industry, city, apiKey, limit = 10) {
+    const query = encodeURIComponent(`${industry} in ${city}`);
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
+    const searchData = await gFetch(searchUrl);
+    if (!['OK','ZERO_RESULTS'].includes(searchData.status)) {
+        throw new Error(`Places API: ${searchData.status} — ${searchData.error_message || ''}`);
+    }
+    const places = (searchData.results || []).slice(0, limit);
+    const leads = [];
+    for (const place of places) {
+        try {
+            const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website&key=${apiKey}`;
+            const detail = await gFetch(detailUrl);
+            const r = detail.result || {};
+            const website = r.website || '';
+            const html = await fetchWebsite(website);
+            const email = extractEmail(html);
+            leads.push({
+                businessName: r.name || place.name || '',
+                contactName: '',
+                phone: r.formatted_phone_number || '',
+                email,
+                address: r.formatted_address || place.formatted_address || '',
+                website,
+                serviceType: industry
+            });
+        } catch {
+            leads.push({
+                businessName: place.name || '',
+                contactName: '', phone: '', email: '',
+                address: place.formatted_address || '',
+                website: '', serviceType: industry
+            });
+        }
+    }
+    return leads;
+}
 
 // Simple hardcoded admin auth - replace with env var in production
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'slowday-internal-2024';
@@ -119,6 +205,30 @@ router.get('/analytics', adminAuth, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin analytics error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route GET /api/admin/leads
+// @desc  Google Places lead finder — returns businesses by city + industries
+router.get('/leads', adminAuth, async (req, res) => {
+    const { city, industries } = req.query;
+    if (!city) return res.status(400).json({ success: false, message: 'city is required' });
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (!apiKey) return res.status(500).json({ success: false, message: 'GOOGLE_PLACES_API_KEY is not set in .env' });
+
+    const industryList = Array.isArray(industries) ? industries : (industries ? [industries] : []);
+    if (!industryList.length) return res.status(400).json({ success: false, message: 'at least one industry is required' });
+
+    try {
+        const allLeads = [];
+        for (const industry of industryList) {
+            const leads = await getPlaceLeads(industry, city.trim(), apiKey, 10);
+            allLeads.push(...leads);
+        }
+        res.json({ success: true, total: allLeads.length, leads: allLeads });
+    } catch (err) {
+        console.error('Lead finder error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });

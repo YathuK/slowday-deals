@@ -2561,22 +2561,26 @@
                     });
                 });
             } else if (tab === 'saved') {
-                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navSaved').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'none';
+                const acSaved = document.querySelector('.app-container');
+                acSaved.scrollTop = 0;
+                requestAnimationFrame(() => { acSaved.scrollTop = 0; requestAnimationFrame(() => { acSaved.scrollTop = 0; }); });
                 renderSavedList();
             } else if (tab === 'bookings') {
-                document.querySelector('.app-container').scrollTop = 0;
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'none';
                 document.getElementById('bookingsTab').style.display = 'block';
                 if (pillsEl) pillsEl.style.display = 'none';
+                const acBook = document.querySelector('.app-container');
+                acBook.scrollTop = 0;
+                requestAnimationFrame(() => { acBook.scrollTop = 0; requestAnimationFrame(() => { acBook.scrollTop = 0; }); });
                 loadCustomerBookingsTab();
             } else if (tab === 'provider') {
                 document.querySelector('.app-container').scrollTop = 0;

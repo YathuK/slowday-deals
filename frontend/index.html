@@ -951,10 +951,10 @@
             padding-bottom: 80px;
         }
         /* !important needed: #customerView .tab-content (specificity 1-1-0) beats
-           plain #savedTab (1-0-0) — without !important the 58px padding from
-           .tab-content wins and pushes the sticky subtabs bar 58px below the header */
+           plain #savedTab (1-0-0). padding-top: 45px clears the fixed .saved-subtabs bar
+           (same height as .provider-tabs) so content starts below it. */
         #savedTab {
-            padding-top: 0 !important;
+            padding-top: 45px !important;
         }
         #savedListWrap, #myBookingsWrap {
             padding-top: 0;
@@ -1128,12 +1128,10 @@
         .my-bookings-section h3 { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         /* ---- Saved sub-tabs ---- */
-        /* sticky keeps the sub-tab bar pinned at the top of the savedTab scroll area
-           (which starts at y=58px due to savedTab's margin-top).  Using sticky instead
-           of fixed avoids the iOS Safari "fixed inside overflow:auto" repaint bug and
-           correctly participates in document flow so no extra padding-top is needed
-           on the list below. */
-        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: sticky; top: 0; width: 100%; background: white; z-index: 90; }
+        /* fixed keeps the sub-tab bar pinned to the viewport at top:58px, identical to
+           .provider-tabs. This survives iOS rubber-band overscroll because fixed elements
+           are not children of any scroll container. JS shows/hides it with savedTab. */
+        .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: fixed; top: 58px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; z-index: 90; box-sizing: border-box; }
         .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
@@ -1563,11 +1561,11 @@
                     <div class="card-stack" id="cardStack"></div>
                 </div>
             </div>
+            <div class="saved-subtabs" style="display:none;">
+                <button class="saved-stab active" id="stabSaved" onclick="switchSavedTab('saved')">❤️ Saved</button>
+                <button class="saved-stab" id="stabMyBookings" onclick="switchSavedTab('mybookings')">📍 My Bookings</button>
+            </div>
             <div id="savedTab" class="tab-content" style="display:none;">
-                <div class="saved-subtabs">
-                    <button class="saved-stab active" id="stabSaved" onclick="switchSavedTab('saved')">❤️ Saved</button>
-                    <button class="saved-stab" id="stabMyBookings" onclick="switchSavedTab('mybookings')">📍 My Bookings</button>
-                </div>
                 <div id="savedListWrap">
                     <div class="saved-list" id="savedList"></div>
                 </div>
@@ -2485,20 +2483,17 @@
             const navBtn = document.getElementById('navProvider');
             const dropdownBtn = document.getElementById('providerDropdownBtn');
             const stabMyBookings = document.getElementById('stabMyBookings');
-            const savedSubtabs = document.querySelector('.saved-subtabs');
 
             if (isProvider) {
                 navBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span>My Profile</span>`;
                 navBtn.onclick = () => showTab('provider');
                 if (dropdownBtn) dropdownBtn.style.display = 'none';
                 if (stabMyBookings) stabMyBookings.style.display = 'inline-flex';
-                if (savedSubtabs) savedSubtabs.style.display = 'flex';
             } else {
                 navBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Bookings</span>`;
                 navBtn.onclick = () => showTab('bookings');
                 if (dropdownBtn) { dropdownBtn.style.display = 'block'; dropdownBtn.textContent = '🚀 Become a Provider'; dropdownBtn.onclick = () => becomeProvider(); }
                 if (stabMyBookings) stabMyBookings.style.display = 'none';
-                if (savedSubtabs) savedSubtabs.style.display = 'none';
             }
         }
 
@@ -2572,11 +2567,13 @@
             document.getElementById('providerView').style.display = 'none';
 
             const pillsEl = document.getElementById('discoverPills');
+            const savedSubtabs = document.querySelector('.saved-subtabs');
             if (tab === 'discover') {
                 document.getElementById('navDiscover').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
+                if (savedSubtabs) savedSubtabs.style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'block';
             } else if (tab === 'saved') {
                 document.getElementById('navSaved').classList.add('active');
@@ -2584,6 +2581,7 @@
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
+                if (savedSubtabs) savedSubtabs.style.display = 'flex';
                 if (pillsEl) pillsEl.style.display = 'none';
                 renderSavedList();
             } else if (tab === 'bookings') {
@@ -2592,6 +2590,7 @@
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'none';
                 document.getElementById('bookingsTab').style.display = 'block';
+                if (savedSubtabs) savedSubtabs.style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'none';
                 loadCustomerBookingsTab();
             } else if (tab === 'provider') {
@@ -2599,6 +2598,7 @@
                 document.getElementById('navProvider').classList.add('active');
                 document.getElementById('providerView').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
+                if (savedSubtabs) savedSubtabs.style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'none';
                 // Auto-fill email and phone if empty
                 const emailField = document.getElementById('providerEmail');

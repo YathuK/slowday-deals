@@ -32,12 +32,11 @@
             max-width: 500px;
             margin: 0 auto;
             background: white;
-            min-height: 100vh;
-            min-height: 100svh;
+            height: 100vh;
+            height: 100svh;
             position: relative;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .header {
@@ -976,8 +975,29 @@
             margin-top: 58px;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
-            touch-action: none;
-            overscroll-behavior: none;
+            /* pan-y: browser handles vertical scroll (card content), JS handles horizontal swipe */
+            touch-action: pan-y;
+            overscroll-behavior-y: contain;
+        }
+        #savedTab {
+            height: calc(100svh - 145px);
+            height: calc(100vh - 145px);
+            margin-top: 58px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            box-sizing: border-box;
+            padding-bottom: 20px;
+        }
+        #bookingsTab {
+            height: calc(100svh - 145px);
+            height: calc(100vh - 145px);
+            margin-top: 58px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            box-sizing: border-box;
+            padding-bottom: 20px;
         }
 
         .ptab-btn {
@@ -1283,7 +1303,7 @@
         .nav-btn.active { color: #667eea; }
         .nav-btn span { font-size: 10px; white-space: nowrap; }
 
-        .app-container { padding-bottom: 65px; }
+        /* app-container no longer scrolls — each tab owns its own scroll area */
 
         #myProfileCard {
             background: white;
@@ -2549,17 +2569,6 @@
                 document.getElementById('discoverTab').style.display = 'block';
                 document.getElementById('savedTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'block';
-                // Double-rAF: kill any in-flight iOS momentum scroll on app-container,
-                // then reset card-content scroll after elements are visible
-                const ac = document.querySelector('.app-container');
-                ac.scrollTop = 0;
-                requestAnimationFrame(() => {
-                    ac.scrollTop = 0;
-                    requestAnimationFrame(() => {
-                        ac.scrollTop = 0;
-                        document.querySelectorAll('#cardStack .card-content').forEach(el => el.scrollTop = 0);
-                    });
-                });
             } else if (tab === 'saved') {
                 document.getElementById('navSaved').classList.add('active');
                 document.getElementById('customerView').style.display = 'block';
@@ -2567,9 +2576,6 @@
                 document.getElementById('savedTab').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
                 if (pillsEl) pillsEl.style.display = 'none';
-                const acSaved = document.querySelector('.app-container');
-                acSaved.scrollTop = 0;
-                requestAnimationFrame(() => { acSaved.scrollTop = 0; requestAnimationFrame(() => { acSaved.scrollTop = 0; }); });
                 renderSavedList();
             } else if (tab === 'bookings') {
                 document.getElementById('navProvider').classList.add('active');
@@ -2578,9 +2584,6 @@
                 document.getElementById('savedTab').style.display = 'none';
                 document.getElementById('bookingsTab').style.display = 'block';
                 if (pillsEl) pillsEl.style.display = 'none';
-                const acBook = document.querySelector('.app-container');
-                acBook.scrollTop = 0;
-                requestAnimationFrame(() => { acBook.scrollTop = 0; requestAnimationFrame(() => { acBook.scrollTop = 0; }); });
                 loadCustomerBookingsTab();
             } else if (tab === 'provider') {
                 document.querySelector('.app-container').scrollTop = 0;

@@ -1380,6 +1380,10 @@
         }
         #swipeHint .sh-l { display:inline-block; font-size:16px; animation: shPulseL 1.1s ease-in-out infinite; }
         #swipeHint .sh-r { display:inline-block; font-size:16px; animation: shPulseR 1.1s ease-in-out infinite; }
+        .radius-btn { font-size:12px; font-weight:700; padding:6px 12px; border-radius:20px; cursor:pointer; border:1.5px solid #e5e7eb; background:white; color:#666; transition:all 0.2s; }
+        .radius-btn.active { background:#667eea; color:white; border-color:#667eea; }
+        .city-chip { font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px; cursor:pointer; border:1.5px solid #e5e7eb; background:white; color:#666; transition:all 0.2s; }
+        .city-chip.active { background:#ede9fe; color:#667eea; border-color:#667eea; }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCzFOIKj0VhPwBjEV2IQljeZ3Yw6l99jWI&libraries=places&callback=initPlaces" async defer></script>
 </head>
@@ -1393,28 +1397,75 @@
                 <input type="text" id="searchInput" placeholder="Search..." oninput="searchServices(this.value)" onclick="event.stopPropagation()" onblur="if(!this.value)toggleSearchPill()" style="display:none;width:150px;border:none;outline:none;font-size:14px;background:transparent;margin-left:8px;color:#333;">
             </div>
         </div>
-        <!-- Filter pill (right) -->
-        <div id="filterPill" style="position:absolute;right:16px;top:0;pointer-events:auto;">
-            <div onclick="toggleFilterPill()" style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,0.14);display:flex;align-items:center;gap:6px;padding:9px 14px;cursor:pointer;white-space:nowrap;">
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                <span id="filterTypeLabel" style="font-size:13px;font-weight:600;color:#333;">All types</span>
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <!-- Right pills group: location filter + service type filter -->
+        <div style="position:absolute;right:16px;top:0;pointer-events:auto;display:flex;gap:6px;align-items:flex-start;">
+            <!-- Location pill -->
+            <div id="locationPill" style="position:relative;">
+                <div id="locationPillInner" onclick="toggleLocationPill()" style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,0.14);display:flex;align-items:center;gap:5px;padding:9px 11px;cursor:pointer;white-space:nowrap;transition:all 0.2s;">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="#667eea" style="flex-shrink:0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span id="locationPillLabel" style="display:none;font-size:12px;font-weight:600;color:#667eea;max-width:70px;overflow:hidden;text-overflow:ellipsis;"></span>
+                    <span id="locationClearBtn" onclick="clearLocationFilter(event)" style="display:none;color:#667eea;font-size:16px;line-height:1;font-weight:700;margin-left:-2px;">×</span>
+                </div>
+                <!-- Location panel -->
+                <div id="locationPanel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:290px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:10000;padding:16px;pointer-events:auto;box-sizing:border-box;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <span style="font-size:14px;font-weight:700;color:#1a1a2e;">📍 Filter by Location</span>
+                        <span onclick="toggleLocationPill()" style="font-size:22px;color:#bbb;cursor:pointer;line-height:1;font-weight:300;">×</span>
+                    </div>
+                    <button onclick="useMyLocation()" style="width:100%;border:1.5px solid #667eea;background:#f5f3ff;color:#667eea;font-size:13px;font-weight:700;padding:9px 14px;border-radius:25px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="#667eea"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        Use my location
+                    </button>
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Cities in Deals</div>
+                        <div id="locationCityChips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:26px;"></div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                        <div style="flex:1;height:1px;background:#eee;"></div>
+                        <span style="font-size:11px;color:#bbb;font-weight:600;">or search</span>
+                        <div style="flex:1;height:1px;background:#eee;"></div>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <input type="text" id="locationSearchInput" placeholder="City or address..." autocomplete="off"
+                            style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13px;outline:none;box-sizing:border-box;color:#333;font-family:inherit;"
+                            onclick="event.stopPropagation()">
+                        <button onclick="applyLocationFromInput()" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:13px;font-weight:700;padding:9px 14px;border-radius:25px;border:none;cursor:pointer;box-sizing:border-box;">Search</button>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Radius</div>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="selectRadius(5)" data-radius="5" class="radius-btn">5km</button>
+                            <button onclick="selectRadius(10)" data-radius="10" class="radius-btn">10km</button>
+                            <button onclick="selectRadius(25)" data-radius="25" class="radius-btn">25km</button>
+                            <button onclick="selectRadius(50)" data-radius="50" class="radius-btn">50km</button>
+                            <button onclick="selectRadius(100)" data-radius="100" class="radius-btn">100km</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="filterTypeDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:180px;max-height:300px;overflow-y:auto;background:white;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,0.18);z-index:9999;pointer-events:auto;">
-                <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
-                <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
+            <!-- Filter pill -->
+            <div id="filterPill" style="position:relative;">
+                <div onclick="toggleFilterPill()" style="background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-radius:25px;box-shadow:0 2px 16px rgba(0,0,0,0.14);display:flex;align-items:center;gap:6px;padding:9px 14px;cursor:pointer;white-space:nowrap;">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                    <span id="filterTypeLabel" style="font-size:13px;font-weight:600;color:#333;">All types</span>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#667eea" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div id="filterTypeDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:180px;max-height:300px;overflow-y:auto;background:white;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,0.18);z-index:9999;pointer-events:auto;">
+                    <div class="custom-select-opt" onclick="pickFilterType('','All types')">All types</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Haircut','Haircut')">Haircut</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Barber','Barber')">Barber</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Cleaning','Cleaning')">Cleaning</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Massage','Massage')">Massage</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Nails','Nails')">Nails</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Spa','Spa')">Spa</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Personal Training','Personal Training')">Personal Training</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Dog Walking','Dog Walking')">Dog Walking</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Tutoring','Tutoring')">Tutoring</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Photography','Photography')">Photography</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Car Detailing','Car Detailing')">Car Detailing</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Laundry Service','Laundry Service')">Laundry Service</div>
+                    <div class="custom-select-opt" onclick="pickFilterType('Other','Other')">Other</div>
+                </div>
             </div>
         </div>
     </div>
@@ -2005,8 +2056,24 @@
                     });
                 } catch (err) {
                     console.log('Google Places autocomplete not available, manual entry enabled');
-                    // Silently fail - user can still type address manually
                 }
+            }
+            // Location search pill autocomplete
+            const locSearchInput = document.getElementById('locationSearchInput');
+            if (locSearchInput && window.google && google.maps && google.maps.places) {
+                try {
+                    const acLoc = new google.maps.places.Autocomplete(locSearchInput, {
+                        types: ['(cities)'],
+                        componentRestrictions: { country: ['ca', 'us'] }
+                    });
+                    acLoc.addListener('place_changed', () => {
+                        const place = acLoc.getPlace();
+                        if (place.geometry) {
+                            const name = place.name || place.formatted_address || locSearchInput.value;
+                            setLocationFilter(name, place.geometry.location.lat(), place.geometry.location.lng(), locationFilter.radius);
+                        }
+                    });
+                } catch (err) {}
             }
         };
 
@@ -2015,6 +2082,15 @@
         // ============================================
         window.onload = async function() {
             checkResetToken();
+            // Restore saved location filter
+            try {
+                const savedLoc = localStorage.getItem('locationFilter');
+                if (savedLoc) {
+                    locationFilter = JSON.parse(savedLoc);
+                    updateLocationPillLabel();
+                    updateRadiusBtns();
+                }
+            } catch(e) {}
             // Check for deep-link tab param from email/SMS
             const urlParams = new URLSearchParams(window.location.search);
             const deepTab = urlParams.get('tab');
@@ -2114,19 +2190,10 @@
                     dealSortPriority(a) - dealSortPriority(b) ||
                     new Date(b.createdAt) - new Date(a.createdAt)
                 );
-
-                // Filter out provider's own service if they're a provider
-                if (myService && myService._id) {
-                    services = allServices.filter(s => (s._id || s.id) !== myService._id);
-                } else {
-                    services = [...allServices];
-                }
             } catch (error) {
                 allServices = [];
-                services = [];
             }
-            injectPlusCard();
-            renderCards();
+            await applyCurrentFilters();
         }
 
         // ============================================
@@ -2527,22 +2594,73 @@
         // SEARCH
         // ============================================
         let allServices = [];
+        let locationFilter = { name: '', lat: null, lng: null, radius: 25 };
+        const serviceGeoCache = {};
 
         function searchServices(query) {
+            applyCurrentFilters();
+        }
+
+        async function applyCurrentFilters() {
             const type = document.getElementById('filterType').value;
-            const q = query.toLowerCase();
-            services = allServices.filter(s => {
+            const q = (document.getElementById('searchInput').value || '').toLowerCase();
+
+            let filtered = allServices.filter(s => {
+                if (s._isPlusCard) return true;
+                if (myService && myService._id && (s._id || s.id) === myService._id) return false;
                 const matchesType = !type || s.serviceType === type;
                 const matchesQuery = !q ||
-                    s.providerName.toLowerCase().includes(q) ||
-                    s.serviceType.toLowerCase().includes(q) ||
-                    s.location.toLowerCase().includes(q) ||
-                    s.description.toLowerCase().includes(q);
+                    (s.providerName || '').toLowerCase().includes(q) ||
+                    (s.serviceType || '').toLowerCase().includes(q) ||
+                    (s.location || '').toLowerCase().includes(q) ||
+                    (s.description || '').toLowerCase().includes(q);
                 return matchesType && matchesQuery;
             });
+
+            if (locationFilter.lat !== null) {
+                const withGeo = await Promise.all(filtered.map(async s => {
+                    if (s._isPlusCard) return { s, ok: true };
+                    const coords = await geocodeAddress(s.location, s._id || s.id);
+                    if (!coords) return { s, ok: true };
+                    const dist = haversineKm(locationFilter.lat, locationFilter.lng, coords.lat, coords.lng);
+                    return { s, ok: dist <= locationFilter.radius };
+                }));
+                filtered = withGeo.filter(x => x.ok).map(x => x.s);
+            }
+
+            services = filtered;
             injectPlusCard();
             currentCardIndex = 0;
             renderCards();
+        }
+
+        function haversineKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        async function geocodeAddress(address, cacheKey) {
+            if (!address) return null;
+            const key = cacheKey || address;
+            if (serviceGeoCache.hasOwnProperty(key)) return serviceGeoCache[key];
+            if (!window.google || !google.maps || !google.maps.Geocoder) return null;
+            return new Promise(resolve => {
+                new google.maps.Geocoder().geocode({ address }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const loc = results[0].geometry.location;
+                        const coords = { lat: loc.lat(), lng: loc.lng() };
+                        serviceGeoCache[key] = coords;
+                        resolve(coords);
+                    } else {
+                        serviceGeoCache[key] = null;
+                        resolve(null);
+                    }
+                });
+            });
         }
 
         function injectPlusCard() {
@@ -4153,6 +4271,9 @@
             document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
             drop.style.display = 'none';
             document.removeEventListener('touchmove', _blockFilterScroll);
+            // Close location panel if open
+            const locPanel = document.getElementById('locationPanel');
+            if (locPanel) locPanel.style.display = 'none';
             if (!isOpen) {
                 drop.style.display = 'block';
                 document.addEventListener('touchmove', _blockFilterScroll, { passive: false });
@@ -4186,7 +4307,7 @@
             document.getElementById('filterTypeLabel').textContent = label || 'All types';
             document.getElementById('filterTypeDropdown').style.display = 'none';
             document.removeEventListener('touchmove', _blockFilterScroll);
-            searchServices(document.getElementById('searchInput').value);
+            applyCurrentFilters();
         }
 
         // Close custom dropdowns when clicking outside
@@ -4195,7 +4316,160 @@
                 document.querySelectorAll('.custom-select-dropdown').forEach(d => d.style.display = 'none');
                 document.removeEventListener('touchmove', _blockFilterScroll);
             }
+            if (!e.target.closest('#locationPill')) {
+                const locPanel = document.getElementById('locationPanel');
+                if (locPanel) locPanel.style.display = 'none';
+            }
         });
+
+        // ============================================
+        // LOCATION FILTER
+        // ============================================
+        function toggleLocationPill() {
+            const panel = document.getElementById('locationPanel');
+            const isOpen = panel.style.display !== 'none';
+            // Close filter dropdown if open
+            document.getElementById('filterTypeDropdown').style.display = 'none';
+            document.removeEventListener('touchmove', _blockFilterScroll);
+            if (isOpen) {
+                panel.style.display = 'none';
+            } else {
+                panel.style.display = 'block';
+                populateCityChips();
+                updateRadiusBtns();
+                // Focus search input
+                setTimeout(() => {
+                    const inp = document.getElementById('locationSearchInput');
+                    if (inp && locationFilter.name) inp.value = locationFilter.name;
+                }, 50);
+            }
+        }
+
+        function populateCityChips() {
+            const container = document.getElementById('locationCityChips');
+            if (!container) return;
+            const seen = new Set();
+            const cities = [];
+            allServices.filter(s => !s._isPlusCard && s.location).forEach(s => {
+                const parts = s.location.split(',').map(p => p.trim());
+                const city = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+                if (city && !seen.has(city)) { seen.add(city); cities.push(city); }
+            });
+            if (cities.length === 0) {
+                container.innerHTML = '<span style="font-size:12px;color:#bbb;">No cities yet</span>';
+                return;
+            }
+            container.innerHTML = cities.slice(0, 8).map(city => `
+                <button onclick="selectCity('${city.replace(/'/g, "\\'")}', event)"
+                    class="city-chip ${locationFilter.name === city ? 'active' : ''}">${city}</button>
+            `).join('');
+        }
+
+        async function selectCity(city, e) {
+            if (e) e.stopPropagation();
+            showToast('Locating ' + city + '...', true);
+            const coords = await geocodeAddress(city, 'city_' + city);
+            if (coords) {
+                setLocationFilter(city, coords.lat, coords.lng, locationFilter.radius);
+            } else {
+                showToast('Could not locate ' + city, false);
+            }
+        }
+
+        function selectRadius(km) {
+            locationFilter.radius = km;
+            updateRadiusBtns();
+            if (locationFilter.lat !== null) {
+                localStorage.setItem('locationFilter', JSON.stringify(locationFilter));
+                applyCurrentFilters();
+            }
+        }
+
+        function updateRadiusBtns() {
+            document.querySelectorAll('.radius-btn').forEach(btn => {
+                const r = parseInt(btn.dataset.radius);
+                btn.classList.toggle('active', r === locationFilter.radius);
+            });
+        }
+
+        function setLocationFilter(name, lat, lng, radius) {
+            locationFilter = { name, lat, lng, radius: radius || locationFilter.radius };
+            localStorage.setItem('locationFilter', JSON.stringify(locationFilter));
+            updateLocationPillLabel();
+            document.getElementById('locationPanel').style.display = 'none';
+            applyCurrentFilters();
+        }
+
+        function clearLocationFilter(e) {
+            if (e) e.stopPropagation();
+            locationFilter = { name: '', lat: null, lng: null, radius: locationFilter.radius };
+            localStorage.removeItem('locationFilter');
+            const inp = document.getElementById('locationSearchInput');
+            if (inp) inp.value = '';
+            updateLocationPillLabel();
+            applyCurrentFilters();
+        }
+
+        function updateLocationPillLabel() {
+            const label = document.getElementById('locationPillLabel');
+            const clearBtn = document.getElementById('locationClearBtn');
+            const pillInner = document.getElementById('locationPillInner');
+            if (!label || !clearBtn || !pillInner) return;
+            if (locationFilter.lat !== null && locationFilter.name) {
+                const shortName = locationFilter.name.split(',')[0].trim();
+                label.textContent = shortName;
+                label.style.display = 'inline';
+                clearBtn.style.display = 'inline';
+                pillInner.style.background = 'rgba(102,126,234,0.12)';
+                pillInner.style.boxShadow = '0 2px 16px rgba(102,126,234,0.25)';
+            } else {
+                label.style.display = 'none';
+                clearBtn.style.display = 'none';
+                pillInner.style.background = 'rgba(255,255,255,0.96)';
+                pillInner.style.boxShadow = '0 2px 16px rgba(0,0,0,0.14)';
+            }
+        }
+
+        async function applyLocationFromInput() {
+            const input = document.getElementById('locationSearchInput');
+            const query = input ? input.value.trim() : '';
+            if (!query) return;
+            showToast('Searching ' + query + '...', true);
+            const coords = await geocodeAddress(query, 'custom_' + query);
+            if (coords) {
+                setLocationFilter(query, coords.lat, coords.lng, locationFilter.radius);
+            } else {
+                showToast('Location not found. Try a city name.', false);
+            }
+        }
+
+        async function useMyLocation() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation not supported', false);
+                return;
+            }
+            showToast('Getting your location...', true);
+            navigator.geolocation.getCurrentPosition(
+                async pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    let name = 'My Location';
+                    if (window.google && google.maps && google.maps.Geocoder) {
+                        await new Promise(resolve => {
+                            new google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
+                                if (status === 'OK' && results[0]) {
+                                    const city = results[0].address_components.find(c => c.types.includes('locality'));
+                                    name = city ? city.long_name : results[0].formatted_address.split(',')[0];
+                                }
+                                resolve();
+                            });
+                        });
+                    }
+                    setLocationFilter(name, lat, lng, locationFilter.radius);
+                },
+                err => { showToast('Could not get your location', false); }
+            );
+        }
 
         // ============================================
         // SHOW DETAIL FROM SAVED LIST

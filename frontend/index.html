@@ -2474,7 +2474,7 @@
             dropdown.style.display = opening ? 'block' : 'none';
             // Pills live outside .app-container (body direct child) so iOS stacking
             // contexts can put them above the dropdown. Hide them while dropdown is open.
-            if (pillsEl) pillsEl.style.display = opening ? 'none' : (document.getElementById('discoverTab').style.display !== 'none' ? 'block' : 'none');
+            if (pillsEl) pillsEl.style.display = opening ? 'none' : (document.getElementById('navDiscover').classList.contains('active') ? 'block' : 'none');
         }
 
         document.addEventListener('click', function(e) {
@@ -2485,7 +2485,7 @@
                 const pillsEl = document.getElementById('discoverPills');
                 const detailModal = document.getElementById('detailModal');
                 const bookingModal = document.getElementById('bookingModal');
-                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none' && !detailModal.classList.contains('active') && !bookingModal.classList.contains('active')) {
+                if (pillsEl && document.getElementById('navDiscover').classList.contains('active') && !detailModal.classList.contains('active') && !bookingModal.classList.contains('active')) {
                     pillsEl.style.display = 'block';
                 }
             }

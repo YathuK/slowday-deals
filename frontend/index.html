@@ -2694,7 +2694,9 @@
                 document.getElementById('discoverTab').style.display = 'none';
                 document.getElementById('savedTab').style.display = 'block';
                 document.getElementById('bookingsTab').style.display = 'none';
-                if (savedSubtabs) savedSubtabs.style.display = 'flex';
+                const isProvider = currentUser && currentUser.accountType === 'provider';
+                if (savedSubtabs) savedSubtabs.style.display = isProvider ? 'flex' : 'none';
+                document.getElementById('savedTab').style.paddingTop = isProvider ? '45px' : '0';
                 if (pillsEl) pillsEl.style.display = 'none';
                 renderSavedList();
             } else if (tab === 'bookings') {

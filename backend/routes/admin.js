@@ -62,22 +62,19 @@ async function getPlaceLeads(industry, city, apiKey, limit = 10) {
     }
     const places = (searchData.results || []).slice(0, limit);
 
-    // Fetch all place details + websites in parallel
+    // Fetch all place details in parallel — no website scraping here
     const leads = await Promise.all(places.map(async place => {
         try {
             const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website&key=${apiKey}`;
             const detail = await gFetch(detailUrl);
             const r = detail.result || {};
-            const website = r.website || '';
-            const html = await fetchWebsite(website);
-            const email = extractEmail(html);
             return {
                 businessName: r.name || place.name || '',
                 contactName: '',
                 phone: r.formatted_phone_number || '',
-                email,
+                email: '',
                 address: r.formatted_address || place.formatted_address || '',
-                website,
+                website: r.website || '',
                 serviceType: industry
             };
         } catch {
@@ -260,6 +257,25 @@ router.post('/leads/save', adminAuth, async (req, res) => {
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
+});
+
+// @route POST /api/admin/leads/scrape-emails
+// @desc  Scrape emails from an array of websites — called separately after search
+router.post('/leads/scrape-emails', adminAuth, async (req, res) => {
+    const { websites } = req.body; // array of URL strings, one per lead
+    if (!Array.isArray(websites)) {
+        return res.status(400).json({ success: false, message: 'websites array is required' });
+    }
+    const emails = await Promise.all(
+        websites.map(async url => {
+            if (!url) return '';
+            try {
+                const html = await fetchWebsite(url);
+                return extractEmail(html);
+            } catch { return ''; }
+        })
+    );
+    res.json({ success: true, emails });
 });
 
 // @route GET /api/admin/leads/saved

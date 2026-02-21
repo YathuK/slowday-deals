@@ -1407,7 +1407,8 @@ async function searchLeads() {
 
         leadsData = data.leads || [];
         renderLeads(leadsData, city);
-        setLeadStatus(`✅ Done — found ${leadsData.length} business${leadsData.length === 1 ? '' : 'es'} across ${industries.length} categor${industries.length === 1 ? 'y' : 'ies'} in ${city}.`);
+        setLeadStatus(`✅ Found ${leadsData.length} business${leadsData.length === 1 ? '' : 'es'} — fetching emails…`, true);
+        scrapeEmails();
     } catch (err) {
         setLeadStatus(`❌ Request failed: ${err.message}`);
     } finally {
@@ -1431,7 +1432,7 @@ function renderLeads(leads, city) {
             <td class="lead-name">${esc(l.businessName)}</td>
             <td><input class="lead-contact-input" data-idx="${i}" placeholder="Enter name…" value="${esc(l.contactName)}" oninput="leadsData[${i}].contactName=this.value"></td>
             <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
-            <td class="lead-email">${l.email ? `<a href="mailto:${esc(l.email)}" style="color:var(--accent);">${esc(l.email)}</a>` : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-email"><span class="lead-empty" style="font-style:normal;opacity:0.4;">…</span></td>
             <td class="lead-addr">${esc(l.address)}</td>
             <td class="lead-web">${l.website ? `<a href="${esc(l.website)}" target="_blank" title="${esc(l.website)}">${esc(l.website.replace(/^https?:\/\/(www\.)?/,'').split('/')[0])}</a>` : '<span class="lead-empty">—</span>'}</td>
             <td class="lead-service"><span class="pill purple">${esc(l.serviceType)}</span></td>
@@ -1440,6 +1441,30 @@ function renderLeads(leads, city) {
 
     document.getElementById('leadCount').textContent = `${leads.length} business${leads.length === 1 ? '' : 'es'} found`;
     document.getElementById('leadResults').style.display = 'block';
+}
+
+async function scrapeEmails() {
+    const websites = leadsData.map(l => l.website || '');
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/scrape-emails`, {
+            method: 'POST',
+            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ websites })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        data.emails.forEach((email, i) => {
+            leadsData[i].email = email;
+            const cell = document.querySelector(`#leadTableBody tr:nth-child(${i + 1}) td:nth-child(5)`);
+            if (cell) cell.innerHTML = email
+                ? `<a href="mailto:${esc(email)}" style="color:var(--accent);">${esc(email)}</a>`
+                : '<span class="lead-empty">—</span>';
+        });
+        const found = data.emails.filter(Boolean).length;
+        setLeadStatus(`✅ Done — ${leadsData.length} businesses, ${found} email${found === 1 ? '' : 's'} found.`);
+    } catch {
+        setLeadStatus(`✅ Done — ${leadsData.length} businesses found (email scraping failed).`);
+    }
 }
 
 async function saveLeadsToDb() {

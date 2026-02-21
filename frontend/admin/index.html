@@ -1385,7 +1385,7 @@ async function searchLeads() {
 
     const industries = checked.map(c => c.value);
     const total = industries.length;
-    setLeadStatus(`Searching ${total} industr${total === 1 ? 'y' : 'ies'} in "${city}" — this may take up to ${total * 6}s…`, true);
+    setLeadStatus(`Searching ${total} industr${total === 1 ? 'y' : 'ies'} in "${city}" — this may take up to ${total} min${total > 1 ? 's' : ''}…`, true);
 
     try {
         const params = new URLSearchParams({ city });

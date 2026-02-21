@@ -61,8 +61,9 @@ async function getPlaceLeads(industry, city, apiKey, limit = 10) {
         throw new Error(`Places API: ${searchData.status} — ${searchData.error_message || ''}`);
     }
     const places = (searchData.results || []).slice(0, limit);
-    const leads = [];
-    for (const place of places) {
+
+    // Fetch all place details + websites in parallel
+    const leads = await Promise.all(places.map(async place => {
         try {
             const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website&key=${apiKey}`;
             const detail = await gFetch(detailUrl);
@@ -70,7 +71,7 @@ async function getPlaceLeads(industry, city, apiKey, limit = 10) {
             const website = r.website || '';
             const html = await fetchWebsite(website);
             const email = extractEmail(html);
-            leads.push({
+            return {
                 businessName: r.name || place.name || '',
                 contactName: '',
                 phone: r.formatted_phone_number || '',
@@ -78,16 +79,17 @@ async function getPlaceLeads(industry, city, apiKey, limit = 10) {
                 address: r.formatted_address || place.formatted_address || '',
                 website,
                 serviceType: industry
-            });
+            };
         } catch {
-            leads.push({
+            return {
                 businessName: place.name || '',
                 contactName: '', phone: '', email: '',
                 address: place.formatted_address || '',
                 website: '', serviceType: industry
-            });
+            };
         }
-    }
+    }));
+
     return leads;
 }
 

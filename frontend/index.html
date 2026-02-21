@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="format-detection" content="telephone=no, address=no, email=no">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
-    <script src="api.js"></script>
+    <script src="api.js?v=98"></script>
     <style>
         * {
             margin: 0;
@@ -2363,6 +2365,7 @@
             }
             try {
                 const response = await API.resetPassword(token, password);
+                console.log('[reset] Response:', JSON.stringify(response));
                 sessionStorage.removeItem('pendingResetToken');
                 window.history.replaceState({}, '', window.location.pathname);
                 // Auto-login with the token returned from reset
@@ -2370,13 +2373,15 @@
                     API.setToken(response.token);
                     currentUser = response.user;
                     closeAuthModal();
-                    try { await showAuthenticatedView(); } catch(e) {}
+                    try { await showAuthenticatedView(); } catch(e) { console.error('[reset] View error:', e); }
                     showToast('Password reset and logged in!');
                 } else {
+                    console.warn('[reset] No token/user in response — auto-login skipped');
                     showToast('Password reset successfully! Please log in.');
                     showLogin();
                 }
             } catch (err) {
+                console.error('[reset] Error:', err.message);
                 errorEl.textContent = err.message || 'Reset failed. Link may have expired. Please request a new one.';
                 errorEl.style.display = 'block';
             }

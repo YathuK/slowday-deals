@@ -3244,7 +3244,7 @@
             if (!dealId) return;
             sessionStorage.removeItem('dealDeepLink');
             try {
-                const response = await API.call('/api/services/' + dealId, 'GET', null, false);
+                const response = await API.getService(dealId);
                 if (response.success && response.service) {
                     showDetails(response.service);
                 }

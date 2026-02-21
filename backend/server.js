@@ -48,10 +48,11 @@ app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
+    res.json({
+        status: 'OK',
         message: 'SlowDay Deals API is running',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        build: 'v98'
     });
 });
 

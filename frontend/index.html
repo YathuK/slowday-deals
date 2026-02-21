@@ -2474,7 +2474,8 @@
                 dropdown.style.display = 'none';
                 const pillsEl = document.getElementById('discoverPills');
                 const detailModal = document.getElementById('detailModal');
-                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none' && !detailModal.classList.contains('active')) {
+                const bookingModal = document.getElementById('bookingModal');
+                if (pillsEl && document.getElementById('discoverTab').style.display !== 'none' && !detailModal.classList.contains('active') && !bookingModal.classList.contains('active')) {
                     pillsEl.style.display = 'block';
                 }
             }
@@ -3393,6 +3394,7 @@
             if (currentBookingService && !currentBookingService.dealActive) { showToast('This deal is currently unavailable.', true); return; }
             document.getElementById('detailModal').classList.remove('active');
             document.getElementById('bookingModal').classList.add('active');
+            const _p = document.getElementById('discoverPills'); if (_p) _p.style.display = 'none';
             document.getElementById('bookingSuccess').style.display = 'none';
             document.getElementById('customerName').value = currentUser.name;
             document.getElementById('customerContact').value = currentUser.email || '';

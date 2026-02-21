@@ -1017,6 +1017,10 @@
             margin-bottom: -2px;
             white-space: nowrap;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .ptab-btn.active { color: #667eea; border-bottom-color: #667eea; }
         .badge {
@@ -1132,7 +1136,7 @@
            .provider-tabs. This survives iOS rubber-band overscroll because fixed elements
            are not children of any scroll container. JS shows/hides it with savedTab. */
         .saved-subtabs { display: flex; border-bottom: 1.5px solid #f0f0f0; margin-bottom: 0; position: fixed; top: 58px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; background: white; z-index: 90; box-sizing: border-box; }
-        .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; }
+        .saved-stab { flex: 1; padding: 12px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .saved-stab.active { color: #667eea; border-bottom-color: #667eea; }
 
         .location-header {
@@ -1562,8 +1566,8 @@
                 </div>
             </div>
             <div class="saved-subtabs" style="display:none;">
-                <button class="saved-stab active" id="stabSaved" onclick="switchSavedTab('saved')">❤️ Saved</button>
-                <button class="saved-stab" id="stabMyBookings" onclick="switchSavedTab('mybookings')">📍 My Bookings</button>
+                <button class="saved-stab active" id="stabSaved" onclick="switchSavedTab('saved')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>Saved</button>
+                <button class="saved-stab" id="stabMyBookings" onclick="switchSavedTab('mybookings')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="11" y2="16"></line></svg>My Bookings</button>
             </div>
             <div id="savedTab" class="tab-content" style="display:none;">
                 <div id="savedListWrap">
@@ -1587,10 +1591,10 @@
         <div id="providerView" class="view">
             <!-- Provider Sub-tabs -->
             <div class="provider-tabs">
-                <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')">👤 Profile</button>
-                <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')">📋 Bookings <span class="badge" id="pendingBadge" style="display:none"></span></button>
-                <button class="ptab-btn" id="ptabCalendar" onclick="switchProviderTab('calendar')">📅 Calendar</button>
-                <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')">📊 Analytics</button>
+                <button class="ptab-btn active" id="ptabProfile" onclick="switchProviderTab('profile')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Profile</button>
+                <button class="ptab-btn" id="ptabBookings" onclick="switchProviderTab('bookings')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="11" y2="16"></line></svg>Bookings<span class="badge" id="pendingBadge" style="display:none"></span></button>
+                <button class="ptab-btn" id="ptabCalendar" onclick="switchProviderTab('calendar')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Calendar</button>
+                <button class="ptab-btn" id="ptabAnalytics" onclick="switchProviderTab('analytics')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>Analytics</button>
             </div>
 
             <!-- PROFILE TAB -->

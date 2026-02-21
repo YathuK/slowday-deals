@@ -2246,11 +2246,16 @@
             const subResult = urlParams.get('subscription');
             const dealDeepLink = urlParams.get('deal');
             const pageParam = urlParams.get('page');
-            if (pageParam === 'terms' || pageParam === 'privacy') {
+            if (pageParam === 'terms' || pageParam === 'privacy' || pageParam === 'delete-account') {
                 window.history.replaceState({}, '', window.location.pathname);
                 setTimeout(function() {
                     if (pageParam === 'terms') showTerms();
-                    else showPrivacy();
+                    else if (pageParam === 'privacy') showPrivacy();
+                    else if (pageParam === 'delete-account') {
+                        var token = API.getToken();
+                        if (token) deleteAccount();
+                        else { showToast('Please log in to delete your account.', true); showAuthModal(); }
+                    }
                 }, 500);
             }
             if (subResult === 'success') {

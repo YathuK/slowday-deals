@@ -226,8 +226,8 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             cursor: grab;
-            /* none: prevents native browser pan on the card so horizontal swipe isn't eaten.
-               .card-content uses -webkit-overflow-scrolling:touch for native iOS scroll. */
+            /* none: prevents native browser pan so horizontal card swipe isn't intercepted.
+               card-content scroll is handled entirely by JS scrollTop (no UIScrollView). */
             touch-action: none;
             transition: transform 0.3s, box-shadow 0.3s;
             user-select: none;
@@ -270,7 +270,6 @@
             padding: 10px 14px 4px;
             height: 45%;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
             overscroll-behavior-y: contain;
         }
@@ -3045,9 +3044,15 @@
             card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; currentX = undefined; startX = e.clientX; card.style.transition = 'none'; });
             card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; swipeDirection = null; currentX = undefined; startX = e.touches[0].clientX; startY = e.touches[0].clientY; card.style.transition = 'none'; }, { passive: true });
             document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
-            // touch-action:none on .service-card disables native browser pan/zoom on the whole card.
-            // card-content uses -webkit-overflow-scrolling:touch so iOS UIScrollView handles vertical
-            // scroll natively inside it. The document touchmove listener below handles horizontal swipe.
+            // touch-action:none on .service-card disables ALL native browser gestures on the card.
+            // -webkit-overflow-scrolling:touch is NOT used (would create an iOS UIScrollView that
+            // conflicts with JS scrollTop). Instead JS drives card-content scroll via scrollTop so
+            // it works identically on Safari, Chrome, and desktop.
+            const cardContent = card.querySelector('.card-content');
+            let ccDir = null, ccPrevY = null, ccVel = 0, ccRaf = null;
+            cardContent.addEventListener('touchstart', () => { ccDir = null; ccPrevY = null; ccVel = 0; if (ccRaf) { cancelAnimationFrame(ccRaf); ccRaf = null; } }, { passive: true });
+            cardContent.addEventListener('touchmove', e => { const cy = e.touches[0].clientY, cx = e.touches[0].clientX; if (!ccDir) { const dx = Math.abs(cx - startX), dy = Math.abs(cy - startY); if (dx > 5 || dy > 5) ccDir = dy > dx ? 'vertical' : 'horizontal'; } if (ccDir !== 'vertical') return; if (ccPrevY !== null) { ccVel = ccPrevY - cy; cardContent.scrollTop = Math.max(0, Math.min(cardContent.scrollTop + ccVel, cardContent.scrollHeight - cardContent.clientHeight)); } ccPrevY = cy; }, { passive: true });
+            cardContent.addEventListener('touchend', () => { ccPrevY = null; if (Math.abs(ccVel) < 1) return; (function momentum() { ccVel *= 0.92; if (Math.abs(ccVel) < 0.5) { ccVel = 0; ccRaf = null; return; } cardContent.scrollTop = Math.max(0, Math.min(cardContent.scrollTop + ccVel, cardContent.scrollHeight - cardContent.clientHeight)); ccRaf = requestAnimationFrame(momentum); })(); }, { passive: true });
             document.addEventListener('touchmove', e => { if (!isDragging) return; const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY; if (!swipeDirection && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) { swipeDirection = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'; } if (!swipeDirection || swipeDirection === 'vertical') return; currentX = e.touches[0].clientX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: true });
             const endDrag = () => { if (!isDragging) return; isDragging = false; swipeDirection = null; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handleSwipeRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);
@@ -3123,9 +3128,15 @@
             card.addEventListener('mousedown', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; currentX = undefined; startX = e.clientX; card.style.transition = 'none'; });
             card.addEventListener('touchstart', e => { if (e.target.closest('.card-action-row')) return; isDragging = true; swipeDirection = null; currentX = undefined; startX = e.touches[0].clientX; startY = e.touches[0].clientY; card.style.transition = 'none'; }, { passive: true });
             document.addEventListener('mousemove', e => { if (!isDragging) return; currentX = e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff/20}deg)`; card.classList.toggle('swiping-right', diff > 50); card.classList.toggle('swiping-left', diff < -50); });
-            // touch-action:none on .service-card disables native browser pan/zoom on the whole card.
-            // card-content uses -webkit-overflow-scrolling:touch so iOS UIScrollView handles vertical
-            // scroll natively inside it. The document touchmove listener below handles horizontal swipe.
+            // touch-action:none on .service-card disables ALL native browser gestures on the card.
+            // -webkit-overflow-scrolling:touch is NOT used (would create an iOS UIScrollView that
+            // conflicts with JS scrollTop). Instead JS drives card-content scroll via scrollTop so
+            // it works identically on Safari, Chrome, and desktop.
+            const cardContent = card.querySelector('.card-content');
+            let ccDir = null, ccPrevY = null, ccVel = 0, ccRaf = null;
+            cardContent.addEventListener('touchstart', () => { ccDir = null; ccPrevY = null; ccVel = 0; if (ccRaf) { cancelAnimationFrame(ccRaf); ccRaf = null; } }, { passive: true });
+            cardContent.addEventListener('touchmove', e => { const cy = e.touches[0].clientY, cx = e.touches[0].clientX; if (!ccDir) { const dx = Math.abs(cx - startX), dy = Math.abs(cy - startY); if (dx > 5 || dy > 5) ccDir = dy > dx ? 'vertical' : 'horizontal'; } if (ccDir !== 'vertical') return; if (ccPrevY !== null) { ccVel = ccPrevY - cy; cardContent.scrollTop = Math.max(0, Math.min(cardContent.scrollTop + ccVel, cardContent.scrollHeight - cardContent.clientHeight)); } ccPrevY = cy; }, { passive: true });
+            cardContent.addEventListener('touchend', () => { ccPrevY = null; if (Math.abs(ccVel) < 1) return; (function momentum() { ccVel *= 0.92; if (Math.abs(ccVel) < 0.5) { ccVel = 0; ccRaf = null; return; } cardContent.scrollTop = Math.max(0, Math.min(cardContent.scrollTop + ccVel, cardContent.scrollHeight - cardContent.clientHeight)); ccRaf = requestAnimationFrame(momentum); })(); }, { passive: true });
             document.addEventListener('touchmove', e => { if (!isDragging) return; const diffX = e.touches[0].clientX - startX; const diffY = e.touches[0].clientY - startY; if (!swipeDirection && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) { swipeDirection = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical'; } if (!swipeDirection || swipeDirection === 'vertical') return; currentX = e.touches[0].clientX; card.style.transform = `translateX(${diffX}px) rotate(${diffX/20}deg)`; card.classList.toggle('swiping-right', diffX > 50); card.classList.toggle('swiping-left', diffX < -50); }, { passive: true });
             const endDrag = () => { if (!isDragging) return; isDragging = false; swipeDirection = null; card.style.transition = 'transform 0.3s'; const diff = (currentX || startX) - startX; if (diff > 100) handlePlusCardRight(); else if (diff < -100) swipeCard('left'); else { card.style.transform = `scale(${1 - stackPosition * 0.05}) translateY(${stackPosition * 10}px)`; card.classList.remove('swiping-right', 'swiping-left'); } };
             document.addEventListener('mouseup', endDrag);

@@ -848,6 +848,9 @@
             text-align: left;
             margin-top: 6px;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .dropdown-btn:hover { background: #ede9fe; color: #667eea; }
@@ -1039,6 +1042,9 @@
             padding: 7px 14px;
             border: 1.5px solid #e0e0e0;
             background: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
@@ -1079,7 +1085,7 @@
         .status-cancelled { background: #f3f4f6; color: #6b7280; }
         .status-rescheduled { background: #dbeafe; color: #2563eb; }
         .status-completed { background: #ede9fe; color: #7c3aed; }
-        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; } .booking-meta a { text-decoration: none !important; color: inherit !important; } .no-link { -webkit-user-select: text; text-decoration: none !important; pointer-events: none; }
+        .booking-meta { font-size: 13px; color: #555; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; } .booking-meta a { text-decoration: none !important; color: inherit !important; } .no-link { -webkit-user-select: text; text-decoration: none !important; pointer-events: none; }
         .booking-meta span { color: #888; }
         .booking-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .action-btn {
@@ -1091,6 +1097,10 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
         .btn-confirm   { background: #d1fae5; color: #059669; }
         .btn-reject    { background: #fee2e2; color: #dc2626; }
@@ -1442,7 +1452,7 @@
                 <!-- Location panel -->
                 <div id="locationPanel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:290px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:10000;padding:16px;pointer-events:auto;box-sizing:border-box;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-                        <span style="font-size:14px;font-weight:700;color:#1a1a2e;">📍 Filter by Location</span>
+                        <span style="font-size:14px;font-weight:700;color:#1a1a2e;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Filter by Location</span>
                         <span onclick="toggleLocationPill()" style="font-size:22px;color:#bbb;cursor:pointer;line-height:1;font-weight:300;">×</span>
                     </div>
                     <button onclick="useMyLocation()" style="width:100%;border:1.5px solid #667eea;background:#f5f3ff;color:#667eea;font-size:13px;font-weight:700;padding:9px 14px;border-radius:25px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;">
@@ -1547,15 +1557,15 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
             <hr style="margin:4px 0 10px;border:none;border-top:1px solid #f0f0f0;">
-            <button class="dropdown-btn" id="providerDropdownBtn" onclick="document.getElementById('userDropdown').style.display='none'; switchToProvider();">💼 My Provider Profile</button>
-            <button onclick="document.getElementById('userDropdown').style.display='none'; showSlowDayPlusModal();" style="width:100%;padding:11px 14px;margin-top:8px;margin-bottom:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;">⚡ SlowDay+</button>
-            <button class="dropdown-btn logout-red" onclick="logout()">🚪 Logout</button>
+            <button class="dropdown-btn" id="providerDropdownBtn" onclick="document.getElementById('userDropdown').style.display='none'; switchToProvider();"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>My Provider Profile</button>
+            <button onclick="document.getElementById('userDropdown').style.display='none'; showSlowDayPlusModal();" style="width:100%;padding:11px 14px;margin-top:8px;margin-bottom:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>SlowDay+</button>
+            <button class="dropdown-btn logout-red" onclick="logout()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Logout</button>
         </div>
 
 
         <div class="mode-toggle" id="modeToggle" style="display:none;">
-            <button class="mode-btn active" onclick="switchMode('customer')">🛍️ Find Services</button>
-            <button class="mode-btn" onclick="switchMode('provider')">💼 I'm a Provider</button>
+            <button class="mode-btn active" onclick="switchMode('customer')"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>Find Services</button>
+            <button class="mode-btn" onclick="switchMode('provider')"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>I'm a Provider</button>
         </div>
 
         <!-- Customer View -->
@@ -1692,8 +1702,8 @@
                 <div id="myProfileView" style="display:none;padding:20px;">
                     <div id="myProfileCard"></div>
                     <div style="display:flex;gap:10px;margin-top:16px;">
-                        <button onclick="editMyProfile()" style="flex:1;padding:14px;background:#667eea;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">✏️ Edit</button>
-                        <button onclick="deleteMyProfile()" style="flex:1;padding:14px;background:#fee2e2;color:#e53e3e;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;">🗑️ Delete</button>
+                        <button onclick="editMyProfile()" style="flex:1;padding:14px;background:#667eea;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Edit</button>
+                        <button onclick="deleteMyProfile()" style="flex:1;padding:14px;background:#fee2e2;color:#e53e3e;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>Delete</button>
                     </div>
                 </div>
             </div>
@@ -1703,10 +1713,10 @@
                 <div style="padding:16px;">
                     <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
                         <button class="filter-btn active" onclick="filterProviderBookings('all', this)">All</button>
-                        <button class="filter-btn" onclick="filterProviderBookings('pending', this)">⏳ Pending</button>
-                        <button class="filter-btn" onclick="filterProviderBookings('confirmed', this)">✅ Confirmed</button>
-                        <button class="filter-btn" onclick="filterProviderBookings('rescheduled', this)">🔄 Rescheduled</button>
-                        <button class="filter-btn" onclick="filterProviderBookings('rejected', this)">❌ Rejected</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('pending', this)"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Pending</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('confirmed', this)"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 15.01 9 12.01"></polyline></svg>Confirmed</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('rescheduled', this)"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Rescheduled</button>
+                        <button class="filter-btn" onclick="filterProviderBookings('rejected', this)"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>Rejected</button>
                     </div>
                     <div id="providerBookingsList"><div class="empty-state"><div class="empty-emoji">📋</div><h3>No bookings yet</h3><p>Bookings will appear here once customers book your service</p></div></div>
                 </div>
@@ -1746,7 +1756,7 @@
         <div class="modal" id="userProfileModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>👤 My Account</h2>
+                    <h2 style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>My Account</h2>
                     <button class="close-btn" onclick="document.getElementById('userProfileModal').classList.remove('active')">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -1756,7 +1766,7 @@
 
                     <!-- Change Name -->
                     <div style="margin-bottom:24px;">
-                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">✏️ Change Name</h3>
+                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>Change Name</h3>
                         <input type="text" id="newName" placeholder="New name" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:10px;">
                         <button onclick="updateName()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Save Name</button>
                     </div>
@@ -1768,7 +1778,7 @@
 
                     <!-- Change Password -->
                     <div style="margin-bottom:24px;">
-                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">🔒 Change Password</h3>
+                        <h3 style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Change Password</h3>
                         <input type="password" id="currentPassword" placeholder="Current password" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:8px;">
                         <input type="password" id="newPassword" placeholder="New password (min 6 chars)" style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;margin-bottom:10px;">
                         <button onclick="updatePassword()" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Change Password</button>
@@ -1778,7 +1788,7 @@
 
                     <!-- Delete Account -->
                     <div>
-                        <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;">⚠️ Delete Account</h3>
+                        <h3 style="font-size:14px;font-weight:700;color:#e53e3e;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Delete Account</h3>
                         <p style="font-size:13px;color:#888;margin-bottom:10px;">This permanently deletes your account and all your data. Cannot be undone.</p>
                         <button onclick="deleteAccount()" style="width:100%;padding:12px;background:#fee2e2;color:#e53e3e;border:1.5px solid #fca5a5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Delete My Account</button>
                     </div>
@@ -1787,7 +1797,7 @@
 
                     <!-- Support Tickets -->
                     <div>
-                        <h3 style="margin:0 0 12px;font-size:15px;color:#1a1a2e;">🎫 Support</h3>
+                        <h3 style="margin:0 0 12px;font-size:15px;color:#1a1a2e;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Support</h3>
                         <div id="accountOpenTickets" style="margin-bottom:12px;"></div>
                         <input type="text" id="ticketSubject" placeholder="Subject" style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
                         <textarea id="ticketMessage" placeholder="Describe your issue..." style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;box-sizing:border-box;height:90px;resize:none;font-family:inherit;margin-bottom:8px;"></textarea>
@@ -1810,7 +1820,7 @@
         <div class="modal" id="rescheduleModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>🔄 Reschedule Booking</h2>
+                    <h2 style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Reschedule Booking</h2>
                     <button class="close-btn" onclick="document.getElementById('rescheduleModal').classList.remove('active')">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -2506,7 +2516,7 @@
             } else {
                 navBtn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Bookings</span>`;
                 navBtn.onclick = () => showTab('bookings');
-                if (dropdownBtn) { dropdownBtn.style.display = 'block'; dropdownBtn.textContent = '🚀 Become a Provider'; dropdownBtn.onclick = () => becomeProvider(); }
+                if (dropdownBtn) { dropdownBtn.style.display = 'flex'; dropdownBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>Become a Provider'; dropdownBtn.onclick = () => becomeProvider(); }
                 if (stabMyBookings) stabMyBookings.style.display = 'none';
             }
         }
@@ -2534,10 +2544,10 @@
                             </div>
                             <span class="status-pill status-${b.status}">${b.status}</span>
                         </div>
-                        <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
-                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
-                        <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
-                        ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <span>Date:</span> ${date}</div>
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> <span>Price:</span> $${b.price}</div>
+                        ${b.notes ? `<div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> <span>Notes:</span> ${b.notes}</div>` : ''}
                     </div>`;
                 }).join('');
             } catch(e) {
@@ -2750,7 +2760,7 @@
             const imgHtml = myService.photos && myService.photos.length > 0
                 ? `<img class="profile-card-img" src="${myService.photos[0]}" alt="${myService.serviceType}">`
                 : `<div class="profile-card-img-placeholder">${getServiceEmoji(myService.serviceType)}</div>`;
-            const emailLine = myService.email ? `<span>✉️ ${myService.email}</span>` : '';
+            const emailLine = myService.email ? `<span style="display:inline-flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>${myService.email}</span>` : '';
             const np = myService.normalPrice;
             const wdPct = np && np > myService.weekdayPrice ? Math.round((1 - myService.weekdayPrice / np) * 100) : 0;
             const wePct = np && np > myService.weekendPrice ? Math.round((1 - myService.weekendPrice / np) * 100) : 0;
@@ -2765,8 +2775,8 @@
                     <div class="type-badge">${myService.serviceType}</div>
                     <p>${myService.description}</p>
                     <p style="color:#888;font-size:13px;display:flex;flex-wrap:wrap;gap:8px;">
-                        <span>📍 ${myService.location}</span>
-                        <span>📞 ${myService.contact}</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>${myService.location}</span>
+                        <span style="display:inline-flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.27 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>${myService.contact}</span>
                         ${emailLine}
                     </p>
                     <div class="profile-price-row">
@@ -2774,13 +2784,13 @@
                             <div class="label">Weekdays</div>
                             <div class="value">$${myService.weekdayPrice}</div>
                             ${wdDiscountHtml}
-                            <div style="font-size:11px;color:#888;margin-top:4px;">🎟️ ${wdSlots}</div>
+                            <div style="font-size:11px;color:#888;margin-top:4px;display:flex;align-items:center;gap:3px;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>${wdSlots}</div>
                         </div>
                         <div class="profile-price-box">
                             <div class="label">Weekends</div>
                             <div class="value">$${myService.weekendPrice}</div>
                             ${weDiscountHtml}
-                            <div style="font-size:11px;color:#888;margin-top:4px;">🎟️ ${weSlots}</div>
+                            <div style="font-size:11px;color:#888;margin-top:4px;display:flex;align-items:center;gap:3px;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>${weSlots}</div>
                         </div>
                     </div>
                 </div>`;
@@ -2947,8 +2957,8 @@
                         <div class="empty-dots">
                             <span></span><span></span><span></span>
                         </div>
-                        <button onclick="currentCardIndex=0;renderCards();" style="margin-top:24px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;">
-                            🔄 Start Over
+                        <button onclick="currentCardIndex=0;renderCards();" style="margin-top:24px;padding:12px 28px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:25px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Start Over
                         </button>
                     </div>`;
                 return;
@@ -3231,7 +3241,7 @@
                 <div class="detail-section"><h3>${service.serviceType}</h3><p style="color:#666;font-size:14px;margin-bottom:10px;">by ${service.providerName}</p><p style="color:#555;line-height:1.6;">${service.description}</p></div>
                 <div class="detail-section">
                     <div class="location-header" onclick="toggleMap('${encodedLocation}')">
-                        <h3 style="margin:0;white-space:nowrap;flex-shrink:0;">📍 Location</h3>
+                        <h3 style="margin:0;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Location</h3>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="color:#555;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${service.location}</span>
                             <svg viewBox="0 0 24 24" width="18" height="18" id="mapChevron" fill="none" stroke="#667eea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -3253,7 +3263,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="detail-section"><h3>💰 ${cancelBookingId ? 'Your Booking' : 'Pricing'}</h3>
+                <div class="detail-section"><h3 style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>${cancelBookingId ? 'Your Booking' : 'Pricing'}</h3>
                     ${(() => {
                         if (cancelBookingId && bookingPrice != null) {
                             const np = service.normalPrice;
@@ -3265,7 +3275,7 @@
                             <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:20px;color:white;">
                                 ${dateStr ? `
                                 <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.25);">
-                                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;opacity:0.7;margin-bottom:4px;">📅 Your Appointment</div>
+                                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;opacity:0.7;margin-bottom:4px;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Your Appointment</div>
                                     <div style="font-size:16px;font-weight:700;">${dateStr}</div>
                                 </div>` : ''}
                                 <div style="font-size:12px;font-weight:700;text-transform:uppercase;opacity:0.8;margin-bottom:6px;">Price you're paying</div>
@@ -3337,7 +3347,7 @@
                 </div>
                 ${(service.contact || service.instagram || service.tiktok || service.facebook) ? `
                 <div class="detail-section">
-                    <h3>📲 Contact & Socials</h3>
+                    <h3 style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.27 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>Contact & Socials</h3>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;">
                         ${service.contact ? `<a href="tel:${service.contact}" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:25px;background:#22c55e;color:white;text-decoration:none;font-size:13px;font-weight:700;box-shadow:0 3px 12px rgba(34,197,94,0.35);"><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>${service.contact}</a>` : ''}
                         ${service.instagram ? `<a href="${service.instagram}" target="_blank" style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);box-shadow:0 3px 10px rgba(220,39,67,0.35);text-decoration:none;"><svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>` : ''}
@@ -3959,7 +3969,7 @@
             if (!bks.length) return;
             const el = document.getElementById('calDayBookings');
             const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
-            let html = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;">📅 ' + label + '</div>';
+            let html = '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;padding:10px 0 8px;border-bottom:1.5px solid #f0f0f0;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' + label + '</div>';
             bks.sort(function(a,b){ return new Date(a.preferredTime)-new Date(b.preferredTime); }).forEach(function(b) {
                 const svc = b.service || {};
                 const time = new Date(b.preferredTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
@@ -3967,8 +3977,8 @@
                 let actions = '';
                 if (b.status === 'pending') {
                     actions = '<div style="display:flex;gap:6px;margin-top:8px;">'
-                        + '<button class="action-btn btn-confirm" onclick="updateBooking(\''+bid+'\',\'confirmed\')">✅ Confirm</button>'
-                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'rejected\')">❌ Reject</button>'
+                        + '<button class="action-btn btn-confirm" onclick="updateBooking(\''+bid+'\',\'confirmed\')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 15.01 9 12.01"></polyline></svg>Confirm</button>'
+                        + '<button class="action-btn btn-reject" onclick="updateBooking(\''+bid+'\',\'rejected\')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>Reject</button>'
                         + '</div>';
                 } else if (b.status === 'confirmed') {
                     actions = '<div style="margin-top:8px;">'
@@ -3983,7 +3993,7 @@
                     + '</div>'
                     + '<span class="status-pill status-' + b.status + '">' + b.status + '</span>'
                     + '</div>'
-                    + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;">📝 ' + b.notes + '</div>' : '')
+                    + (b.notes ? '<div style="font-size:12px;color:#666;margin-top:6px;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>' + b.notes + '</div>' : '')
                     + actions
                     + '</div>';
             });
@@ -4106,11 +4116,11 @@
                 const cust = b.customer || {};
                 const date = new Date(b.preferredTime).toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
                 const actions = b.status === 'pending' ? `
-                    <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed')">✅ Confirm</button>
-                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
-                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected')">❌ Reject</button>` :
+                    <button class="action-btn btn-confirm" onclick="updateBooking('${b._id}','confirmed')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 15.01 9 12.01"></polyline></svg>Confirm</button>
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Reschedule</button>
+                    <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','rejected')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>Reject</button>` :
                 b.status === 'confirmed' ? `
-                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')">🔄 Reschedule</button>
+                    <button class="action-btn btn-reschedule" onclick="openReschedule('${b._id}')"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Reschedule</button>
                     <button class="action-btn btn-reject" onclick="updateBooking('${b._id}','cancelled')">Cancel</button>` : '';
                 return `<div class="booking-card">
                     <div class="booking-card-header">
@@ -4120,10 +4130,10 @@
                         </div>
                         <span class="status-pill status-${b.status}">${b.status}</span>
                     </div>
-                    <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
-                    <div class="booking-meta">📞 <span>Contact:</span> ${b.customerContact}</div>
-                    <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
-                    ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                    <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <span>Date:</span> ${date}</div>
+                    <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.27 2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> <span>Contact:</span> ${b.customerContact}</div>
+                    <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> <span>Price:</span> $${b.price}</div>
+                    ${b.notes ? `<div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> <span>Notes:</span> ${b.notes}</div>` : ''}
                     ${actions ? `<div class="booking-actions">${actions}</div>` : ''}
                 </div>`;
             }).join('');
@@ -4187,7 +4197,7 @@
                 document.getElementById('analyticsContent').innerHTML = `
                     ${potentialEarnings > 0 ? `
                     <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:14px;padding:16px;margin-bottom:16px;color:white;text-align:center;">
-                        <div style="font-size:12px;font-weight:700;opacity:0.85;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">💰 Potential Revenue</div>
+                        <div style="font-size:12px;font-weight:700;opacity:0.85;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;gap:5px;"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Potential Revenue</div>
                         <div style="font-size:32px;font-weight:900;line-height:1;margin-bottom:4px;">$${potentialEarnings.toFixed(2)}</div>
                         <div style="font-size:13px;opacity:0.75;">If all remaining slots sell</div>
                     </div>` : ''}
@@ -4204,7 +4214,7 @@
                         <div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:#dc2626;">${a.byStatus.rejected||0}</div><div style="font-size:11px;color:#888;">Rejected</div></div>
                     </div>
                     <div class="chart-bar-wrap">
-                        <h3>📅 Bookings – Last 7 Days</h3>
+                        <h3 style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Bookings – Last 7 Days</h3>
                         ${a.last7Days.map(d => `
                         <div class="bar-row">
                             <div class="bar-label">${d.date.split(',')[0]}</div>
@@ -4213,7 +4223,7 @@
                         </div>`).join('')}
                     </div>
                     <div class="chart-bar-wrap">
-                        <h3>💰 Earnings – Last 7 Days</h3>
+                        <h3 style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Earnings – Last 7 Days</h3>
                         ${a.last7Days.map(d => `
                         <div class="bar-row">
                             <div class="bar-label">${d.date.split(',')[0]}</div>
@@ -4287,10 +4297,10 @@
                             </div>
                             <span class="status-pill status-${b.status}">${b.status}</span>
                         </div>
-                        <div class="booking-meta">📅 <span>Date:</span> ${date}</div>
-                        <div class="booking-meta">📍 <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
-                        <div class="booking-meta">💰 <span>Price:</span> $${b.price}</div>
-                        ${b.notes ? `<div class="booking-meta">📝 <span>Notes:</span> ${b.notes}</div>` : ''}
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <span>Date:</span> ${date}</div>
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <span>Location:</span> <span class="no-link">${svc.location || ''}</span></div>
+                        <div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> <span>Price:</span> $${b.price}</div>
+                        ${b.notes ? `<div class="booking-meta"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> <span>Notes:</span> ${b.notes}</div>` : ''}
                     </div>`;
                 }).join('');
             } catch(e) {
@@ -5277,7 +5287,7 @@
     <div class="modal" id="privacyModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🔒 Privacy Policy</h2>
+                <h2 style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Privacy Policy</h2>
                 <button class="close-btn" onclick="document.getElementById('privacyModal').classList.remove('active')">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>

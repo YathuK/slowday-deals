@@ -256,15 +256,19 @@ router.post('/leads/save', adminAuth, async (req, res) => {
     }
     try {
         const docs = leads.map(l => ({
-            businessName: l.businessName || '',
-            contactName:  l.contactName  || '',
-            phone:        l.phone        || '',
-            email:        l.email        || '',
-            address:      l.address      || '',
-            website:      l.website      || '',
-            serviceType:  l.serviceType  || '',
-            city:         city           || '',
-            status: 'new'
+            businessName:  l.businessName  || '',
+            contactName:   l.contactName   || '',
+            phone:         l.phone         || '',
+            email:         l.email         || '',
+            address:       l.address       || '',
+            website:       l.website       || '',
+            serviceType:   l.serviceType   || '',
+            city:          l.city          || city || '',
+            status:        l.status        || 'new',
+            price:         l.price         ?? null,
+            discountPrice: l.discountPrice ?? null,
+            days:          l.days          || [],
+            notes:         l.notes         || ''
         }));
         const saved = await Lead.insertMany(docs);
         res.json({ success: true, saved: saved.length });

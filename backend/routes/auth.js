@@ -120,7 +120,7 @@ router.post('/login', [
 
         // Check password — use direct bcrypt.compare for safety
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('[login] User:', user.email, '| Password match:', isMatch, '| Hash prefix:', user.password?.substring(0, 7));
+        console.log('[login] User:', user.email, '| Password match:', isMatch, '| Hash prefix:', user.password?.substring(0, 10), '| Hash length:', user.password?.length, '| Password length received:', password?.length);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
@@ -270,10 +270,15 @@ router.post('/reset-password', async (req, res) => {
             $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 }
         });
 
-        // Verify the password was saved correctly
+        // Verify the password was saved correctly by re-reading from DB
         const verify = await User.findById(user._id);
         const verifyMatch = await bcrypt.compare(password, verify.password);
-        console.log('[reset-password] Password verified after save:', verifyMatch);
+        console.log('[reset-password] Password verified after save:', verifyMatch, '| Hash prefix:', verify.password?.substring(0, 10), '| Hash length:', verify.password?.length);
+
+        if (!verifyMatch) {
+            // Something went wrong with the save — abort and report
+            return res.status(500).json({ success: false, message: 'Password save verification failed. Please try again.' });
+        }
 
         // Auto-login: return JWT so user doesn't have to log in manually
         const autoToken = generateToken(user._id);
@@ -287,7 +292,8 @@ router.post('/reset-password', async (req, res) => {
                 email: user.email,
                 phone: user.phone,
                 accountType: user.accountType
-            }
+            },
+            _build: 'v97'
         });
     } catch (error) {
         console.error('Reset password error:', error);

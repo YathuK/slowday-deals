@@ -53,14 +53,28 @@ function extractEmail(html) {
     ) || '';
 }
 
-async function getPlaceLeads(industry, city, apiKey, limit = 10) {
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function getPlaceLeads(industry, city, apiKey) {
     const query = encodeURIComponent(`${industry} in ${city}`);
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
-    const searchData = await gFetch(searchUrl);
-    if (!['OK','ZERO_RESULTS'].includes(searchData.status)) {
-        throw new Error(`Places API: ${searchData.status} — ${searchData.error_message || ''}`);
+    const places = [];
+
+    // Paginate through up to 3 pages (max 60 results from Google)
+    let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
+    for (let page = 0; page < 3; page++) {
+        const data = await gFetch(url);
+        if (!['OK', 'ZERO_RESULTS'].includes(data.status)) {
+            if (page === 0) throw new Error(`Places API: ${data.status} — ${data.error_message || ''}`);
+            break;
+        }
+        places.push(...(data.results || []));
+        if (!data.next_page_token) break;
+        // Google requires a short delay before the next_page_token becomes valid
+        await sleep(2000);
+        url = `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${data.next_page_token}&key=${apiKey}`;
     }
-    const places = (searchData.results || []).slice(0, limit);
 
     // Fetch all place details in parallel — no website scraping here
     const leads = await Promise.all(places.map(async place => {
@@ -223,7 +237,7 @@ router.get('/leads', adminAuth, async (req, res) => {
     try {
         const allLeads = [];
         for (const industry of industryList) {
-            const leads = await getPlaceLeads(industry, city.trim(), apiKey, 10);
+            const leads = await getPlaceLeads(industry, city.trim(), apiKey);
             allLeads.push(...leads);
         }
         res.json({ success: true, total: allLeads.length, leads: allLeads });

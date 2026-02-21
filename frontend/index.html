@@ -4866,6 +4866,8 @@
                 startY = e.touches[0].clientY;
             }, { passive: true });
             discoverTab.addEventListener('touchmove', function(e) {
+                // card-content handles its own native scroll — never preventDefault here
+                if (e.target.closest('.card-content')) return;
                 // Find scrollable parent
                 let el = e.target;
                 let scrollable = null;

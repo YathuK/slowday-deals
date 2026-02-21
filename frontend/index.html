@@ -12,6 +12,8 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>SlowDay Deals - Service Marketplace</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <script src="api.js?v=98"></script>
     <style>
         * {
@@ -815,6 +817,49 @@
         .auth-form {
             max-width: 400px;
             margin: 0 auto;
+        }
+
+        .sso-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        .sso-divider::before,
+        .sso-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .sso-divider::before { margin-right: 12px; }
+        .sso-divider::after { margin-left: 12px; }
+
+        .sso-btn {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .sso-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .sso-btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
 
         .user-menu {
@@ -1955,9 +2000,15 @@
                         </div>
                         <button type="submit" class="submit-btn">Log In</button>
                         <p style="text-align: center; margin-top: 15px; color: #666;">
-                            Don't have an account? 
+                            Don't have an account?
                             <a href="#" onclick="showSignup(); return false;" style="color: #667eea; font-weight: 600;">Sign Up</a>
                         </p>
+                        <div class="sso-divider">or continue with</div>
+                        <div id="googleSignInBtn" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
+                        <button type="button" class="sso-btn" onclick="handleFacebookSignIn()">
+                            <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            Continue with Facebook
+                        </button>
                     </form>
 
                     <!-- Forgot Password Form -->
@@ -2027,9 +2078,15 @@
                         </div>
                         <button type="submit" class="submit-btn">Create Account</button>
                         <p style="text-align: center; margin-top: 15px; color: #666;">
-                            Already have an account? 
+                            Already have an account?
                             <a href="#" onclick="showLogin(); return false;" style="color: #667eea; font-weight: 600;">Log In</a>
                         </p>
+                        <div class="sso-divider">or sign up with</div>
+                        <div id="googleSignUpBtn" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
+                        <button type="button" class="sso-btn" onclick="handleFacebookSignIn()">
+                            <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            Continue with Facebook
+                        </button>
                         <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0f0;">
                             <p style="font-size:11px;color:#999;line-height:1.6;">
                                 By creating an account, you agree to our<br>
@@ -2203,6 +2260,11 @@
             }
             showWakingUp();
             await wakeUpServer();
+
+            // Initialize SSO SDKs
+            initGoogleSignIn();
+            initFacebookSDK();
+
             const token = API.getToken();
             if (token) {
                 try {
@@ -2500,6 +2562,108 @@
                 }
             }
             if (btn) { btn.disabled = false; btn.textContent = 'Create Account'; }
+        }
+
+        // ============================================
+        // SSO HANDLERS (Google & Facebook)
+        // ============================================
+
+        function initGoogleSignIn() {
+            if (typeof google === 'undefined' || !google.accounts) {
+                setTimeout(initGoogleSignIn, 500);
+                return;
+            }
+            google.accounts.id.initialize({
+                client_id: 'GOOGLE_CLIENT_ID_PLACEHOLDER',
+                callback: handleGoogleSignIn,
+                auto_select: false
+            });
+
+            var loginBtn = document.getElementById('googleSignInBtn');
+            if (loginBtn) {
+                google.accounts.id.renderButton(loginBtn, {
+                    type: 'standard',
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'continue_with',
+                    width: 320
+                });
+            }
+
+            var signupBtn = document.getElementById('googleSignUpBtn');
+            if (signupBtn) {
+                google.accounts.id.renderButton(signupBtn, {
+                    type: 'standard',
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signup_with',
+                    width: 320
+                });
+            }
+        }
+
+        async function handleGoogleSignIn(response) {
+            try {
+                var result = await API.googleAuth(response.credential);
+                if (result.success) {
+                    API.setToken(result.token);
+                    currentUser = result.user;
+                    closeAuthModal();
+                    await showAuthenticatedView();
+                    showToast('Welcome, ' + currentUser.name + '!');
+                    handleDeepLink();
+                    handleDealDeepLink();
+                }
+            } catch (error) {
+                if (error.message === 'Failed to fetch') {
+                    showToast('Server is waking up — please wait 30 seconds and try again.', true);
+                } else {
+                    showToast(error.message || 'Google sign-in failed. Please try again.', true);
+                }
+            }
+        }
+
+        function initFacebookSDK() {
+            if (typeof FB === 'undefined') {
+                setTimeout(initFacebookSDK, 500);
+                return;
+            }
+            FB.init({
+                appId: 'FACEBOOK_APP_ID_PLACEHOLDER',
+                cookie: true,
+                xfbml: false,
+                version: 'v19.0'
+            });
+        }
+
+        async function handleFacebookSignIn() {
+            if (typeof FB === 'undefined') {
+                showToast('Facebook is loading. Please try again.', true);
+                return;
+            }
+            FB.login(async function(response) {
+                if (response.authResponse) {
+                    var accessToken = response.authResponse.accessToken;
+                    try {
+                        var result = await API.facebookAuth(accessToken);
+                        if (result.success) {
+                            API.setToken(result.token);
+                            currentUser = result.user;
+                            closeAuthModal();
+                            await showAuthenticatedView();
+                            showToast('Welcome, ' + currentUser.name + '!');
+                            handleDeepLink();
+                            handleDealDeepLink();
+                        }
+                    } catch (error) {
+                        if (error.message === 'Failed to fetch') {
+                            showToast('Server is waking up — please wait 30 seconds and try again.', true);
+                        } else {
+                            showToast(error.message || 'Facebook sign-in failed. Please try again.', true);
+                        }
+                    }
+                }
+            }, { scope: 'email,public_profile' });
         }
 
         function logout() {

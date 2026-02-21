@@ -18,7 +18,8 @@
     "multer": "^1.4.5-lts.1",
     "@sendgrid/mail": "^8.1.0",
     "twilio": "^4.19.0",
-    "stripe": "^14.21.0"
+    "stripe": "^14.21.0",
+    "google-auth-library": "^9.14.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

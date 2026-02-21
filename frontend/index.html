@@ -2245,6 +2245,14 @@
             const deepTab = urlParams.get('tab');
             const subResult = urlParams.get('subscription');
             const dealDeepLink = urlParams.get('deal');
+            const pageParam = urlParams.get('page');
+            if (pageParam === 'terms' || pageParam === 'privacy') {
+                window.history.replaceState({}, '', window.location.pathname);
+                setTimeout(function() {
+                    if (pageParam === 'terms') showTerms();
+                    else showPrivacy();
+                }, 500);
+            }
             if (subResult === 'success') {
                 sessionStorage.setItem('showPlusSuccess', '1');
                 window.history.replaceState({}, '', window.location.pathname);

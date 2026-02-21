@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Service = require('../models/Service');
+const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
 // @route   GET /api/services
@@ -96,9 +97,8 @@ router.post('/', auth, [
 
         await service.save();
 
-        // Also update user's accountType to provider
-        req.user.accountType = 'provider';
-        await req.user.save();
+        // Also update user's accountType to provider (use updateOne to avoid pre-save hook)
+        await User.updateOne({ _id: req.user._id }, { $set: { accountType: 'provider' } });
 
         res.status(201).json({ success: true, message: 'Service created successfully!', service });
     } catch (error) {
@@ -137,8 +137,8 @@ router.delete('/:id', auth, async (req, res) => {
         }
 
         await service.deleteOne();
-        req.user.accountType = 'customer';
-        await req.user.save();
+        // Use updateOne to avoid pre-save hook touching password
+        await User.updateOne({ _id: req.user._id }, { $set: { accountType: 'customer' } });
         res.json({ success: true, message: 'Service deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error deleting service', error: error.message });

@@ -22,7 +22,11 @@ const generateToken = (userId) => {
 async function findOrCreateSSOUser({ email, name, socialIdField, socialIdValue, avatar }) {
     // 1. Check if user exists by social ID (returning SSO user)
     let user = await User.findOne({ [socialIdField]: socialIdValue });
-    if (user) return user;
+    if (user) {
+        user.lastLogin = new Date();
+        await user.save();
+        return user;
+    }
 
     // 2. Check if user exists by email (account linking)
     if (email) {
@@ -30,6 +34,7 @@ async function findOrCreateSSOUser({ email, name, socialIdField, socialIdValue, 
         if (user) {
             user[socialIdField] = socialIdValue;
             if (!user.avatar && avatar) user.avatar = avatar;
+            user.lastLogin = new Date();
             await user.save();
             return user;
         }
@@ -43,7 +48,8 @@ async function findOrCreateSSOUser({ email, name, socialIdField, socialIdValue, 
         accountType: 'customer',
         authProvider: socialIdField === 'googleId' ? 'google' : 'facebook',
         avatar: avatar || null,
-        isVerified: true
+        isVerified: true,
+        lastLogin: new Date()
     });
 
     try {
@@ -179,6 +185,10 @@ router.post('/login', [
                 message: 'Invalid email or password'
             });
         }
+
+        // Track last login
+        user.lastLogin = new Date();
+        await user.save();
 
         // Generate token
         const token = generateToken(user._id);
@@ -506,6 +516,7 @@ router.post('/setup-provider', async (req, res) => {
 
         user.providerSetupToken = null;
         user.providerSetupExpires = null;
+        user.lastLogin = new Date();
         await user.save();
 
         const jwtToken = generateToken(user._id);

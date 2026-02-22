@@ -446,6 +446,62 @@ router.get('/analytics', staffAuth, async (req, res) => {
     }
 });
 
+// @route  GET /api/admin/users
+// @desc   List all users with booking counts and saved counts
+router.get('/users', staffAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const users = await User.find({}, 'name email phone accountType lastLogin savedServices createdAt').lean();
+
+        // Aggregate booking counts per customer
+        const customerBookings = await Booking.aggregate([
+            { $group: { _id: '$customer', count: { $sum: 1 } } }
+        ]);
+        const customerBookingMap = {};
+        for (const b of customerBookings) {
+            if (b._id) customerBookingMap[b._id.toString()] = b.count;
+        }
+
+        // Aggregate booking counts per provider (via service ownership)
+        const services = await Service.find({}, 'provider').lean();
+        const serviceToProvider = {};
+        for (const s of services) {
+            if (s.provider) serviceToProvider[s._id.toString()] = s.provider.toString();
+        }
+
+        const providerBookings = await Booking.aggregate([
+            { $group: { _id: '$service', count: { $sum: 1 } } }
+        ]);
+        const providerBookingMap = {};
+        for (const b of providerBookings) {
+            if (b._id) {
+                const providerId = serviceToProvider[b._id.toString()];
+                if (providerId) {
+                    providerBookingMap[providerId] = (providerBookingMap[providerId] || 0) + b.count;
+                }
+            }
+        }
+
+        const userList = users.map(u => ({
+            _id: u._id,
+            name: u.name,
+            email: u.email || '',
+            phone: u.phone || '',
+            accountType: u.accountType,
+            lastLogin: u.lastLogin || null,
+            createdAt: u.createdAt,
+            bookingsCount: u.accountType === 'provider'
+                ? (providerBookingMap[u._id.toString()] || 0)
+                : (customerBookingMap[u._id.toString()] || 0),
+            savedCount: u.savedServices ? u.savedServices.length : 0
+        }));
+
+        res.json({ success: true, users: userList });
+    } catch (err) {
+        console.error('Admin users list error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ══════════════════════════════════════════════════════════════════════════════
 // LEAD FINDER (existing + enhancements)
 // ══════════════════════════════════════════════════════════════════════════════

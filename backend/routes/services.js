@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Service = require('../models/Service');
 const User = require('../models/User');
+const Lead = require('../models/Lead');
 const { auth } = require('../middleware/auth');
 
 // @route   GET /api/services
@@ -134,6 +135,15 @@ router.delete('/:id', auth, async (req, res) => {
         if (!service) return res.status(404).json({ success: false, message: 'Service not found' });
         if (service.provider && service.provider.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+
+        // Update associated lead status to 'deleted'
+        const user = req.user;
+        if (user.email) {
+            await Lead.updateMany({ email: user.email, status: 'live' }, { $set: { status: 'deleted' } });
+        }
+        if (user.phone) {
+            await Lead.updateMany({ phone: user.phone, status: 'live' }, { $set: { status: 'deleted' } });
         }
 
         await service.deleteOne();

@@ -752,6 +752,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 .lead-status-select.s-rejected  { border-color: var(--red);    color: var(--red);    }
 .lead-status-select.s-live      { border-color: #00c853;       color: #00c853;       }
 .live-locked-row td { background: rgba(0,200,83,0.04); }
+.lead-status-select.s-deleted   { border-color: #888;          color: #888;          }
 
 /* LEAD NOTES INPUT */
 .lead-notes-input {
@@ -2313,7 +2314,7 @@ async function loadSavedLeads() {
     }
 }
 
-const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected', live: 'Live' };
+const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected', live: 'Live', deleted: 'Deleted' };
 
 const LEAD_SERVICE_TYPES = ['Haircut','Barber','Cleaning Service','Massage','Nail Service','Spa Treatment','Personal Training','Dog Walking','Tutoring','Photography','Car Detailing','Laundry Service'];
 
@@ -2330,16 +2331,18 @@ function renderSavedLeads(leads) {
         const assigneeId = l.assignee ? (l.assignee._id || l.assignee) : '';
         const cleanPhone = (l.phone || '').replace(/[^+\d]/g, '');
         const isLive = l.status === 'live';
+        const isDeleted = l.status === 'deleted';
+        const isLocked = isLive || isDeleted;
         const isEditing = liveEditingLeads.has(l._id);
 
-        // Day chips — locked if live and not editing
+        // Day chips — locked if live/deleted and not editing
         const dayChips = DAYS.map(d =>
-            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}"${!isLive || isEditing ? ` onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')"` : ''} style="${isLive && !isEditing ? 'pointer-events:none;opacity:0.7;' : ''}">${d}</span>`
+            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}"${!isLocked || isEditing ? ` onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')"` : ''} style="${isLocked && !isEditing ? 'pointer-events:none;opacity:0.7;' : ''}">${d}</span>`
         ).join('');
 
         // For live rows: show readonly text, for non-live/editing: show inputs
-        const locked = isLive && !isEditing;
-        const emailPhoneLocked = isLive; // always locked for live leads even in edit mode
+        const locked = isLocked && !isEditing;
+        const emailPhoneLocked = isLocked; // always locked for live/deleted leads even in edit mode
 
         return `
         <tr id="srow-${esc(l._id)}" ${locked ? 'class="live-locked-row"' : ''}>
@@ -2403,7 +2406,9 @@ function renderSavedLeads(leads) {
                 ? `<span style="font-size:12px;color:var(--text2);">${esc(l.notes || '—')}</span>`
                 : `<input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
                     onchange="updateLeadField('${esc(l._id)}','notes',this.value)">`}</td>
-            <td style="white-space:nowrap;">${isLive
+            <td style="white-space:nowrap;">${isDeleted
+                ? '<span class="pill" style="background:#888;color:#fff;font-size:11px;">Deleted</span>'
+                : isLive
                 ? `<span class="pill" style="background:#00c853;color:#fff;font-size:11px;">Live</span>
                    ${isEditing
                        ? `<button class="lead-toggle-btn" style="font-size:11px;margin-left:4px;background:#00c853;color:#fff;border-color:#00c853;" onclick="publishLeadChanges('${esc(l._id)}')">Publish</button>`

@@ -2627,6 +2627,7 @@
                 currentUser = data.user;
                 closeAuthModal();
                 await showAuthenticatedView();
+                showTab('provider');
                 showToast('Welcome, ' + currentUser.name + '! Your provider account is ready.');
             } catch (err) {
                 errEl.textContent = err.message || 'Setup failed. Please try again.';
@@ -3183,8 +3184,14 @@
             const weDiscountHtml = wePct > 0 ? `<div style="font-size:11px;color:#999;text-decoration:line-through;">$${np}</div><div style="font-size:11px;font-weight:700;color:#10b981;">${wePct}% off</div>` : '';
             const wdSlots = myService.weekdaySlots ? `${myService.weekdaySlots} slot${myService.weekdaySlots > 1 ? 's' : ''}` : '∞ slots';
             const weSlots = myService.weekendSlots ? `${myService.weekendSlots} slot${myService.weekendSlots > 1 ? 's' : ''}` : '∞ slots';
+            const dealOffBanner = myService.dealActive === false
+                ? `<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(220,38,38,0.92);color:white;text-align:center;padding:10px 16px;font-size:14px;font-weight:700;letter-spacing:0.3px;">Deal Turned Off</div>`
+                : '';
             document.getElementById('myProfileCard').innerHTML = `
-                ${imgHtml}
+                <div style="position:relative;">
+                    ${imgHtml}
+                    ${dealOffBanner}
+                </div>
                 <div class="profile-card-body">
                     <h2>${myService.providerName}</h2>
                     <div class="type-badge">${myService.serviceType}</div>

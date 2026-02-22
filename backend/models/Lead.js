@@ -17,7 +17,8 @@ const leadSchema = new mongoose.Schema({
     notes:         { type: String, default: '' },
     price:         { type: Number, default: null },
     discountPrice: { type: Number, default: null },
-    days:          [{ type: String, enum: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] }]
+    days:          [{ type: String, enum: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] }],
+    assignee:      { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Lead', leadSchema);

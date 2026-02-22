@@ -1120,7 +1120,10 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             <input type="password" id="loginPass" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
         </div>
         <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
-        <div id="setupLink" style="text-align:center;margin-top:16px;display:none;">
+        <div style="text-align:center;margin-top:12px;">
+            <span style="font-size:13px;color:var(--accent);cursor:pointer;" onclick="showForgotPassword()">Forgot password?</span>
+        </div>
+        <div id="setupLink" style="text-align:center;margin-top:8px;display:none;">
             <span style="font-size:13px;color:var(--text3);cursor:pointer;" onclick="showSetupForm()">First time? Set up your admin account →</span>
         </div>
     </div>
@@ -1168,6 +1171,44 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             <input type="password" id="invitePass2" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')doAcceptInvite()">
         </div>
         <button class="login-btn" onclick="doAcceptInvite()">Activate Account →</button>
+    </div>
+    <!-- FORGOT PASSWORD FORM -->
+    <div class="login-box" id="forgotBox" style="display:none;">
+        <div class="login-logo">
+            <div class="login-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
+            <div class="login-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="login-title">Reset Password</div>
+        <div class="login-sub">Enter your email to receive a reset link</div>
+        <div class="login-error" id="forgotError"></div>
+        <div class="login-success" id="forgotSuccess" style="display:none;background:rgba(34,211,160,0.1);color:#22d3a0;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;"></div>
+        <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="forgotEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doForgotPassword()">
+        </div>
+        <button class="login-btn" id="forgotBtn" onclick="doForgotPassword()">Send Reset Link →</button>
+        <div style="text-align:center;margin-top:16px;">
+            <span style="font-size:13px;color:var(--text3);cursor:pointer;" onclick="showLoginForm()">← Back to login</span>
+        </div>
+    </div>
+    <!-- RESET PASSWORD FORM -->
+    <div class="login-box" id="resetBox" style="display:none;">
+        <div class="login-logo">
+            <div class="login-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
+            <div class="login-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="login-title">Set New Password</div>
+        <div class="login-sub">Choose a new password for your account</div>
+        <div class="login-error" id="resetError"></div>
+        <div class="login-field">
+            <label>New Password</label>
+            <input type="password" id="resetPass" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')document.getElementById('resetPass2').focus()">
+        </div>
+        <div class="login-field">
+            <label>Confirm Password</label>
+            <input type="password" id="resetPass2" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')doResetPassword()">
+        </div>
+        <button class="login-btn" id="resetBtn" onclick="doResetPassword()">Reset Password →</button>
     </div>
 </div>
 
@@ -1589,6 +1630,7 @@ let cachedData = null;
 let staffList = []; // cached staff for assignee dropdowns
 let ticketFilter = '';
 let inviteToken = null;
+let staffResetToken = null;
 
 const CATEGORY_ICONS = {
     'Haircut': '✂️', 'Barber': '💈', 'Cleaning': '🧹', 'Massage': '💆',
@@ -1607,7 +1649,12 @@ function authHeaders(extra = {}) {
 // On page load: check for invite token or restore session
 (function init() {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('invite')) {
+    if (params.get('resetToken')) {
+        staffResetToken = params.get('resetToken');
+        window.history.replaceState({}, '', window.location.pathname);
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('resetBox').style.display = 'block';
+    } else if (params.get('invite')) {
         inviteToken = params.get('invite');
         window.history.replaceState({}, '', window.location.pathname);
         document.getElementById('loginBox').style.display = 'none';
@@ -1643,7 +1690,16 @@ function showSetupForm() {
 }
 function showLoginForm() {
     document.getElementById('setupBox').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'none';
+    document.getElementById('resetBox').style.display = 'none';
     document.getElementById('loginBox').style.display = 'block';
+}
+function showForgotPassword() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'block';
+    document.getElementById('forgotError').textContent = '';
+    document.getElementById('forgotSuccess').style.display = 'none';
+    document.getElementById('forgotEmail').value = '';
 }
 
 async function doSetup() {
@@ -1715,6 +1771,57 @@ async function doAcceptInvite() {
         enterDashboard();
     } catch (err) {
         showError('inviteError', 'Connection error. Try again.');
+    }
+}
+
+async function doForgotPassword() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { showError('forgotError', 'Please enter your email.'); return; }
+    const btn = document.getElementById('forgotBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    document.getElementById('forgotError').textContent = '';
+    document.getElementById('forgotSuccess').style.display = 'none';
+    try {
+        const res = await fetch(`${API_BASE}/admin/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!data.success) { showError('forgotError', data.message); return; }
+        document.getElementById('forgotSuccess').textContent = 'If that email exists, a reset link has been sent. Check your inbox.';
+        document.getElementById('forgotSuccess').style.display = 'block';
+        document.getElementById('forgotEmail').value = '';
+    } catch (err) {
+        showError('forgotError', 'Connection error. Try again.');
+    } finally {
+        btn.disabled = false; btn.textContent = 'Send Reset Link →';
+    }
+}
+
+async function doResetPassword() {
+    const pass = document.getElementById('resetPass').value;
+    const pass2 = document.getElementById('resetPass2').value;
+    if (!pass || pass.length < 6) { showError('resetError', 'Password must be at least 6 characters.'); return; }
+    if (pass !== pass2) { showError('resetError', 'Passwords do not match.'); return; }
+    const btn = document.getElementById('resetBtn');
+    btn.disabled = true; btn.textContent = 'Resetting…';
+    try {
+        const res = await fetch(`${API_BASE}/admin/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: staffResetToken, password: pass })
+        });
+        const data = await res.json();
+        if (!data.success) { showError('resetError', data.message); return; }
+        authToken = data.token;
+        sessionStorage.setItem('staffToken', authToken);
+        currentStaff = data.staff;
+        enterDashboard();
+    } catch (err) {
+        showError('resetError', 'Connection error. Try again.');
+    } finally {
+        btn.disabled = false; btn.textContent = 'Reset Password →';
     }
 }
 

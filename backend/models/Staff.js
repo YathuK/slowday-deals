@@ -14,7 +14,9 @@ const staffSchema = new mongoose.Schema({
     inviteToken: { type: String, default: null },
     inviteExpires: { type: Date, default: null },
     invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', default: null },
-    lastLogin: { type: Date, default: null }
+    lastLogin: { type: Date, default: null },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null }
 }, { timestamps: true });
 
 staffSchema.pre('save', async function(next) {

@@ -12,6 +12,7 @@ const Staff = require('../models/Staff');
 const CallLog = require('../models/CallLog');
 const EmailLog = require('../models/EmailLog');
 const SupportTicket = require('../models/SupportTicket');
+const bcrypt = require('bcryptjs');
 const { staffAuth, requireRole } = require('../middleware/adminAuth');
 const sgMail = require('@sendgrid/mail');
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -175,6 +176,107 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Staff login error:', err);
         res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/forgot-password
+// @desc  Send password reset email to staff
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+        }
+
+        const staff = await Staff.findOne({ email: email.toLowerCase(), isActive: true });
+        if (!staff) {
+            return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        await Staff.updateOne({ _id: staff._id }, {
+            $set: { resetPasswordToken: resetTokenHash, resetPasswordExpires: Date.now() + 3600000 }
+        });
+
+        const resetUrl = `${ADMIN_URL}?resetToken=${resetToken}`;
+
+        if (!process.env.SENDGRID_API_KEY) {
+            console.error('[admin-forgot-password] SENDGRID_API_KEY not set');
+            return res.status(500).json({ success: false, message: 'Email service not configured.' });
+        }
+
+        const msg = {
+            to: staff.email,
+            from: FROM_EMAIL,
+            subject: 'Reset Your Back Office Password',
+            html: `
+                <div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
+                    <div style="text-align:center;margin-bottom:24px;">
+                        <div style="background:linear-gradient(135deg,#667eea,#764ba2);width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">⚡</div>
+                    </div>
+                    <h2 style="color:#1a1a2e;margin-bottom:8px;">Reset your password</h2>
+                    <p style="color:#666;line-height:1.6;margin-bottom:24px;">Hi ${staff.name}, we received a request to reset your SlowDay Deals Back Office password. Click the button below to choose a new one.</p>
+                    <a href="${resetUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;margin-bottom:24px;">Reset My Password</a>
+                    <p style="color:#999;font-size:13px;text-align:center;">This link expires in <strong>1 hour</strong>. If you didn't request this, you can safely ignore this email.</p>
+                    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+                    <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals Back Office · slowdaydeals.com</p>
+                </div>
+            `
+        };
+
+        try {
+            await sgMail.send(msg);
+            console.log('[admin-forgot-password] Reset email sent to', staff.email);
+        } catch (sendErr) {
+            console.error('[admin-forgot-password] SendGrid error:', sendErr.response?.body || sendErr.message);
+            return res.status(500).json({ success: false, message: 'Failed to send reset email. Please try again later.' });
+        }
+
+        res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+    } catch (err) {
+        console.error('Admin forgot password error:', err);
+        res.status(500).json({ success: false, message: 'Error sending reset email.' });
+    }
+});
+
+// @route POST /api/admin/reset-password
+// @desc  Reset staff password using token
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        if (!token || !password) {
+            return res.status(400).json({ success: false, message: 'Token and password are required.' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        const staff = await Staff.findOne({
+            resetPasswordToken: tokenHash,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!staff) {
+            return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await Staff.updateOne({ _id: staff._id }, {
+            $set: { password: hashedPassword },
+            $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 }
+        });
+
+        const jwtToken = generateStaffToken(staff._id);
+        res.json({ success: true, token: jwtToken, staff });
+    } catch (err) {
+        console.error('Admin reset password error:', err);
+        res.status(500).json({ success: false, message: 'Error resetting password.' });
     }
 });
 

@@ -49,13 +49,11 @@ const userSchema = new mongoose.Schema({
     },
     googleId: {
         type: String,
-        default: null,
         sparse: true,
         unique: true
     },
     facebookId: {
         type: String,
-        default: null,
         sparse: true,
         unique: true
     },

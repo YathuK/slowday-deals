@@ -15,7 +15,7 @@ const { staffAuth, requireRole } = require('../middleware/adminAuth');
 const sgMail = require('@sendgrid/mail');
 if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const ADMIN_URL = process.env.ADMIN_URL || 'https://yathuk.github.io/slowday-deals/frontend/admin';
+const ADMIN_URL = process.env.ADMIN_URL || 'https://www.slowdaydeals.com/admin';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@slowdaydeals.com';
 
 // Generate staff JWT

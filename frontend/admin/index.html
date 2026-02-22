@@ -70,10 +70,13 @@ body {
 }
 .login-logo-icon {
     width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.login-logo-icon img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 10px;
 }
 .login-logo-text {
     font-size: 18px;
@@ -154,21 +157,28 @@ body {
     flex-direction: column;
     z-index: 100;
     padding: 24px 0;
+    transition: width 0.25s ease;
+    overflow: hidden;
 }
+.sidebar.collapsed { width: 62px; }
 .sidebar-logo {
     display: flex; align-items: center; gap: 10px;
     padding: 0 20px 24px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 16px;
+    white-space: nowrap;
 }
 .sidebar-logo-icon {
     width: 34px; height: 34px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
+    flex-shrink: 0;
+    overflow: hidden;
 }
-.sidebar-logo-text { font-size: 15px; font-weight: 700; }
+.sidebar-logo-icon img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 8px;
+}
+.sidebar-logo-text { font-size: 15px; font-weight: 700; white-space: nowrap; }
 .sidebar-logo-text span {
     display: block;
     font-family: var(--mono);
@@ -179,6 +189,24 @@ body {
     font-weight: 400;
     margin-top: 1px;
 }
+.sidebar.collapsed .sidebar-logo-text { display: none; }
+.sidebar-toggle {
+    position: absolute;
+    top: 24px;
+    right: -14px;
+    width: 28px; height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 14px;
+    z-index: 101;
+    transition: all 0.2s;
+}
+.sidebar-toggle:hover { color: var(--text); background: var(--accent); border-color: var(--accent); }
+.sidebar.collapsed .sidebar-toggle { transform: rotate(180deg); }
 .nav-item {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 20px;
@@ -190,16 +218,25 @@ body {
     transition: all 0.15s;
     border-left: 3px solid transparent;
     margin: 1px 0;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
 .nav-item.active { color: var(--text); background: rgba(124,92,252,0.1); border-left-color: var(--accent); }
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-text { transition: opacity 0.2s; }
+.sidebar.collapsed .nav-text { opacity: 0; }
+.sidebar.collapsed .nav-badge { display: none !important; }
 
 .sidebar-bottom {
     margin-top: auto;
     padding: 16px 20px;
     border-top: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
 }
+.sidebar.collapsed #staffNameDisplay { display: none; }
+.sidebar.collapsed .logout-text { display: none; }
 .logout-btn {
     display: flex; align-items: center; gap: 8px;
     color: var(--text2);
@@ -210,6 +247,8 @@ body {
     transition: all 0.15s;
     background: none; border: none; width: 100%;
     font-family: var(--sans);
+    white-space: nowrap;
+    overflow: hidden;
 }
 .logout-btn:hover { color: var(--red); background: rgba(252,92,92,0.1); }
 
@@ -218,7 +257,9 @@ body {
     margin-left: 220px;
     padding: 32px 36px;
     min-height: 100vh;
+    transition: margin-left 0.25s ease;
 }
+.sidebar.collapsed ~ .main { margin-left: 62px; }
 .page { display: none; }
 .page.active { display: block; }
 
@@ -952,7 +993,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 <div id="loginScreen">
     <div class="login-box" id="loginBox">
         <div class="login-logo">
-            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
             <div class="login-logo-text">SlowDay <span>Back Office</span></div>
         </div>
         <div class="login-title" id="loginTitle">Welcome Back</div>
@@ -974,7 +1015,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
     <!-- SETUP FORM (one-time super admin creation) -->
     <div class="login-box" id="setupBox" style="display:none;">
         <div class="login-logo">
-            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
             <div class="login-logo-text">SlowDay <span>Back Office</span></div>
         </div>
         <div class="login-title">Create Admin Account</div>
@@ -1000,7 +1041,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
     <!-- INVITE ACCEPTANCE FORM -->
     <div class="login-box" id="inviteBox" style="display:none;">
         <div class="login-logo">
-            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
             <div class="login-logo-text">SlowDay <span>Back Office</span></div>
         </div>
         <div class="login-title">Set Your Password</div>
@@ -1021,36 +1062,37 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 <!-- DASHBOARD -->
 <div id="dashboard">
     <!-- SIDEBAR -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">◀</div>
         <div class="sidebar-logo">
-            <div class="sidebar-logo-icon">⚡</div>
+            <div class="sidebar-logo-icon"><img src="../apple-touch-icon.png" alt="SlowDay" /></div>
             <div class="sidebar-logo-text">SlowDay <span>Back Office</span></div>
         </div>
         <div class="nav-item active" onclick="showPage('overview')" id="nav-overview">
-            <span class="nav-icon">📊</span> Overview
+            <span class="nav-icon">📊</span> <span class="nav-text">Overview</span>
         </div>
         <div class="nav-item" onclick="showPage('categories')" id="nav-categories">
-            <span class="nav-icon">🗂️</span> Categories & Slots
+            <span class="nav-icon">🗂️</span> <span class="nav-text">Categories & Slots</span>
         </div>
         <div class="nav-item" onclick="showPage('users')" id="nav-users">
-            <span class="nav-icon">👥</span> Users
+            <span class="nav-icon">👥</span> <span class="nav-text">Users</span>
         </div>
         <div class="nav-item" onclick="showPage('bookings')" id="nav-bookings">
-            <span class="nav-icon">📅</span> Bookings
+            <span class="nav-icon">📅</span> <span class="nav-text">Bookings</span>
         </div>
         <div class="nav-item" onclick="showPage('leads')" id="nav-leads">
-            <span class="nav-icon">🎯</span> Lead Finder
+            <span class="nav-icon">🎯</span> <span class="nav-text">Lead Finder</span>
         </div>
         <div class="nav-item" onclick="showPage('support')" id="nav-support" style="display:none;">
-            <span class="nav-icon">🎫</span> Support
+            <span class="nav-icon">🎫</span> <span class="nav-text">Support</span>
             <span class="nav-badge" id="supportBadge" style="display:none;">0</span>
         </div>
         <div class="nav-item" onclick="showPage('employees')" id="nav-employees" style="display:none;">
-            <span class="nav-icon">👤</span> Employees
+            <span class="nav-icon">👤</span> <span class="nav-text">Employees</span>
         </div>
         <div class="sidebar-bottom">
             <div id="staffNameDisplay" style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:0 4px;"></div>
-            <button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button>
+            <button class="logout-btn" onclick="doLogout()">🚪 <span class="logout-text">Sign Out</span></button>
         </div>
     </div>
 
@@ -1574,6 +1616,16 @@ function enterDashboard() {
     renderSidebar();
     loadData();
     loadStaffList();
+    // Restore sidebar collapse state
+    if (localStorage.getItem('sidebarCollapsed') === 'true') {
+        document.getElementById('sidebar').classList.add('collapsed');
+    }
+}
+
+function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    sb.classList.toggle('collapsed');
+    localStorage.setItem('sidebarCollapsed', sb.classList.contains('collapsed'));
 }
 
 function doLogout() {

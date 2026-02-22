@@ -978,4 +978,60 @@ router.post('/leads/:id/create-profile', staffAuth, requireRole('admin', 'sales'
     }
 });
 
+// ── Publish Lead Changes to Live Service ─────────────────────────────────────
+
+router.post('/leads/:id/publish', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found.' });
+        if (lead.status !== 'live') return res.status(400).json({ success: false, message: 'Lead is not live.' });
+
+        // Find the associated User by email or phone
+        let user = null;
+        if (lead.email) user = await User.findOne({ email: lead.email.toLowerCase(), accountType: 'provider' });
+        if (!user && lead.phone) user = await User.findOne({ phone: lead.phone, accountType: 'provider' });
+        if (!user) return res.status(404).json({ success: false, message: 'Could not find the associated provider account.' });
+
+        // Find the Service for this provider
+        const service = await Service.findOne({ provider: user._id });
+        if (!service) return res.status(404).json({ success: false, message: 'Could not find the associated service.' });
+
+        // Map lead fields → service fields
+        const mappedType = SERVICE_TYPE_MAP[lead.serviceType] || lead.serviceType;
+        const validTypes = ['Haircut', 'Barber', 'Cleaning', 'Massage', 'Nails', 'Spa',
+            'Personal Training', 'Dog Walking', 'Tutoring', 'Photography',
+            'Car Detailing', 'Laundry Service', 'Other'];
+
+        const days = lead.days || [];
+        const hasWeekday = days.some(d => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(d));
+        const hasWeekend = days.some(d => ['Sat', 'Sun'].includes(d));
+        const dealPrice = lead.discountPrice;
+
+        service.providerName = lead.businessName;
+        service.serviceType = validTypes.includes(mappedType) ? mappedType : 'Other';
+        service.description = lead.description || service.description;
+        service.location = lead.city || service.location;
+        service.normalPrice = lead.price || service.normalPrice;
+        if (dealPrice != null) {
+            service.weekdayPrice = dealPrice;
+            service.weekendPrice = dealPrice;
+        }
+        service.photos = lead.photos || service.photos;
+        service.contact = lead.phone || lead.email || service.contact;
+
+        await service.save();
+
+        // Also update user name if contact name changed
+        if (lead.contactName) {
+            user.name = lead.contactName;
+            await user.save();
+        }
+
+        res.json({ success: true, message: 'Changes published to live deal.' });
+    } catch (err) {
+        console.error('Publish error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 module.exports = router;

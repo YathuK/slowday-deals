@@ -807,25 +807,214 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 }
 .lead-delete-btn:hover { color: var(--red); }
 .lead-saved-count { font-size: 13px; color: var(--text2); margin-left: auto; }
+
+/* CALL BUTTON */
+.call-btn {
+    background: rgba(34,211,160,0.15); border: 1px solid rgba(34,211,160,0.3);
+    border-radius: 8px; padding: 5px 10px; color: var(--green);
+    cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;
+    text-decoration: none; transition: all 0.15s; font-family: var(--sans);
+}
+.call-btn:hover { background: rgba(34,211,160,0.25); }
+.call-count-badge {
+    background: var(--accent); color: white; font-size: 10px; font-family: var(--mono);
+    padding: 1px 6px; border-radius: 10px; cursor: pointer; margin-left: 4px;
+}
+.call-log-row td { background: var(--surface2) !important; padding: 8px 16px !important; }
+.call-log-entry {
+    font-size: 12px; color: var(--text2); padding: 6px 0;
+    border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center;
+}
+.call-log-entry:last-child { border-bottom: none; }
+.log-call-form {
+    display: none; background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 12px; padding: 16px; margin-top: 8px; max-width: 350px;
+}
+.log-call-form input, .log-call-form textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--sans);
+    font-size: 13px; outline: none; margin-bottom: 8px;
+}
+.log-call-form textarea { height: 60px; resize: none; }
+.log-call-submit {
+    background: var(--accent); border: none; border-radius: 8px; padding: 8px 16px;
+    color: white; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans);
+}
+
+/* ASSIGNEE SELECT */
+.lead-assignee-select {
+    background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 6px; padding: 4px 8px; color: var(--text2);
+    font-family: var(--sans); font-size: 12px; cursor: pointer; outline: none; width: 130px;
+}
+
+/* SUPPORT TAB */
+.ticket-filters {
+    display: flex; gap: 4px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px; width: fit-content; margin-bottom: 24px;
+}
+.ticket-filter-btn {
+    background: none; border: none; border-radius: 9px; padding: 8px 18px;
+    color: var(--text2); font-family: var(--sans); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+}
+.ticket-filter-btn:hover { color: var(--text); }
+.ticket-filter-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.ticket-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.15s;
+}
+.ticket-card:hover { border-color: var(--border-bright); }
+.ticket-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.ticket-subject { font-weight: 600; font-size: 15px; }
+.ticket-status-pill {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; font-family: var(--mono);
+}
+.ticket-status-pill.open { background: rgba(245,200,66,0.12); color: var(--yellow); }
+.ticket-status-pill.in_progress { background: rgba(124,92,252,0.15); color: var(--accent); }
+.ticket-status-pill.resolved { background: rgba(34,211,160,0.12); color: var(--green); }
+.ticket-meta { font-size: 12px; color: var(--text3); margin-bottom: 8px; font-family: var(--mono); }
+.ticket-preview { font-size: 13px; color: var(--text2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ticket-detail {
+    background: var(--surface); border: 1px solid var(--border-bright); border-radius: 16px;
+    padding: 28px; margin-bottom: 24px;
+}
+.ticket-detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.ticket-detail-back {
+    background: var(--surface2); border: 1px solid var(--border-bright); border-radius: 8px;
+    padding: 6px 14px; color: var(--text2); cursor: pointer; font-size: 13px;
+    font-family: var(--sans); transition: color 0.15s;
+}
+.ticket-detail-back:hover { color: var(--text); }
+.ticket-detail-controls { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+.ticket-detail-controls select {
+    background: var(--surface2); border: 1px solid var(--border-bright); border-radius: 8px;
+    padding: 8px 12px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none;
+}
+.ticket-reply {
+    background: var(--surface2); border-radius: 10px; padding: 14px; margin-bottom: 10px;
+}
+.ticket-reply-author { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+.ticket-reply-date { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.ticket-reply-msg { font-size: 13px; color: var(--text); line-height: 1.5; margin-top: 6px; }
+.ticket-reply-form { margin-top: 20px; }
+.ticket-reply-form textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
+    border-radius: 10px; padding: 12px; color: var(--text); font-family: var(--sans);
+    font-size: 14px; outline: none; height: 100px; resize: none; margin-bottom: 10px; box-sizing: border-box;
+}
+.ticket-reply-submit {
+    background: linear-gradient(135deg, var(--accent), #5a3dcc); border: none; border-radius: 10px;
+    padding: 10px 24px; color: white; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: var(--sans);
+}
+
+/* EMPLOYEES TAB */
+.staff-card {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 10px; transition: border-color 0.15s;
+}
+.staff-card:hover { border-color: var(--border-bright); }
+.staff-info { display: flex; align-items: center; gap: 14px; }
+.staff-avatar {
+    width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; font-weight: 700; color: white;
+}
+.staff-name { font-weight: 600; font-size: 14px; }
+.staff-email { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+.staff-role-pill {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; font-family: var(--mono);
+}
+.staff-role-pill.super_admin { background: rgba(252,92,125,0.15); color: var(--accent2); }
+.staff-role-pill.admin { background: rgba(124,92,252,0.15); color: var(--accent); }
+.staff-role-pill.sales { background: rgba(34,211,160,0.12); color: var(--green); }
+.staff-role-pill.support { background: rgba(245,200,66,0.12); color: var(--yellow); }
+.staff-actions { display: flex; align-items: center; gap: 10px; }
+.staff-remove-btn {
+    background: none; border: none; color: var(--text3); cursor: pointer;
+    font-size: 15px; padding: 4px 8px; border-radius: 6px; transition: color 0.15s;
+}
+.staff-remove-btn:hover { color: var(--red); }
+.staff-invited-pill {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    background: rgba(255,255,255,0.06); color: var(--text3); font-family: var(--mono);
+}
+.nav-badge {
+    background: var(--accent2); color: white; font-size: 10px; font-family: var(--mono);
+    padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; margin-left: auto;
+}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
 <div id="loginScreen">
-    <div class="login-box">
+    <div class="login-box" id="loginBox">
         <div class="login-logo">
             <div class="login-logo-icon">⚡</div>
             <div class="login-logo-text">SlowDay <span>Back Office</span></div>
         </div>
-        <div class="login-title">Internal Access Only</div>
-        <div class="login-sub">Enter your admin password to continue</div>
-        <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+        <div class="login-title" id="loginTitle">Welcome Back</div>
+        <div class="login-sub" id="loginSub">Sign in to your account</div>
+        <div class="login-error" id="loginError"></div>
         <div class="login-field">
-            <label>Admin Password</label>
-            <input type="password" id="adminPass" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
         </div>
-        <button class="login-btn" onclick="doLogin()">Access Dashboard →</button>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+        <div id="setupLink" style="text-align:center;margin-top:16px;display:none;">
+            <span style="font-size:13px;color:var(--text3);cursor:pointer;" onclick="showSetupForm()">First time? Set up your admin account →</span>
+        </div>
+    </div>
+    <!-- SETUP FORM (one-time super admin creation) -->
+    <div class="login-box" id="setupBox" style="display:none;">
+        <div class="login-logo">
+            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="login-title">Create Admin Account</div>
+        <div class="login-sub">One-time setup for the super admin</div>
+        <div class="login-error" id="setupError"></div>
+        <div class="login-field">
+            <label>Your Name</label>
+            <input type="text" id="setupName" placeholder="Your full name">
+        </div>
+        <div class="login-field">
+            <label>Email</label>
+            <input type="email" id="setupEmail" placeholder="you@example.com">
+        </div>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="setupPass" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')doSetup()">
+        </div>
+        <button class="login-btn" onclick="doSetup()">Create Account →</button>
+        <div style="text-align:center;margin-top:16px;">
+            <span style="font-size:13px;color:var(--text3);cursor:pointer;" onclick="showLoginForm()">← Back to login</span>
+        </div>
+    </div>
+    <!-- INVITE ACCEPTANCE FORM -->
+    <div class="login-box" id="inviteBox" style="display:none;">
+        <div class="login-logo">
+            <div class="login-logo-icon">⚡</div>
+            <div class="login-logo-text">SlowDay <span>Back Office</span></div>
+        </div>
+        <div class="login-title">Set Your Password</div>
+        <div class="login-sub">You've been invited to join the team</div>
+        <div class="login-error" id="inviteError"></div>
+        <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="invitePass" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')doAcceptInvite()">
+        </div>
+        <div class="login-field">
+            <label>Confirm Password</label>
+            <input type="password" id="invitePass2" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')doAcceptInvite()">
+        </div>
+        <button class="login-btn" onclick="doAcceptInvite()">Activate Account →</button>
     </div>
 </div>
 
@@ -852,7 +1041,15 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
         <div class="nav-item" onclick="showPage('leads')" id="nav-leads">
             <span class="nav-icon">🎯</span> Lead Finder
         </div>
+        <div class="nav-item" onclick="showPage('support')" id="nav-support" style="display:none;">
+            <span class="nav-icon">🎫</span> Support
+            <span class="nav-badge" id="supportBadge" style="display:none;">0</span>
+        </div>
+        <div class="nav-item" onclick="showPage('employees')" id="nav-employees" style="display:none;">
+            <span class="nav-icon">👤</span> Employees
+        </div>
         <div class="sidebar-bottom">
+            <div id="staffNameDisplay" style="font-size:12px;color:var(--text2);margin-bottom:10px;padding:0 4px;"></div>
             <button class="logout-btn" onclick="doLogout()">🚪 Sign Out</button>
         </div>
     </div>
@@ -1044,10 +1241,12 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>Business Name</th>
                                 <th>Contact Name</th>
                                 <th>Phone</th>
+                                <th>Call</th>
                                 <th>Email</th>
                                 <th>City</th>
                                 <th>Service</th>
                                 <th>Status</th>
+                                <th>Assignee</th>
                                 <th>Price</th>
                                 <th>Deal Price</th>
                                 <th>Days</th>
@@ -1063,6 +1262,72 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
             </div>
         </div>
 
+        <!-- SUPPORT PAGE -->
+        <div class="page" id="page-support">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Support Tickets</div>
+                    <div class="page-sub">Manage customer help requests</div>
+                </div>
+                <button class="refresh-btn" onclick="loadTickets()">↻ Refresh</button>
+            </div>
+            <div id="supportTicketDetail" style="display:none;"></div>
+            <div id="supportTicketList">
+                <div class="ticket-filters">
+                    <button class="ticket-filter-btn active" onclick="filterTickets('')">All</button>
+                    <button class="ticket-filter-btn" onclick="filterTickets('open')">Open</button>
+                    <button class="ticket-filter-btn" onclick="filterTickets('in_progress')">In Progress</button>
+                    <button class="ticket-filter-btn" onclick="filterTickets('resolved')">Resolved</button>
+                </div>
+                <div id="ticketsList">
+                    <div class="loading"><div class="spinner"></div> Loading tickets...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPLOYEES PAGE -->
+        <div class="page" id="page-employees">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Team</div>
+                    <div class="page-sub">Manage back office employees and roles</div>
+                </div>
+                <button class="lead-search-btn" onclick="openInviteModal()">+ Invite Employee</button>
+            </div>
+            <div id="staffList">
+                <div class="loading"><div class="spinner"></div> Loading team...</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- INVITE EMPLOYEE MODAL -->
+<div class="lead-modal-overlay" id="inviteOverlay" onclick="if(event.target===this)closeInviteModal()">
+    <div class="lead-modal" style="width:420px;">
+        <div class="lead-modal-header">
+            <div class="lead-modal-title">Invite Employee</div>
+            <button class="lead-modal-close" onclick="closeInviteModal()">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Name</label>
+                <input class="lead-modal-input" id="invName" placeholder="Full name">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Email</label>
+                <input class="lead-modal-input" id="invEmail" type="email" placeholder="email@example.com">
+            </div>
+            <div class="lead-modal-field">
+                <label class="lead-modal-label">Role</label>
+                <select class="lead-modal-input" id="invRole">
+                    <option value="sales">Sales</option>
+                    <option value="support">Support</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+        </div>
+        <button class="lead-modal-submit" id="invSubmitBtn" onclick="submitInvite()">Send Invite</button>
     </div>
 </div>
 
@@ -1155,11 +1420,12 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 
 <script>
 const API_BASE = 'https://slowday-deals.onrender.com/api';
-let adminKey = sessionStorage.getItem('adminKey') || '';
+let authToken = sessionStorage.getItem('staffToken') || '';
+let currentStaff = null;
 let cachedData = null;
-
-// Auto-restore session on page load
-if (adminKey) loadData(true);
+let staffList = []; // cached staff for assignee dropdowns
+let ticketFilter = '';
+let inviteToken = null;
 
 const CATEGORY_ICONS = {
     'Haircut': '✂️', 'Barber': '💈', 'Cleaning': '🧹', 'Massage': '💆',
@@ -1168,46 +1434,204 @@ const CATEGORY_ICONS = {
     'Laundry Service': '👕', 'Other': '✨'
 };
 
-function doLogin() {
-    const pass = document.getElementById('adminPass').value.trim();
-    if (!pass) return;
-    adminKey = pass;
-    sessionStorage.setItem('adminKey', adminKey);
-    document.getElementById('loginError').style.display = 'none';
-    loadData(true);
+// Auth header helper
+function authHeaders(extra = {}) {
+    const h = { 'Content-Type': 'application/json', ...extra };
+    if (authToken) h['Authorization'] = `Bearer ${authToken}`;
+    return h;
+}
+
+// On page load: check for invite token or restore session
+(function init() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('invite')) {
+        inviteToken = params.get('invite');
+        window.history.replaceState({}, '', window.location.pathname);
+        document.getElementById('loginBox').style.display = 'none';
+        document.getElementById('inviteBox').style.display = 'block';
+    } else if (authToken) {
+        restoreSession();
+    } else {
+        checkSetupNeeded();
+    }
+})();
+
+async function checkSetupNeeded() {
+    try {
+        // Try to hit /me with no auth — if 401 and no staff exist, show setup link
+        const res = await fetch(`${API_BASE}/admin/staff`, { headers: authHeaders() });
+        // This will fail with 401, that's fine
+    } catch {}
+    // Show setup link always — the setup endpoint itself checks if staff exist
+    document.getElementById('setupLink').style.display = 'block';
+}
+
+function showSetupForm() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('setupBox').style.display = 'block';
+}
+function showLoginForm() {
+    document.getElementById('setupBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+}
+
+async function doSetup() {
+    const name = document.getElementById('setupName').value.trim();
+    const email = document.getElementById('setupEmail').value.trim();
+    const password = document.getElementById('setupPass').value;
+    if (!name || !email || !password) {
+        showError('setupError', 'All fields are required.');
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/admin/setup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!data.success) { showError('setupError', data.message); return; }
+        authToken = data.token;
+        sessionStorage.setItem('staffToken', authToken);
+        currentStaff = data.staff;
+        enterDashboard();
+    } catch (err) {
+        showError('setupError', 'Connection error. Try again.');
+    }
+}
+
+async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPass').value;
+    if (!email || !password) { showError('loginError', 'Email and password are required.'); return; }
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+        const res = await fetch(`${API_BASE}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!data.success) { showError('loginError', data.message); return; }
+        authToken = data.token;
+        sessionStorage.setItem('staffToken', authToken);
+        currentStaff = data.staff;
+        enterDashboard();
+    } catch (err) {
+        showError('loginError', 'Connection error. Check API URL.');
+    } finally {
+        btn.disabled = false; btn.textContent = 'Sign In →';
+    }
+}
+
+async function doAcceptInvite() {
+    const pass = document.getElementById('invitePass').value;
+    const pass2 = document.getElementById('invitePass2').value;
+    if (!pass || pass.length < 6) { showError('inviteError', 'Password must be at least 6 characters.'); return; }
+    if (pass !== pass2) { showError('inviteError', 'Passwords do not match.'); return; }
+    try {
+        const res = await fetch(`${API_BASE}/admin/staff/accept-invite`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: inviteToken, password: pass })
+        });
+        const data = await res.json();
+        if (!data.success) { showError('inviteError', data.message); return; }
+        authToken = data.token;
+        sessionStorage.setItem('staffToken', authToken);
+        currentStaff = data.staff;
+        enterDashboard();
+    } catch (err) {
+        showError('inviteError', 'Connection error. Try again.');
+    }
+}
+
+async function restoreSession() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/me`, { headers: authHeaders() });
+        if (!res.ok) { doLogout(); return; }
+        const data = await res.json();
+        if (!data.success) { doLogout(); return; }
+        currentStaff = data.staff;
+        enterDashboard();
+    } catch {
+        doLogout();
+    }
+}
+
+function enterDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderSidebar();
+    loadData();
+    loadStaffList();
 }
 
 function doLogout() {
-    adminKey = '';
+    authToken = '';
+    currentStaff = null;
     cachedData = null;
-    sessionStorage.removeItem('adminKey');
+    staffList = [];
+    sessionStorage.removeItem('staffToken');
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('adminPass').value = '';
+    document.getElementById('loginBox').style.display = 'block';
+    document.getElementById('setupBox').style.display = 'none';
+    document.getElementById('inviteBox').style.display = 'none';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').style.display = 'none';
+}
+
+function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+// Role-based sidebar
+function renderSidebar() {
+    if (!currentStaff) return;
+    const role = currentStaff.role;
+    const tabs = {
+        overview: ['super_admin','admin'],
+        categories: ['super_admin','admin'],
+        users: ['super_admin','admin'],
+        bookings: ['super_admin','admin'],
+        leads: ['super_admin','admin','sales'],
+        support: ['super_admin','admin','support'],
+        employees: ['super_admin','admin']
+    };
+    Object.entries(tabs).forEach(([tab, roles]) => {
+        const el = document.getElementById(`nav-${tab}`);
+        if (el) el.style.display = roles.includes(role) ? 'flex' : 'none';
+    });
+    // Show first visible tab
+    const firstTab = Object.entries(tabs).find(([t, roles]) => roles.includes(role));
+    if (firstTab) showPage(firstTab[0]);
+    // Display staff name
+    document.getElementById('staffNameDisplay').textContent = currentStaff.name || currentStaff.email || '';
+}
+
+async function loadStaffList() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/staff`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success) staffList = data.staff || [];
+    } catch { /* silent — sales users may not have access */ }
 }
 
 async function loadData(isLogin = false) {
     try {
-        const res = await fetch(`${API_BASE}/admin/analytics`, {
-            headers: { 'x-admin-key': adminKey }
-        });
-        if (res.status === 401) {
-            sessionStorage.removeItem('adminKey');
-            document.getElementById('loginError').style.display = 'block';
-            return;
-        }
+        const res = await fetch(`${API_BASE}/admin/analytics`, { headers: authHeaders() });
+        if (res.status === 401) { doLogout(); return; }
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
         cachedData = data;
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
         renderAll(data);
     } catch (err) {
         console.error(err);
-        if (isLogin) {
-            document.getElementById('loginError').style.display = 'block';
-            document.getElementById('loginError').textContent = 'Connection error. Check API URL.';
-        }
     }
 }
 
@@ -1496,9 +1920,13 @@ function toggleCat(id) {
 function showPage(name) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`page-${name}`).classList.add('active');
-    document.getElementById(`nav-${name}`).classList.add('active');
+    const page = document.getElementById(`page-${name}`);
+    const nav = document.getElementById(`nav-${name}`);
+    if (page) page.classList.add('active');
+    if (nav) nav.classList.add('active');
     if (name === 'leads') refreshSavedBadge();
+    if (name === 'support') loadTickets();
+    if (name === 'employees') loadEmployees();
 }
 
 // ── LEAD FINDER / CRM ────────────────────────────────────────────────────────
@@ -1558,7 +1986,7 @@ async function searchLeads() {
         industries.forEach(i => params.append('industries', i));
 
         const res = await fetch(`${API_BASE}/admin/leads?${params}`, {
-            headers: { 'x-admin-key': adminKey }
+            headers: authHeaders()
         });
         const data = await res.json();
 
@@ -1610,7 +2038,7 @@ async function scrapeEmails() {
     try {
         const res = await fetch(`${API_BASE}/admin/leads/scrape-emails`, {
             method: 'POST',
-            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({ websites })
         });
         const data = await res.json();
@@ -1638,7 +2066,7 @@ async function saveLeadsToDb() {
     try {
         const res = await fetch(`${API_BASE}/admin/leads/save`, {
             method: 'POST',
-            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({ leads: leadsData, city })
         });
         const data = await res.json();
@@ -1656,7 +2084,7 @@ async function saveLeadsToDb() {
 
 async function refreshSavedBadge() {
     try {
-        const res = await fetch(`${API_BASE}/admin/leads/saved`, { headers: { 'x-admin-key': adminKey } });
+        const res = await fetch(`${API_BASE}/admin/leads/saved`, { headers: authHeaders() });
         const data = await res.json();
         if (data.success) {
             const badge = document.getElementById('leadSavedBadge');
@@ -1677,7 +2105,7 @@ async function loadSavedLeads() {
         if (city)    params.set('city', city);
         if (service) params.set('serviceType', service);
         const res = await fetch(`${API_BASE}/admin/leads/saved?${params}`, {
-            headers: { 'x-admin-key': adminKey }
+            headers: authHeaders()
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
@@ -1699,14 +2127,17 @@ function renderSavedLeads(leads) {
     const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const tbody = document.getElementById('savedLeadsBody');
     if (!leads.length) {
-        tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:40px;color:var(--text3);">No leads found. Use the Search tab to find and save businesses.</td></tr>`;
         return;
     }
+    const assigneeOptions = staffList.map(s => `<option value="${s._id}">${esc(s.name)}</option>`).join('');
     tbody.innerHTML = leads.map((l, i) => {
         const activeDays = new Set(l.days || []);
         const dayChips = DAYS.map(d =>
             `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}" onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')">${d}</span>`
         ).join('');
+        const assigneeId = l.assignee ? (l.assignee._id || l.assignee) : '';
+        const cleanPhone = (l.phone || '').replace(/[^+\d]/g, '');
         return `
         <tr id="srow-${esc(l._id)}">
             <td>${i + 1}</td>
@@ -1714,6 +2145,7 @@ function renderSavedLeads(leads) {
             <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
                 onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
             <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
+            <td>${cleanPhone ? `<a href="tel:${cleanPhone}" class="call-btn" onclick="promptCallLog('${esc(l._id)}')">📞</a><span class="call-count-badge" id="ccb-${esc(l._id)}" onclick="toggleCallHistory('${esc(l._id)}')" style="display:none">0</span><div class="log-call-form" id="lcf-${esc(l._id)}"><input type="number" placeholder="Duration (minutes)" id="lcd-${esc(l._id)}"><textarea placeholder="Call notes…" id="lcn-${esc(l._id)}"></textarea><button class="log-call-submit" onclick="saveCallLog('${esc(l._id)}')">Save Call Log</button></div>` : ''}</td>
             <td class="lead-email"><input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
                 onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;"></td>
             <td class="lead-addr" style="font-size:12px;color:var(--text2);">${esc(l.city || '')}</td>
@@ -1721,6 +2153,12 @@ function renderSavedLeads(leads) {
             <td>
                 <select class="lead-status-select s-${esc(l.status)}" onchange="updateLeadField('${esc(l._id)}','status',this.value);this.className='lead-status-select s-'+this.value">
                     ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
+                </select>
+            </td>
+            <td>
+                <select class="lead-assignee-select" onchange="updateLeadField('${esc(l._id)}','assignee',this.value)">
+                    <option value="">Unassigned</option>
+                    ${assigneeOptions.replace(`value="${assigneeId}"`, `value="${assigneeId}" selected`)}
                 </select>
             </td>
             <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.price != null ? l.price : ''}"
@@ -1733,13 +2171,15 @@ function renderSavedLeads(leads) {
             <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
         </tr>`;
     }).join('');
+    // Load call counts
+    leads.forEach(l => loadCallCount(l._id));
 }
 
 async function updateLeadField(id, field, value) {
     try {
         await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
             method: 'PATCH',
-            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({ [field]: value })
         });
     } catch { /* silent — UI already updated */ }
@@ -1801,7 +2241,7 @@ async function submitManualLead() {
     try {
         const res = await fetch(`${API_BASE}/admin/leads/save`, {
             method: 'POST',
-            headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+            headers: authHeaders(),
             body: JSON.stringify({ leads: [lead], city: lead.city })
         });
         const data = await res.json();
@@ -1821,7 +2261,7 @@ async function deleteLead(id, btn) {
     try {
         const res = await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
             method: 'DELETE',
-            headers: { 'x-admin-key': adminKey }
+            headers: authHeaders()
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
@@ -1858,6 +2298,331 @@ function exportLeadsCSV() {
     a.download = `slowday_leads_${city}_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+// ── CALL LOGGING ────────────────────────────────────────────────────────────
+
+function promptCallLog(leadId) {
+    const form = document.getElementById(`lcf-${leadId}`);
+    if (form) form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveCallLog(leadId) {
+    const dur = document.getElementById(`lcd-${leadId}`);
+    const notes = document.getElementById(`lcn-${leadId}`);
+    try {
+        await fetch(`${API_BASE}/admin/call-logs`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({
+                leadId,
+                startedAt: new Date().toISOString(),
+                duration: (parseFloat(dur.value) || 0) * 60,
+                notes: notes.value.trim()
+            })
+        });
+        dur.value = '';
+        notes.value = '';
+        document.getElementById(`lcf-${leadId}`).style.display = 'none';
+        loadCallCount(leadId);
+    } catch (err) {
+        alert('Failed to save call log: ' + err.message);
+    }
+}
+
+async function loadCallCount(leadId) {
+    try {
+        const res = await fetch(`${API_BASE}/admin/call-logs/${leadId}`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success && data.callLogs.length) {
+            const badge = document.getElementById(`ccb-${leadId}`);
+            if (badge) {
+                badge.textContent = data.callLogs.length;
+                badge.style.display = 'inline-block';
+            }
+        }
+    } catch {}
+}
+
+async function toggleCallHistory(leadId) {
+    const existingRow = document.getElementById(`callhist-${leadId}`);
+    if (existingRow) { existingRow.remove(); return; }
+    try {
+        const res = await fetch(`${API_BASE}/admin/call-logs/${leadId}`, { headers: authHeaders() });
+        const data = await res.json();
+        if (!data.success || !data.callLogs.length) return;
+        const row = document.getElementById(`srow-${leadId}`);
+        if (!row) return;
+        const histRow = document.createElement('tr');
+        histRow.id = `callhist-${leadId}`;
+        histRow.className = 'call-log-row';
+        histRow.innerHTML = `<td colspan="15" style="padding:12px 20px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Call History (${data.callLogs.length})</div>
+            ${data.callLogs.map(c => {
+                const d = new Date(c.startedAt);
+                const mins = Math.round((c.duration || 0) / 60);
+                return `<div class="call-log-entry">
+                    <span style="color:var(--text3);font-family:var(--mono);min-width:140px;">${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+                    <span style="color:var(--accent);min-width:60px;">${mins}m</span>
+                    <span style="color:var(--green);min-width:100px;">${esc(c.callerName)}</span>
+                    <span style="flex:1;">${esc(c.notes)}</span>
+                </div>`;
+            }).join('')}
+        </td>`;
+        row.after(histRow);
+    } catch {}
+}
+
+// ── SUPPORT TICKETS ─────────────────────────────────────────────────────────
+
+let allTickets = [];
+
+function filterTickets(status) {
+    ticketFilter = status;
+    document.querySelectorAll('.ticket-filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTicketList();
+}
+
+async function loadTickets() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/support/tickets`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success) {
+            allTickets = data.tickets || [];
+            renderTicketList();
+            // Update badge
+            const openCount = allTickets.filter(t => t.status !== 'resolved').length;
+            const badge = document.getElementById('supportBadge');
+            badge.textContent = openCount;
+            badge.style.display = openCount ? 'inline-block' : 'none';
+        }
+    } catch (err) {
+        document.getElementById('ticketsList').innerHTML = `<div style="color:var(--red);padding:20px;">Failed to load tickets: ${err.message}</div>`;
+    }
+}
+
+function renderTicketList() {
+    const filtered = ticketFilter ? allTickets.filter(t => t.status === ticketFilter) : allTickets;
+    const container = document.getElementById('ticketsList');
+    if (!filtered.length) {
+        container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">No tickets found.</div>`;
+        return;
+    }
+    container.innerHTML = filtered.map(t => {
+        const d = new Date(t.createdAt);
+        return `
+        <div class="ticket-card" onclick="showTicketDetail('${t._id}')">
+            <div class="ticket-card-header">
+                <div class="ticket-subject">${esc(t.subject)}</div>
+                <span class="ticket-status-pill ${t.status}">${t.status === 'in_progress' ? 'In Progress' : t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span>
+            </div>
+            <div class="ticket-meta">#${t._id.slice(-8).toUpperCase()} &middot; ${esc(t.userName)} &middot; ${esc(t.userEmail)} &middot; ${d.toLocaleDateString()}</div>
+            <div class="ticket-preview">${esc(t.message)}</div>
+        </div>`;
+    }).join('');
+}
+
+async function showTicketDetail(id) {
+    const ticket = allTickets.find(t => t._id === id);
+    if (!ticket) return;
+    document.getElementById('supportTicketList').style.display = 'none';
+    const detail = document.getElementById('supportTicketDetail');
+    detail.style.display = 'block';
+    const d = new Date(ticket.createdAt);
+    const assigneeOptions = staffList.filter(s => ['super_admin','admin','support'].includes(s.role))
+        .map(s => `<option value="${s._id}" ${(ticket.assignedTo && (ticket.assignedTo._id || ticket.assignedTo) === s._id) ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
+
+    detail.innerHTML = `
+    <button class="ticket-detail-back" onclick="closeTicketDetail()">← Back to list</button>
+    <div class="ticket-detail" style="margin-top:16px;">
+        <div class="ticket-detail-header">
+            <div>
+                <div style="font-size:20px;font-weight:700;margin-bottom:4px;">${esc(ticket.subject)}</div>
+                <div class="ticket-meta">#${ticket._id.slice(-8).toUpperCase()} &middot; ${esc(ticket.userName)} &middot; <a href="mailto:${esc(ticket.userEmail)}" style="color:var(--accent);">${esc(ticket.userEmail)}</a> &middot; ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+            <span class="ticket-status-pill ${ticket.status}">${ticket.status === 'in_progress' ? 'In Progress' : ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}</span>
+        </div>
+        <div class="ticket-detail-controls">
+            <select onchange="updateTicket('${ticket._id}','status',this.value)">
+                <option value="open" ${ticket.status==='open'?'selected':''}>Open</option>
+                <option value="in_progress" ${ticket.status==='in_progress'?'selected':''}>In Progress</option>
+                <option value="resolved" ${ticket.status==='resolved'?'selected':''}>Resolved</option>
+            </select>
+            <select onchange="updateTicket('${ticket._id}','assignedTo',this.value)">
+                <option value="">Unassigned</option>
+                ${assigneeOptions}
+            </select>
+        </div>
+        <div style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:20px;">
+            <div style="font-size:12px;font-weight:600;color:var(--yellow);margin-bottom:6px;">Customer Message</div>
+            <div style="font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${esc(ticket.message)}</div>
+        </div>
+        ${(ticket.replies || []).map(r => {
+            const rd = new Date(r.createdAt);
+            return `<div class="ticket-reply">
+                <div class="ticket-reply-author">${esc(r.staffName)} <span class="ticket-reply-date">${rd.toLocaleDateString()} ${rd.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></div>
+                <div class="ticket-reply-msg">${esc(r.message)}</div>
+            </div>`;
+        }).join('')}
+        <div class="ticket-reply-form">
+            <textarea id="replyMsg" placeholder="Type your reply…"></textarea>
+            <button class="ticket-reply-submit" onclick="submitReply('${ticket._id}')">Send Reply</button>
+        </div>
+    </div>`;
+}
+
+function closeTicketDetail() {
+    document.getElementById('supportTicketDetail').style.display = 'none';
+    document.getElementById('supportTicketList').style.display = 'block';
+}
+
+async function updateTicket(id, field, value) {
+    try {
+        await fetch(`${API_BASE}/admin/support/tickets/${id}`, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ [field]: value })
+        });
+        loadTickets();
+    } catch {}
+}
+
+async function submitReply(ticketId) {
+    const msg = document.getElementById('replyMsg').value.trim();
+    if (!msg) return;
+    try {
+        const res = await fetch(`${API_BASE}/admin/support/tickets/${ticketId}/reply`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // Update local ticket data
+            const idx = allTickets.findIndex(t => t._id === ticketId);
+            if (idx >= 0) allTickets[idx] = data.ticket;
+            showTicketDetail(ticketId);
+        }
+    } catch (err) {
+        alert('Failed to send reply: ' + err.message);
+    }
+}
+
+// ── EMPLOYEES ───────────────────────────────────────────────────────────────
+
+async function loadEmployees() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/staff`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.success) {
+            staffList = data.staff || [];
+            renderEmployees(staffList);
+        }
+    } catch (err) {
+        document.getElementById('staffList').innerHTML = `<div style="color:var(--red);padding:20px;">Failed to load team: ${err.message}</div>`;
+    }
+}
+
+const ROLE_COLORS = { super_admin: '#fc5c7d', admin: '#7c5cfc', sales: '#22d3a0', support: '#f5c842' };
+const ROLE_LABELS = { super_admin: 'Super Admin', admin: 'Admin', sales: 'Sales', support: 'Support' };
+
+function renderEmployees(staff) {
+    const container = document.getElementById('staffList');
+    if (!staff.length) {
+        container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text3);">No team members yet. Invite your first employee.</div>`;
+        return;
+    }
+    container.innerHTML = staff.map(s => {
+        const initial = (s.name || s.email || '?')[0].toUpperCase();
+        const color = ROLE_COLORS[s.role] || '#7c5cfc';
+        const isPending = !!s.inviteExpires && !s.lastLogin;
+        const isSuperAdmin = s.role === 'super_admin';
+        const canDelete = currentStaff && currentStaff.role === 'super_admin' && !isSuperAdmin;
+        const canChangeRole = currentStaff && currentStaff.role === 'super_admin' && !isSuperAdmin;
+        const lastLogin = s.lastLogin ? new Date(s.lastLogin).toLocaleDateString() : 'Never';
+
+        return `
+        <div class="staff-card">
+            <div class="staff-info">
+                <div class="staff-avatar" style="background:${color}33;color:${color};">${initial}</div>
+                <div>
+                    <div class="staff-name">${esc(s.name)} ${isSuperAdmin ? '<span style="font-size:11px;color:var(--accent2);">(Owner)</span>' : ''}</div>
+                    <div class="staff-email">${esc(s.email)}</div>
+                </div>
+            </div>
+            <div class="staff-actions">
+                ${isPending ? '<span class="staff-invited-pill">Invited</span>' : `<span style="font-size:11px;color:var(--text3);font-family:var(--mono);">Last: ${lastLogin}</span>`}
+                ${canChangeRole ? `
+                <select class="lead-assignee-select" onchange="changeStaffRole('${s._id}',this.value)" style="width:110px;">
+                    ${['admin','sales','support'].map(r => `<option value="${r}" ${s.role===r?'selected':''}>${ROLE_LABELS[r]}</option>`).join('')}
+                </select>` : `<span class="staff-role-pill ${s.role}">${ROLE_LABELS[s.role]}</span>`}
+                ${canDelete ? `<button class="staff-remove-btn" onclick="removeStaff('${s._id}','${esc(s.name)}')" title="Remove">✕</button>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openInviteModal() {
+    document.getElementById('invName').value = '';
+    document.getElementById('invEmail').value = '';
+    document.getElementById('invRole').value = 'sales';
+    document.getElementById('invSubmitBtn').disabled = false;
+    document.getElementById('invSubmitBtn').textContent = 'Send Invite';
+    document.getElementById('inviteOverlay').classList.add('open');
+}
+
+function closeInviteModal() {
+    document.getElementById('inviteOverlay').classList.remove('open');
+}
+
+async function submitInvite() {
+    const name = document.getElementById('invName').value.trim();
+    const email = document.getElementById('invEmail').value.trim();
+    const role = document.getElementById('invRole').value;
+    if (!name || !email) { alert('Name and email are required.'); return; }
+    const btn = document.getElementById('invSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+        const res = await fetch(`${API_BASE}/admin/staff/invite`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ name, email, role })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        closeInviteModal();
+        loadEmployees();
+    } catch (err) {
+        alert('Invite failed: ' + err.message);
+        btn.disabled = false; btn.textContent = 'Send Invite';
+    }
+}
+
+async function changeStaffRole(id, role) {
+    try {
+        await fetch(`${API_BASE}/admin/staff/${id}`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ role })
+        });
+        loadEmployees();
+    } catch {}
+}
+
+async function removeStaff(id, name) {
+    if (!confirm(`Remove ${name} from the team?`)) return;
+    try {
+        const res = await fetch(`${API_BASE}/admin/staff/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        loadEmployees();
+    } catch (err) {
+        alert('Failed to remove: ' + err.message);
+    }
 }
 </script>
 </body>

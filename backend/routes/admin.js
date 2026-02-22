@@ -2,10 +2,26 @@ const express = require('express');
 const router = express.Router();
 const https = require('https');
 const http = require('http');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Service = require('../models/Service');
 const Booking = require('../models/Booking');
 const Lead = require('../models/Lead');
+const Staff = require('../models/Staff');
+const CallLog = require('../models/CallLog');
+const SupportTicket = require('../models/SupportTicket');
+const { staffAuth, requireRole } = require('../middleware/adminAuth');
+const sgMail = require('@sendgrid/mail');
+if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const ADMIN_URL = process.env.ADMIN_URL || 'https://yathuk.github.io/slowday-deals/frontend/admin';
+const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@slowdaydeals.com';
+
+// Generate staff JWT
+function generateStaffToken(staffId) {
+    return jwt.sign({ staffId, type: 'staff' }, process.env.JWT_SECRET, { expiresIn: '30d' });
+}
 
 // ── Lead Finder helpers ──────────────────────────────────────────────────────
 
@@ -61,7 +77,6 @@ async function getPlaceLeads(industry, city, apiKey) {
     const query = encodeURIComponent(`${industry} in ${city}`);
     const places = [];
 
-    // Paginate through up to 3 pages (max 60 results from Google)
     let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`;
     for (let page = 0; page < 3; page++) {
         const data = await gFetch(url);
@@ -71,12 +86,10 @@ async function getPlaceLeads(industry, city, apiKey) {
         }
         places.push(...(data.results || []));
         if (!data.next_page_token) break;
-        // Google requires a short delay before the next_page_token becomes valid
         await sleep(2000);
         url = `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${data.next_page_token}&key=${apiKey}`;
     }
 
-    // Fetch all place details in parallel — no website scraping here
     const leads = await Promise.all(places.map(async place => {
         try {
             const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website&key=${apiKey}`;
@@ -104,21 +117,233 @@ async function getPlaceLeads(industry, city, apiKey) {
     return leads;
 }
 
-// Simple hardcoded admin auth - replace with env var in production
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'slowday-internal-2024';
+// ══════════════════════════════════════════════════════════════════════════════
+// STAFF AUTH ROUTES
+// ══════════════════════════════════════════════════════════════════════════════
 
-// Admin auth middleware
-const adminAuth = (req, res, next) => {
-    const key = req.headers['x-admin-key'] || req.query.key;
-    if (key !== ADMIN_PASSWORD) {
-        return res.status(401).json({ success: false, message: 'Unauthorized' });
+// @route POST /api/admin/setup
+// @desc  One-time super_admin account creation (only works if zero staff exist)
+router.post('/setup', async (req, res) => {
+    try {
+        const count = await Staff.countDocuments();
+        if (count > 0) {
+            return res.status(400).json({ success: false, message: 'Setup already completed. Staff accounts exist.' });
+        }
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+        const staff = new Staff({ name, email, password, role: 'super_admin' });
+        await staff.save();
+        const token = generateStaffToken(staff._id);
+        staff.lastLogin = new Date();
+        await staff.save();
+        res.status(201).json({ success: true, message: 'Super admin account created.', token, staff });
+    } catch (err) {
+        console.error('Setup error:', err);
+        res.status(500).json({ success: false, message: err.message });
     }
-    next();
-};
+});
+
+// @route POST /api/admin/login
+// @desc  Staff email/password login
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Email and password are required.' });
+        }
+        const staff = await Staff.findOne({ email: email.toLowerCase() });
+        if (!staff || !staff.isActive) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+        }
+        if (!staff.password) {
+            return res.status(401).json({ success: false, message: 'Please accept your invite first to set a password.' });
+        }
+        const isMatch = await staff.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+        }
+        staff.lastLogin = new Date();
+        await staff.save();
+        const token = generateStaffToken(staff._id);
+        res.json({ success: true, token, staff });
+    } catch (err) {
+        console.error('Staff login error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route GET /api/admin/me
+// @desc  Get current staff profile
+router.get('/me', staffAuth, (req, res) => {
+    if (req.staff.legacy) {
+        return res.json({ success: true, staff: { name: 'Admin', role: 'super_admin', legacy: true } });
+    }
+    res.json({ success: true, staff: req.staff });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EMPLOYEE MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/staff
+// @desc  List all staff members
+router.get('/staff', staffAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const staff = await Staff.find().sort({ createdAt: 1 });
+        res.json({ success: true, staff });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/staff/invite
+// @desc  Invite a new employee via email
+router.post('/staff/invite', staffAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const { email, name, role } = req.body;
+        if (!email || !name || !role) {
+            return res.status(400).json({ success: false, message: 'Email, name, and role are required.' });
+        }
+        if (!['admin', 'sales', 'support'].includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role. Must be admin, sales, or support.' });
+        }
+        // Only super_admin can invite admins
+        if (role === 'admin' && req.staff.role !== 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Only the super admin can invite admin users.' });
+        }
+        const existing = await Staff.findOne({ email: email.toLowerCase() });
+        if (existing) {
+            return res.status(400).json({ success: false, message: 'A staff member with this email already exists.' });
+        }
+
+        const inviteToken = crypto.randomBytes(32).toString('hex');
+        const staff = new Staff({
+            name,
+            email: email.toLowerCase(),
+            role,
+            inviteToken,
+            inviteExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            invitedBy: req.staff._id || null
+        });
+        await staff.save();
+
+        // Send invite email
+        const inviteUrl = `${ADMIN_URL}?invite=${inviteToken}`;
+        if (process.env.SENDGRID_API_KEY) {
+            await sgMail.send({
+                to: email,
+                from: { email: FROM_EMAIL, name: 'SlowDay Deals' },
+                subject: 'You\'re Invited to SlowDay Deals Back Office',
+                html: `
+<div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
+    <div style="text-align:center;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#667eea,#764ba2);width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">⚡</div>
+    </div>
+    <h2 style="color:#1a1a2e;margin-bottom:8px;">You're Invited!</h2>
+    <p style="color:#666;line-height:1.6;margin-bottom:24px;">Hi ${name}, you've been invited to join the SlowDay Deals back office as <strong>${role}</strong>. Click the button below to set your password and get started.</p>
+    <a href="${inviteUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:14px 24px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;margin-bottom:24px;">Accept Invite</a>
+    <p style="color:#999;font-size:13px;text-align:center;">This invite expires in <strong>7 days</strong>.</p>
+    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+    <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals</p>
+</div>`
+            });
+        }
+
+        res.status(201).json({ success: true, message: `Invite sent to ${email}`, staff });
+    } catch (err) {
+        console.error('Invite error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/staff/accept-invite
+// @desc  Accept invite and set password (public — no auth required)
+router.post('/staff/accept-invite', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        if (!token || !password) {
+            return res.status(400).json({ success: false, message: 'Token and password are required.' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+        const staff = await Staff.findOne({
+            inviteToken: token,
+            inviteExpires: { $gt: new Date() }
+        });
+        if (!staff) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired invite link.' });
+        }
+        staff.password = password;
+        staff.inviteToken = null;
+        staff.inviteExpires = null;
+        staff.lastLogin = new Date();
+        await staff.save();
+
+        const jwtToken = generateStaffToken(staff._id);
+        res.json({ success: true, message: 'Account activated!', token: jwtToken, staff });
+    } catch (err) {
+        console.error('Accept invite error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route PUT /api/admin/staff/:id
+// @desc  Update staff role
+router.put('/staff/:id', staffAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const target = await Staff.findById(req.params.id);
+        if (!target) return res.status(404).json({ success: false, message: 'Staff not found' });
+        if (target.role === 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot modify the super admin.' });
+        }
+        // Only super_admin can change roles
+        if (req.staff.role !== 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Only the super admin can change roles.' });
+        }
+        const { role } = req.body;
+        if (role && ['admin', 'sales', 'support'].includes(role)) {
+            target.role = role;
+        }
+        await target.save();
+        res.json({ success: true, staff: target });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route DELETE /api/admin/staff/:id
+// @desc  Deactivate/remove staff member
+router.delete('/staff/:id', staffAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const target = await Staff.findById(req.params.id);
+        if (!target) return res.status(404).json({ success: false, message: 'Staff not found' });
+        if (target.role === 'super_admin') {
+            return res.status(403).json({ success: false, message: 'Cannot remove the super admin.' });
+        }
+        // Admin can only remove sales/support, not other admins
+        if (req.staff.role === 'admin' && target.role === 'admin') {
+            return res.status(403).json({ success: false, message: 'Admins cannot remove other admins.' });
+        }
+        await Staff.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Staff member removed.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ANALYTICS (existing)
+// ══════════════════════════════════════════════════════════════════════════════
 
 // @route GET /api/admin/analytics
 // @desc  Full analytics for back office
-router.get('/analytics', adminAuth, async (req, res) => {
+router.get('/analytics', staffAuth, async (req, res) => {
     try {
         const now = new Date();
         const startOfDay = new Date(now); startOfDay.setHours(0,0,0,0);
@@ -146,7 +371,6 @@ router.get('/analytics', adminAuth, async (req, res) => {
             const cat = svc.serviceType || 'Other';
             if (!categoryMap[cat]) categoryMap[cat] = [];
 
-            // Build availability slot rows
             const slots = [];
             if (svc.availabilityWindows && svc.availabilityWindows.length > 0) {
                 for (const w of svc.availabilityWindows) {
@@ -165,7 +389,6 @@ router.get('/analytics', adminAuth, async (req, res) => {
                     });
                 }
             } else {
-                // No windows - show weekday/weekend summary
                 slots.push({
                     day: 'Weekdays',
                     startTime: '-', endTime: '-', duration: '-',
@@ -202,7 +425,6 @@ router.get('/analytics', adminAuth, async (req, res) => {
         const bookingsToday = await Booking.countDocuments({ createdAt: { $gte: startOfDay } });
         const bookingsWeek = await Booking.countDocuments({ createdAt: { $gte: startOfWeek } });
 
-        // Revenue stats
         const revenueData = await Booking.aggregate([
             { $match: { status: { $in: ['confirmed', 'completed'] } } },
             { $group: { _id: null, total: { $sum: '$price' }, totalSaved: { $sum: '$savedAmount' } } }
@@ -223,9 +445,13 @@ router.get('/analytics', adminAuth, async (req, res) => {
     }
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// LEAD FINDER (existing + enhancements)
+// ══════════════════════════════════════════════════════════════════════════════
+
 // @route GET /api/admin/leads
-// @desc  Google Places lead finder — returns businesses by city + industries
-router.get('/leads', adminAuth, async (req, res) => {
+// @desc  Google Places lead finder
+router.get('/leads', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     const { city, industries } = req.query;
     if (!city) return res.status(400).json({ success: false, message: 'city is required' });
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -248,8 +474,7 @@ router.get('/leads', adminAuth, async (req, res) => {
 });
 
 // @route POST /api/admin/leads/save
-// @desc  Persist search results to the Lead CRM
-router.post('/leads/save', adminAuth, async (req, res) => {
+router.post('/leads/save', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     const { leads, city } = req.body;
     if (!Array.isArray(leads) || !leads.length) {
         return res.status(400).json({ success: false, message: 'leads array is required' });
@@ -278,9 +503,8 @@ router.post('/leads/save', adminAuth, async (req, res) => {
 });
 
 // @route POST /api/admin/leads/scrape-emails
-// @desc  Scrape emails from an array of websites — called separately after search
-router.post('/leads/scrape-emails', adminAuth, async (req, res) => {
-    const { websites } = req.body; // array of URL strings, one per lead
+router.post('/leads/scrape-emails', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    const { websites } = req.body;
     if (!Array.isArray(websites)) {
         return res.status(400).json({ success: false, message: 'websites array is required' });
     }
@@ -297,14 +521,14 @@ router.post('/leads/scrape-emails', adminAuth, async (req, res) => {
 });
 
 // @route GET /api/admin/leads/saved
-// @desc  Fetch all saved leads (optional query filters: status, city, serviceType)
-router.get('/leads/saved', adminAuth, async (req, res) => {
+router.get('/leads/saved', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     try {
         const filter = {};
         if (req.query.status)      filter.status      = req.query.status;
         if (req.query.city)        filter.city        = new RegExp(req.query.city, 'i');
         if (req.query.serviceType) filter.serviceType = req.query.serviceType;
-        const leads = await Lead.find(filter).sort({ createdAt: -1 });
+        if (req.query.assignee)    filter.assignee    = req.query.assignee;
+        const leads = await Lead.find(filter).populate('assignee', 'name email').sort({ createdAt: -1 });
         res.json({ success: true, total: leads.length, leads });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -312,10 +536,9 @@ router.get('/leads/saved', adminAuth, async (req, res) => {
 });
 
 // @route PATCH /api/admin/leads/saved/:id
-// @desc  Update status, contactName, or notes on a saved lead
-router.patch('/leads/saved/:id', adminAuth, async (req, res) => {
+router.patch('/leads/saved/:id', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     try {
-        const { status, contactName, email, notes, price, discountPrice, days } = req.body;
+        const { status, contactName, email, notes, price, discountPrice, days, assignee } = req.body;
         const update = {};
         if (status        !== undefined) update.status        = status;
         if (contactName   !== undefined) update.contactName   = contactName;
@@ -324,7 +547,8 @@ router.patch('/leads/saved/:id', adminAuth, async (req, res) => {
         if (price         !== undefined) update.price         = price;
         if (discountPrice !== undefined) update.discountPrice = discountPrice;
         if (days          !== undefined) update.days          = days;
-        const lead = await Lead.findByIdAndUpdate(req.params.id, update, { new: true });
+        if (assignee      !== undefined) update.assignee      = assignee || null;
+        const lead = await Lead.findByIdAndUpdate(req.params.id, update, { new: true }).populate('assignee', 'name email');
         if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
         res.json({ success: true, lead });
     } catch (err) {
@@ -333,12 +557,138 @@ router.patch('/leads/saved/:id', adminAuth, async (req, res) => {
 });
 
 // @route DELETE /api/admin/leads/saved/:id
-// @desc  Delete a saved lead
-router.delete('/leads/saved/:id', adminAuth, async (req, res) => {
+router.delete('/leads/saved/:id', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     try {
         const lead = await Lead.findByIdAndDelete(req.params.id);
         if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
         res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CALL LOGS
+// ══════════════════════════════════════════════════════════════════════════════
+
+// @route POST /api/admin/call-logs
+// @desc  Log a call for a lead
+router.post('/call-logs', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const { leadId, startedAt, duration, notes } = req.body;
+        if (!leadId) return res.status(400).json({ success: false, message: 'leadId is required' });
+        const lead = await Lead.findById(leadId);
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+        const log = await CallLog.create({
+            lead: leadId,
+            caller: req.staff._id,
+            callerName: req.staff.name || 'Admin',
+            startedAt: startedAt || new Date(),
+            duration: duration || 0,
+            notes: notes || ''
+        });
+        res.status(201).json({ success: true, callLog: log });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route GET /api/admin/call-logs/:leadId
+// @desc  Get call history for a lead
+router.get('/call-logs/:leadId', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const logs = await CallLog.find({ lead: req.params.leadId }).sort({ startedAt: -1 });
+        res.json({ success: true, callLogs: logs });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SUPPORT TICKET MANAGEMENT
+// ══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/support/tickets
+// @desc  List all support tickets
+router.get('/support/tickets', staffAuth, requireRole('admin', 'support'), async (req, res) => {
+    try {
+        const filter = {};
+        if (req.query.status) filter.status = req.query.status;
+        const tickets = await SupportTicket.find(filter)
+            .populate('assignedTo', 'name email')
+            .sort({ createdAt: -1 });
+        res.json({ success: true, total: tickets.length, tickets });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route PATCH /api/admin/support/tickets/:id
+// @desc  Update ticket status or assignee
+router.patch('/support/tickets/:id', staffAuth, requireRole('admin', 'support'), async (req, res) => {
+    try {
+        const { status, assignedTo } = req.body;
+        const update = {};
+        if (status !== undefined) update.status = status;
+        if (assignedTo !== undefined) update.assignedTo = assignedTo || null;
+        const ticket = await SupportTicket.findByIdAndUpdate(req.params.id, update, { new: true })
+            .populate('assignedTo', 'name email');
+        if (!ticket) return res.status(404).json({ success: false, message: 'Ticket not found' });
+        res.json({ success: true, ticket });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/support/tickets/:id/reply
+// @desc  Add a reply to a support ticket and notify customer via email
+router.post('/support/tickets/:id/reply', staffAuth, requireRole('admin', 'support'), async (req, res) => {
+    try {
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ success: false, message: 'Message is required.' });
+
+        const ticket = await SupportTicket.findById(req.params.id);
+        if (!ticket) return res.status(404).json({ success: false, message: 'Ticket not found' });
+
+        ticket.replies.push({
+            staffId: req.staff._id,
+            staffName: req.staff.name || 'Support',
+            message,
+            createdAt: new Date()
+        });
+        if (ticket.status === 'open') ticket.status = 'in_progress';
+        await ticket.save();
+
+        // Email the customer
+        if (process.env.SENDGRID_API_KEY && ticket.userEmail) {
+            try {
+                await sgMail.send({
+                    to: ticket.userEmail,
+                    from: { email: FROM_EMAIL, name: 'SlowDay Deals Support' },
+                    subject: `Re: ${ticket.subject} — Ticket #${ticket._id.toString().slice(-8).toUpperCase()}`,
+                    html: `
+<div style="font-family:-apple-system,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;">
+    <div style="text-align:center;margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg,#667eea,#764ba2);width:56px;height:56px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">⚡</div>
+    </div>
+    <h2 style="color:#1a1a2e;margin-bottom:8px;">Update on Your Ticket</h2>
+    <p style="color:#666;line-height:1.6;">Hi ${ticket.userName}, our team has responded to your support ticket:</p>
+    <div style="background:#f8f9ff;border-left:4px solid #667eea;padding:16px;border-radius:8px;margin:20px 0;">
+        <p style="color:#333;line-height:1.6;margin:0;">${message.replace(/\n/g, '<br>')}</p>
+    </div>
+    <p style="color:#999;font-size:13px;">Ticket #${ticket._id.toString().slice(-8).toUpperCase()} — ${ticket.subject}</p>
+    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+    <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals</p>
+</div>`
+                });
+            } catch (emailErr) {
+                console.error('Failed to send reply email:', emailErr);
+            }
+        }
+
+        const updated = await SupportTicket.findById(req.params.id).populate('assignedTo', 'name email');
+        res.json({ success: true, ticket: updated });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

@@ -1270,6 +1270,9 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                         <option>Tutoring</option><option>Photography</option>
                         <option>Car Detailing</option><option>Laundry Service</option>
                     </select>
+                    <select class="lead-filter-select" id="savedFilterAssignee" onchange="loadSavedLeads()">
+                        <option value="">All People</option>
+                    </select>
                     <button class="lead-toggle-btn" onclick="loadSavedLeads()">Apply</button>
                     <span class="lead-saved-count" id="savedLeadsCount"></span>
                     <button class="lead-add-btn" onclick="openAddLeadModal()" title="Add lead manually">＋</button>
@@ -1678,8 +1681,19 @@ async function loadStaffList() {
     try {
         const res = await fetch(`${API_BASE}/admin/staff`, { headers: authHeaders() });
         const data = await res.json();
-        if (data.success) staffList = data.staff || [];
+        if (data.success) {
+            staffList = data.staff || [];
+            populateAssigneeFilter();
+        }
     } catch { /* silent — sales users may not have access */ }
+}
+
+function populateAssigneeFilter() {
+    const sel = document.getElementById('savedFilterAssignee');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All People</option>' +
+        staffList.map(s => `<option value="${s._id}"${s._id === current ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
 }
 
 async function loadData(isLogin = false) {
@@ -2158,12 +2172,14 @@ async function loadSavedLeads() {
     const status   = document.getElementById('savedFilterStatus').value;
     const city     = document.getElementById('savedFilterCity').value.trim();
     const service  = document.getElementById('savedFilterService').value;
+    const assignee = document.getElementById('savedFilterAssignee').value;
     setSavedStatus('Loading…', true);
     try {
         const params = new URLSearchParams();
-        if (status)  params.set('status', status);
-        if (city)    params.set('city', city);
-        if (service) params.set('serviceType', service);
+        if (status)   params.set('status', status);
+        if (city)     params.set('city', city);
+        if (service)  params.set('serviceType', service);
+        if (assignee) params.set('assignee', assignee);
         const res = await fetch(`${API_BASE}/admin/leads/saved?${params}`, {
             headers: authHeaders()
         });

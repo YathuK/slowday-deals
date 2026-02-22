@@ -575,7 +575,7 @@ router.delete('/leads/saved/:id', staffAuth, requireRole('admin', 'sales'), asyn
 // @desc  Log a call for a lead
 router.post('/call-logs', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     try {
-        const { leadId, startedAt, duration, notes } = req.body;
+        const { leadId, startedAt, duration, notes, twilioCallSid, status } = req.body;
         if (!leadId) return res.status(400).json({ success: false, message: 'leadId is required' });
         const lead = await Lead.findById(leadId);
         if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
@@ -586,9 +586,29 @@ router.post('/call-logs', staffAuth, requireRole('admin', 'sales'), async (req, 
             callerName: req.staff.name || 'Admin',
             startedAt: startedAt || new Date(),
             duration: duration || 0,
-            notes: notes || ''
+            notes: notes || '',
+            twilioCallSid: twilioCallSid || null,
+            status: status || 'completed'
         });
         res.status(201).json({ success: true, callLog: log });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route PATCH /api/admin/call-logs/:id
+// @desc  Update call log (notes, duration, status)
+router.patch('/call-logs/:id', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const { notes, duration, status, twilioCallSid } = req.body;
+        const update = {};
+        if (notes !== undefined) update.notes = notes;
+        if (duration !== undefined) update.duration = duration;
+        if (status !== undefined) update.status = status;
+        if (twilioCallSid !== undefined) update.twilioCallSid = twilioCallSid;
+        const log = await CallLog.findByIdAndUpdate(req.params.id, update, { new: true });
+        if (!log) return res.status(404).json({ success: false, message: 'Call log not found' });
+        res.json({ success: true, callLog: log });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -603,6 +623,76 @@ router.get('/call-logs/:leadId', staffAuth, requireRole('admin', 'sales'), async
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TWILIO VOICE (BROWSER CALLING)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// @route GET /api/admin/voice/token
+// @desc  Generate Twilio Access Token for browser calling
+router.get('/voice/token', staffAuth, requireRole('admin', 'sales'), (req, res) => {
+    try {
+        const AccessToken = require('twilio').jwt.AccessToken;
+        const VoiceGrant = AccessToken.VoiceGrant;
+
+        if (!process.env.TWILIO_API_KEY_SID || !process.env.TWILIO_API_KEY_SECRET || !process.env.TWILIO_TWIML_APP_SID) {
+            return res.status(500).json({ success: false, message: 'Voice calling not configured. Set TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, and TWILIO_TWIML_APP_SID.' });
+        }
+
+        const token = new AccessToken(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_API_KEY_SID,
+            process.env.TWILIO_API_KEY_SECRET,
+            { identity: req.staff._id?.toString() || 'admin', ttl: 3600 }
+        );
+
+        const voiceGrant = new VoiceGrant({
+            outgoingApplicationSid: process.env.TWILIO_TWIML_APP_SID,
+            incomingAllow: false
+        });
+        token.addGrant(voiceGrant);
+
+        res.json({ success: true, token: token.toJwt(), identity: req.staff._id?.toString() || 'admin' });
+    } catch (err) {
+        console.error('Voice token error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route POST /api/admin/voice/twiml
+// @desc  TwiML instructions for outgoing calls (called by Twilio, NOT by browser)
+router.post('/voice/twiml', (req, res) => {
+    const VoiceResponse = require('twilio').twiml.VoiceResponse;
+    const twiml = new VoiceResponse();
+
+    const to = req.body.To;
+    if (to && /^\+?[\d]+$/.test(to)) {
+        const dial = twiml.dial({ callerId: process.env.TWILIO_PHONE_NUMBER, timeout: 30 });
+        dial.number(to.startsWith('+') ? to : `+1${to}`);
+    } else {
+        twiml.say('No phone number provided. Goodbye.');
+    }
+
+    res.type('text/xml');
+    res.send(twiml.toString());
+});
+
+// @route POST /api/admin/voice/status
+// @desc  Twilio posts call status updates here
+router.post('/voice/status', async (req, res) => {
+    try {
+        const { CallSid, CallStatus, CallDuration } = req.body;
+        if (CallSid && ['completed', 'failed', 'no-answer', 'busy', 'canceled'].includes(CallStatus)) {
+            await CallLog.findOneAndUpdate(
+                { twilioCallSid: CallSid },
+                { duration: parseInt(CallDuration) || 0, status: CallStatus }
+            );
+        }
+    } catch (err) {
+        console.error('Voice status webhook error:', err);
+    }
+    res.sendStatus(200);
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

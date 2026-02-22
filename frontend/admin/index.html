@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SlowDay — Back Office</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://sdk.twilio.com/js/voice/releases/2.12.1/twilio.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -861,25 +862,102 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
     background: var(--accent); color: white; font-size: 10px; font-family: var(--mono);
     padding: 1px 6px; border-radius: 10px; cursor: pointer; margin-left: 4px;
 }
-.call-log-row td { background: var(--surface2) !important; padding: 8px 16px !important; }
-.call-log-entry {
-    font-size: 12px; color: var(--text2); padding: 6px 0;
-    border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: center;
+
+/* CALL MODAL */
+.call-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    z-index: 9999; align-items: center; justify-content: center;
 }
-.call-log-entry:last-child { border-bottom: none; }
-.log-call-form {
-    display: none; background: var(--surface); border: 1px solid var(--border-bright);
-    border-radius: 12px; padding: 16px; margin-top: 8px; max-width: 350px;
+.call-modal-overlay.open { display: flex; }
+.call-modal {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 20px; padding: 0; width: 380px; max-width: 95vw;
+    overflow: hidden;
 }
-.log-call-form input, .log-call-form textarea {
+.call-modal-header {
+    background: linear-gradient(135deg, #22d3a0, #1ab394);
+    padding: 28px 24px 20px; text-align: center;
+}
+.call-modal-header.ended { background: linear-gradient(135deg, var(--surface2), var(--surface)); }
+.call-modal-header.failed { background: linear-gradient(135deg, #fc5c5c, #e04444); }
+.call-modal-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 12px; color: white; font-weight: 700;
+}
+.call-modal-name { font-size: 18px; font-weight: 700; color: white; }
+.call-modal-phone { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+.call-modal-status {
+    font-size: 12px; color: rgba(255,255,255,0.6);
+    margin-top: 8px; font-family: var(--mono);
+}
+.call-modal-timer {
+    font-size: 28px; font-weight: 700; color: white;
+    font-family: var(--mono); margin-top: 8px; letter-spacing: 2px;
+}
+.call-controls {
+    display: flex; gap: 16px; justify-content: center; padding: 20px 0 24px;
+}
+.call-control-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    border: none; cursor: pointer; font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.call-control-btn.mute {
+    background: var(--surface2); border: 1px solid var(--border-bright); color: var(--text);
+}
+.call-control-btn.mute.active { background: var(--yellow); color: #000; }
+.call-control-btn.hangup {
+    background: var(--red); color: white; width: 60px; height: 60px; font-size: 24px;
+}
+.call-control-btn.hangup:hover { background: #e04444; }
+.call-notes-area { display: none; padding: 20px 24px; }
+.call-notes-area.show { display: block; }
+.call-notes-textarea {
     width: 100%; background: var(--surface2); border: 1px solid var(--border-bright);
-    border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--sans);
-    font-size: 13px; outline: none; margin-bottom: 8px;
+    border-radius: 10px; padding: 12px 14px; color: var(--text);
+    font-family: var(--sans); font-size: 13px; outline: none;
+    height: 80px; resize: none; margin-bottom: 12px;
 }
-.log-call-form textarea { height: 60px; resize: none; }
-.log-call-submit {
-    background: var(--accent); border: none; border-radius: 8px; padding: 8px 16px;
-    color: white; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans);
+.call-notes-textarea:focus { border-color: var(--accent); }
+.call-notes-save {
+    background: var(--accent); border: none; border-radius: 10px;
+    padding: 10px 20px; color: white; font-size: 13px;
+    font-weight: 600; cursor: pointer; width: 100%; font-family: var(--sans);
+}
+.call-notes-save:hover { opacity: 0.9; }
+
+/* CALL HISTORY */
+.call-history-panel {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    border-radius: 14px; padding: 16px;
+}
+.call-history-title {
+    font-size: 13px; font-weight: 600; color: var(--text2);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.call-history-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.call-history-item:last-child { border-bottom: none; }
+.call-history-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+}
+.call-history-icon.completed { background: rgba(34,211,160,0.15); color: var(--green); }
+.call-history-icon.failed { background: rgba(252,92,92,0.15); color: var(--red); }
+.call-history-meta { flex: 1; min-width: 0; }
+.call-history-date { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.call-history-info { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.call-history-info span { margin-right: 10px; }
+.call-history-notes {
+    font-size: 12px; color: var(--text); margin-top: 4px;
+    font-style: italic; opacity: 0.8;
 }
 
 /* ASSIGNEE SELECT */
@@ -1619,6 +1697,7 @@ function enterDashboard() {
     renderSidebar();
     loadData();
     loadStaffList();
+    initTwilioDevice();
     // Restore sidebar collapse state
     if (localStorage.getItem('sidebarCollapsed') === 'true') {
         document.getElementById('sidebar').classList.add('collapsed');
@@ -2221,7 +2300,7 @@ function renderSavedLeads(leads) {
             <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
                 onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
             <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
-            <td>${cleanPhone ? `<a href="tel:${cleanPhone}" class="call-btn" onclick="promptCallLog('${esc(l._id)}')">📞</a><span class="call-count-badge" id="ccb-${esc(l._id)}" onclick="toggleCallHistory('${esc(l._id)}')" style="display:none">0</span><div class="log-call-form" id="lcf-${esc(l._id)}"><input type="number" placeholder="Duration (minutes)" id="lcd-${esc(l._id)}"><textarea placeholder="Call notes…" id="lcn-${esc(l._id)}"></textarea><button class="log-call-submit" onclick="saveCallLog('${esc(l._id)}')">Save Call Log</button></div>` : ''}</td>
+            <td>${cleanPhone ? `<button class="call-btn" onclick="startBrowserCall('${esc(l._id)}','${esc(l.businessName).replace(/'/g,"\\\\'")}','${cleanPhone}')">📞 Call</button><span class="call-count-badge" id="ccb-${esc(l._id)}" onclick="toggleCallHistory('${esc(l._id)}')" style="display:none">0</span>` : ''}</td>
             <td class="lead-email"><input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
                 onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;"></td>
             <td class="lead-addr" style="font-size:12px;color:var(--text2);">${esc(l.city || '')}</td>
@@ -2378,33 +2457,196 @@ function exportLeadsCSV() {
 
 // ── CALL LOGGING ────────────────────────────────────────────────────────────
 
-function promptCallLog(leadId) {
-    const form = document.getElementById(`lcf-${leadId}`);
-    if (form) form.style.display = form.style.display === 'block' ? 'none' : 'block';
+// ── TWILIO BROWSER CALLING ──────────────────────────────────────────────────
+
+let twilioDevice = null;
+let activeCall = null;
+let callTimerInterval = null;
+let callStartTime = null;
+let currentCallLogId = null;
+let currentCallLeadId = null;
+let isMuted = false;
+
+async function initTwilioDevice() {
+    try {
+        const res = await fetch(`${API_BASE}/admin/voice/token`, { headers: authHeaders() });
+        const data = await res.json();
+        if (!data.success) { console.warn('Voice calling not available:', data.message); return; }
+
+        if (typeof Twilio !== 'undefined' && Twilio.Device) {
+            twilioDevice = new Twilio.Device(data.token, {
+                codecPreferences: ['opus', 'pcmu'],
+                enableRingingState: true
+            });
+            twilioDevice.on('registered', () => console.log('Twilio Device ready'));
+            twilioDevice.on('error', (err) => {
+                console.error('Twilio Device error:', err);
+                updateCallModalStatus('Error: ' + (err.message || 'Connection failed'), 'failed');
+            });
+            twilioDevice.on('tokenWillExpire', async () => {
+                const r = await fetch(`${API_BASE}/admin/voice/token`, { headers: authHeaders() });
+                const d = await r.json();
+                if (d.success) twilioDevice.updateToken(d.token);
+            });
+            await twilioDevice.register();
+        }
+    } catch (err) {
+        console.error('Failed to init Twilio Device:', err);
+    }
 }
 
-async function saveCallLog(leadId) {
-    const dur = document.getElementById(`lcd-${leadId}`);
-    const notes = document.getElementById(`lcn-${leadId}`);
+async function startBrowserCall(leadId, leadName, phone) {
+    if (!twilioDevice) {
+        alert('Voice calling is initializing. Please try again in a moment.');
+        await initTwilioDevice();
+        return;
+    }
+
+    const cleanPhone = phone.replace(/[^+\d]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) { alert('Invalid phone number'); return; }
+    const fullPhone = cleanPhone.startsWith('+') ? cleanPhone : `+1${cleanPhone.replace(/^1/, '')}`;
+
+    // Show call modal
+    currentCallLeadId = leadId;
+    isMuted = false;
+    document.getElementById('callModalAvatar').textContent = (leadName || '?')[0].toUpperCase();
+    document.getElementById('callModalName').textContent = leadName || 'Unknown';
+    document.getElementById('callModalPhone').textContent = fullPhone;
+    document.getElementById('callModalStatus').textContent = 'Connecting...';
+    document.getElementById('callModalTimer').textContent = '00:00';
+    document.getElementById('callModalHeader').className = 'call-modal-header';
+    document.getElementById('callControls').style.display = 'flex';
+    document.getElementById('callNotesArea').classList.remove('show');
+    document.getElementById('callNotesInput').value = '';
+    document.getElementById('callMuteBtn').classList.remove('active');
+    document.getElementById('callModalOverlay').classList.add('open');
+
     try {
-        await fetch(`${API_BASE}/admin/call-logs`, {
+        activeCall = await twilioDevice.connect({ params: { To: fullPhone } });
+
+        // Create call log immediately
+        const logRes = await fetch(`${API_BASE}/admin/call-logs`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({
                 leadId,
                 startedAt: new Date().toISOString(),
-                duration: (parseFloat(dur.value) || 0) * 60,
-                notes: notes.value.trim()
+                duration: 0,
+                notes: '',
+                twilioCallSid: activeCall.parameters?.CallSid || null,
+                status: 'in-progress'
             })
         });
-        dur.value = '';
-        notes.value = '';
-        document.getElementById(`lcf-${leadId}`).style.display = 'none';
-        loadCallCount(leadId);
+        const logData = await logRes.json();
+        if (logData.success) currentCallLogId = logData.callLog._id;
+
+        activeCall.on('ringing', () => updateCallModalStatus('Ringing...', null));
+
+        activeCall.on('accept', () => {
+            updateCallModalStatus('Connected', null);
+            callStartTime = Date.now();
+            callTimerInterval = setInterval(updateCallTimer, 1000);
+            // Update CallSid if not captured earlier
+            if (currentCallLogId && activeCall.parameters?.CallSid) {
+                fetch(`${API_BASE}/admin/call-logs/${currentCallLogId}`, {
+                    method: 'PATCH',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ twilioCallSid: activeCall.parameters.CallSid })
+                }).catch(() => {});
+            }
+        });
+
+        activeCall.on('disconnect', () => onCallEnded('completed'));
+        activeCall.on('cancel', () => onCallEnded('canceled'));
+        activeCall.on('reject', () => onCallEnded('no-answer'));
+        activeCall.on('error', (err) => { console.error('Call error:', err); onCallEnded('failed'); });
+
     } catch (err) {
-        alert('Failed to save call log: ' + err.message);
+        console.error('Failed to connect call:', err);
+        updateCallModalStatus('Failed to connect', 'failed');
+        setTimeout(() => closeCallModal(), 3000);
     }
 }
+
+function toggleMute() {
+    if (!activeCall) return;
+    isMuted = !isMuted;
+    activeCall.mute(isMuted);
+    const btn = document.getElementById('callMuteBtn');
+    btn.classList.toggle('active', isMuted);
+    btn.title = isMuted ? 'Unmute' : 'Mute';
+}
+
+function hangupCall() {
+    if (activeCall) { activeCall.disconnect(); } else { closeCallModal(); }
+}
+
+function updateCallModalStatus(text, headerState) {
+    document.getElementById('callModalStatus').textContent = text;
+    if (headerState === 'failed') {
+        document.getElementById('callModalHeader').className = 'call-modal-header failed';
+    }
+}
+
+function updateCallTimer() {
+    if (!callStartTime) return;
+    const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+    const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const secs = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('callModalTimer').textContent = `${mins}:${secs}`;
+}
+
+function onCallEnded(status) {
+    clearInterval(callTimerInterval);
+    activeCall = null;
+    const elapsed = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
+    callStartTime = null;
+
+    const header = document.getElementById('callModalHeader');
+    header.className = (status === 'failed' || status === 'no-answer' || status === 'busy')
+        ? 'call-modal-header failed' : 'call-modal-header ended';
+
+    const labels = { completed: 'Call ended', failed: 'Call failed', 'no-answer': 'No answer', busy: 'Line busy', canceled: 'Call cancelled' };
+    document.getElementById('callModalStatus').textContent = labels[status] || 'Call ended';
+    document.getElementById('callControls').style.display = 'none';
+    document.getElementById('callNotesArea').classList.add('show');
+
+    if (currentCallLogId) {
+        fetch(`${API_BASE}/admin/call-logs/${currentCallLogId}`, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ duration: elapsed, status })
+        }).catch(() => {});
+    }
+}
+
+async function saveCallNotes() {
+    const notes = document.getElementById('callNotesInput').value.trim();
+    if (currentCallLogId) {
+        try {
+            await fetch(`${API_BASE}/admin/call-logs/${currentCallLogId}`, {
+                method: 'PATCH',
+                headers: authHeaders(),
+                body: JSON.stringify({ notes })
+            });
+        } catch (err) { console.error('Failed to save notes:', err); }
+    }
+    closeCallModal();
+}
+
+function closeCallModal() {
+    document.getElementById('callModalOverlay').classList.remove('open');
+    clearInterval(callTimerInterval);
+    activeCall = null;
+    callStartTime = null;
+    currentCallLogId = null;
+    if (currentCallLeadId) {
+        loadCallCount(currentCallLeadId);
+        currentCallLeadId = null;
+    }
+}
+
+// ── CALL COUNT & HISTORY ────────────────────────────────────────────────────
 
 async function loadCallCount(leadId) {
     try {
@@ -2431,19 +2673,29 @@ async function toggleCallHistory(leadId) {
         if (!row) return;
         const histRow = document.createElement('tr');
         histRow.id = `callhist-${leadId}`;
-        histRow.className = 'call-log-row';
-        histRow.innerHTML = `<td colspan="15" style="padding:12px 20px;">
-            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Call History (${data.callLogs.length})</div>
-            ${data.callLogs.map(c => {
-                const d = new Date(c.startedAt);
-                const mins = Math.round((c.duration || 0) / 60);
-                return `<div class="call-log-entry">
-                    <span style="color:var(--text3);font-family:var(--mono);min-width:140px;">${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
-                    <span style="color:var(--accent);min-width:60px;">${mins}m</span>
-                    <span style="color:var(--green);min-width:100px;">${esc(c.callerName)}</span>
-                    <span style="flex:1;">${esc(c.notes)}</span>
-                </div>`;
-            }).join('')}
+        histRow.innerHTML = `<td colspan="15" style="padding:12px 16px;background:var(--surface2);">
+            <div class="call-history-panel">
+                <div class="call-history-title">Call History (${data.callLogs.length})</div>
+                ${data.callLogs.map(c => {
+                    const d = new Date(c.startedAt);
+                    const mins = Math.floor((c.duration || 0) / 60);
+                    const secs = (c.duration || 0) % 60;
+                    const statusClass = (c.status === 'failed' || c.status === 'no-answer' || c.status === 'busy') ? 'failed' : 'completed';
+                    const statusIcon = statusClass === 'completed' ? '✓' : '✕';
+                    const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                    return `<div class="call-history-item">
+                        <div class="call-history-icon ${statusClass}">${statusIcon}</div>
+                        <div class="call-history-meta">
+                            <div class="call-history-date">${d.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})} at ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+                            <div class="call-history-info">
+                                <span>${durationStr}</span>
+                                <span>by ${esc(c.callerName)}</span>
+                            </div>
+                            ${c.notes ? `<div class="call-history-notes">"${esc(c.notes)}"</div>` : ''}
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
         </td>`;
         row.after(histRow);
     } catch {}
@@ -2701,5 +2953,27 @@ async function removeStaff(id, name) {
     }
 }
 </script>
+
+<!-- CALL MODAL -->
+<div class="call-modal-overlay" id="callModalOverlay">
+    <div class="call-modal">
+        <div class="call-modal-header" id="callModalHeader">
+            <div class="call-modal-avatar" id="callModalAvatar">?</div>
+            <div class="call-modal-name" id="callModalName">—</div>
+            <div class="call-modal-phone" id="callModalPhone">—</div>
+            <div class="call-modal-status" id="callModalStatus">Connecting...</div>
+            <div class="call-modal-timer" id="callModalTimer">00:00</div>
+        </div>
+        <div class="call-controls" id="callControls">
+            <button class="call-control-btn mute" id="callMuteBtn" onclick="toggleMute()" title="Mute">🎤</button>
+            <button class="call-control-btn hangup" id="callHangupBtn" onclick="hangupCall()" title="Hang up">📕</button>
+        </div>
+        <div class="call-notes-area" id="callNotesArea">
+            <textarea class="call-notes-textarea" id="callNotesInput" placeholder="Call notes... What was discussed?"></textarea>
+            <button class="call-notes-save" onclick="saveCallNotes()">Save Notes & Close</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

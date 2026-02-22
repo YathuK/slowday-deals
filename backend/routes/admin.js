@@ -10,6 +10,7 @@ const Booking = require('../models/Booking');
 const Lead = require('../models/Lead');
 const Staff = require('../models/Staff');
 const CallLog = require('../models/CallLog');
+const EmailLog = require('../models/EmailLog');
 const SupportTicket = require('../models/SupportTicket');
 const { staffAuth, requireRole } = require('../middleware/adminAuth');
 const sgMail = require('@sendgrid/mail');
@@ -630,6 +631,71 @@ router.get('/call-logs/:leadId', staffAuth, requireRole('admin', 'sales'), async
     try {
         const logs = await CallLog.find({ lead: req.params.leadId }).sort({ startedAt: -1 });
         res.json({ success: true, callLogs: logs });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Email Logs ──────────────────────────────────────────────────────────────
+
+// @route POST /api/admin/email-logs
+// @desc  Send email to a lead and log it
+router.post('/email-logs', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const { leadId, to, subject, body } = req.body;
+        if (!leadId || !to || !subject || !body) {
+            return res.status(400).json({ success: false, message: 'leadId, to, subject, and body are required.' });
+        }
+        const lead = await Lead.findById(leadId);
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found.' });
+
+        let status = 'sent';
+        if (process.env.SENDGRID_API_KEY) {
+            try {
+                await sgMail.send({
+                    to,
+                    from: FROM_EMAIL,
+                    subject,
+                    html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+${body.replace(/\n/g, '<br>')}
+<hr style="border:none;border-top:1px solid #f0f0f0;margin:32px 0 16px;">
+<p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals</p>
+</div>`
+                });
+            } catch (emailErr) {
+                console.error('SendGrid error:', emailErr);
+                status = 'failed';
+            }
+        } else {
+            console.warn('SENDGRID_API_KEY not set — email not actually sent');
+        }
+
+        const log = await EmailLog.create({
+            lead: leadId,
+            sender: req.staff._id,
+            senderName: req.staff.name || 'Admin',
+            to,
+            subject,
+            body,
+            sentAt: new Date(),
+            status
+        });
+
+        if (status === 'failed') {
+            return res.status(500).json({ success: false, message: 'Email failed to send.', emailLog: log });
+        }
+        res.status(201).json({ success: true, emailLog: log });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// @route GET /api/admin/email-logs/:leadId
+// @desc  Get email history for a lead
+router.get('/email-logs/:leadId', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const logs = await EmailLog.find({ lead: req.params.leadId }).sort({ sentAt: -1 });
+        res.json({ success: true, emailLogs: logs });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

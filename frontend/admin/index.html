@@ -1458,12 +1458,24 @@ function authHeaders(extra = {}) {
 
 async function checkSetupNeeded() {
     try {
-        // Try to hit /me with no auth — if 401 and no staff exist, show setup link
-        const res = await fetch(`${API_BASE}/admin/staff`, { headers: authHeaders() });
-        // This will fail with 401, that's fine
-    } catch {}
-    // Show setup link always — the setup endpoint itself checks if staff exist
-    document.getElementById('setupLink').style.display = 'block';
+        // Try the setup endpoint with a dummy request to see if staff already exist
+        const res = await fetch(`${API_BASE}/admin/setup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        const data = await res.json();
+        // If setup returns 400 with "Setup already completed", staff exist — hide setup link
+        if (data.message && data.message.includes('Setup already completed')) {
+            document.getElementById('setupLink').style.display = 'none';
+        } else {
+            // No staff yet — show setup link
+            document.getElementById('setupLink').style.display = 'block';
+        }
+    } catch {
+        // Network error — hide setup link, show login normally
+        document.getElementById('setupLink').style.display = 'none';
+    }
 }
 
 function showSetupForm() {

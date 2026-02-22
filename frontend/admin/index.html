@@ -1392,9 +1392,9 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>Price</th>
                                 <th>Deal Price</th>
                                 <th>Days</th>
-                                <th>Notes</th>
                                 <th>Description</th>
                                 <th>Photos</th>
+                                <th>Notes</th>
                                 <th>Profile</th>
                                 <th></th>
                             </tr>
@@ -2349,8 +2349,6 @@ function renderSavedLeads(leads) {
             <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.discountPrice != null ? l.discountPrice : ''}"
                 onchange="updateLeadField('${esc(l._id)}','discountPrice',this.value===''?null:Number(this.value))" style="color:var(--accent2);"></td>
             <td><div class="lead-day-chips" id="daychips-${esc(l._id)}">${dayChips}</div></td>
-            <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
-                onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
             <td><textarea class="lead-notes-input" placeholder="Add description…" rows="2" style="min-width:150px;resize:vertical;"
                 onchange="updateLeadField('${esc(l._id)}','description',this.value)">${esc(l.description || '')}</textarea></td>
             <td>
@@ -2358,7 +2356,10 @@ function renderSavedLeads(leads) {
                     ${(l.photos || []).map((p, pi) => `<div class="lead-photo-thumb"><img src="${p}" alt=""><button class="lead-photo-remove" onclick="removeLeadPhoto('${esc(l._id)}',${pi})">✕</button></div>`).join('')}
                     ${(l.photos || []).length < 6 ? `<label class="lead-photo-add"><input type="file" accept="image/*" multiple hidden onchange="addLeadPhotos('${esc(l._id)}',this.files)">+</label>` : ''}
                 </div>
+                ${(l.photos || []).length > 0 ? `<span style="font-size:10px;color:var(--text3);margin-top:2px;display:block;">${(l.photos || []).length}/6</span>` : ''}
             </td>
+            <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
+                onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
             <td>${l.status === 'live'
                 ? '<span class="pill" style="background:#00c853;color:#fff;font-size:11px;">Live</span>'
                 : `<button class="lead-toggle-btn" style="font-size:11px;white-space:nowrap;" onclick="createProfile('${esc(l._id)}')">Create Profile</button>`}
@@ -2391,43 +2392,79 @@ async function addLeadPhotos(id, files) {
     const grid = document.getElementById(`photos-${id}`);
     const existing = grid.querySelectorAll('.lead-photo-thumb').length;
     const allowed = Math.min(files.length, 6 - existing);
-    if (allowed <= 0) return;
+    if (allowed <= 0) { alert('Maximum 6 photos allowed.'); return; }
 
-    const newPhotos = [];
-    for (let i = 0; i < allowed; i++) {
-        const b64 = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if (w > 600) { h = Math.round(h * 600 / w); w = 600; }
-                    if (h > 600) { w = Math.round(w * 600 / h); h = 600; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+    // Show loading feedback
+    const addBtn = grid.querySelector('.lead-photo-add');
+    if (addBtn) addBtn.innerHTML = '<span style="font-size:11px;">...</span>';
+
+    try {
+        const newPhotos = [];
+        for (let i = 0; i < allowed; i++) {
+            const b64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > 600) { h = Math.round(h * 600 / w); w = 600; }
+                        if (h > 600) { w = Math.round(w * 600 / h); h = 600; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = () => reject(new Error('Failed to load image'));
+                    img.src = reader.result;
                 };
-                img.src = reader.result;
-            };
-            reader.readAsDataURL(files[i]);
-        });
-        newPhotos.push(b64);
-    }
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(files[i]);
+            });
+            newPhotos.push(b64);
+        }
 
-    // Get current photos from DOM
-    const currentPhotos = [...grid.querySelectorAll('.lead-photo-thumb img')].map(img => img.src);
-    const allPhotos = [...currentPhotos, ...newPhotos].slice(0, 6);
-    await updateLeadField(id, 'photos', allPhotos);
-    loadSavedLeads();
+        // Fetch current lead data from server to get existing photos
+        const res = await fetch(`${API_BASE}/admin/leads/saved`, { headers: authHeaders() });
+        const data = await res.json();
+        const lead = data.leads ? data.leads.find(l => l._id === id) : null;
+        const currentPhotos = lead ? (lead.photos || []) : [];
+        const allPhotos = [...currentPhotos, ...newPhotos].slice(0, 6);
+
+        const patchRes = await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ photos: allPhotos })
+        });
+        const patchData = await patchRes.json();
+        if (!patchData.success) throw new Error(patchData.message || 'Failed to save photos');
+
+        loadSavedLeads();
+    } catch (err) {
+        alert('Error uploading photos: ' + err.message);
+        if (addBtn) addBtn.innerHTML = '+';
+    }
 }
 
 async function removeLeadPhoto(id, photoIdx) {
-    const grid = document.getElementById(`photos-${id}`);
-    const currentPhotos = [...grid.querySelectorAll('.lead-photo-thumb img')].map(img => img.src);
-    currentPhotos.splice(photoIdx, 1);
-    await updateLeadField(id, 'photos', currentPhotos);
-    loadSavedLeads();
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/saved`, { headers: authHeaders() });
+        const data = await res.json();
+        const lead = data.leads ? data.leads.find(l => l._id === id) : null;
+        const currentPhotos = lead ? [...(lead.photos || [])] : [];
+        currentPhotos.splice(photoIdx, 1);
+
+        const patchRes = await fetch(`${API_BASE}/admin/leads/saved/${id}`, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({ photos: currentPhotos })
+        });
+        const patchData = await patchRes.json();
+        if (!patchData.success) throw new Error(patchData.message);
+
+        loadSavedLeads();
+    } catch (err) {
+        alert('Error removing photo: ' + err.message);
+    }
 }
 
 async function createProfile(id) {

@@ -751,6 +751,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 .lead-status-select.s-onboarded { border-color: #9d7dff;       color: #9d7dff;       }
 .lead-status-select.s-rejected  { border-color: var(--red);    color: var(--red);    }
 .lead-status-select.s-live      { border-color: #00c853;       color: #00c853;       }
+.live-locked-row td { background: rgba(0,200,83,0.04); }
 
 /* LEAD NOTES INPUT */
 .lead-notes-input {
@@ -2314,6 +2315,8 @@ async function loadSavedLeads() {
 
 const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected', live: 'Live' };
 
+const LEAD_SERVICE_TYPES = ['Haircut','Barber','Cleaning Service','Massage','Nail Service','Spa Treatment','Personal Training','Dog Walking','Tutoring','Photography','Car Detailing','Laundry Service'];
+
 function renderSavedLeads(leads) {
     const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const tbody = document.getElementById('savedLeadsBody');
@@ -2324,59 +2327,87 @@ function renderSavedLeads(leads) {
     const assigneeOptions = staffList.map(s => `<option value="${s._id}">${esc(s.name)}</option>`).join('');
     tbody.innerHTML = leads.map((l, i) => {
         const activeDays = new Set(l.days || []);
-        const dayChips = DAYS.map(d =>
-            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}" onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')">${d}</span>`
-        ).join('');
         const assigneeId = l.assignee ? (l.assignee._id || l.assignee) : '';
         const cleanPhone = (l.phone || '').replace(/[^+\d]/g, '');
+        const isLive = l.status === 'live';
+        const isEditing = liveEditingLeads.has(l._id);
+
+        // Day chips — locked if live and not editing
+        const dayChips = DAYS.map(d =>
+            `<span class="lead-day-chip${activeDays.has(d) ? ' active' : ''}"${!isLive || isEditing ? ` onclick="toggleLeadDay('${esc(l._id)}',this,'${d}')"` : ''} style="${isLive && !isEditing ? 'pointer-events:none;opacity:0.7;' : ''}">${d}</span>`
+        ).join('');
+
+        // For live rows: show readonly text, for non-live/editing: show inputs
+        const locked = isLive && !isEditing;
+        const emailPhoneLocked = isLive; // always locked for live leads even in edit mode
+
         return `
-        <tr id="srow-${esc(l._id)}">
+        <tr id="srow-${esc(l._id)}" ${locked ? 'class="live-locked-row"' : ''}>
             <td>${i + 1}</td>
             <td class="lead-name">${esc(l.businessName)}</td>
-            <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
-                onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
-            <td class="lead-phone"><input class="lead-contact-input" placeholder="Phone…" value="${esc(l.phone || '')}"
-                onchange="updateLeadField('${esc(l._id)}','phone',this.value)" style="min-width:120px;"></td>
+            <td>${locked
+                ? `<span style="font-size:13px;color:var(--text);">${esc(l.contactName || '—')}</span>`
+                : `<input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
+                    onchange="updateLeadField('${esc(l._id)}','contactName',this.value);markLiveEdited('${esc(l._id)}')">`}</td>
+            <td class="lead-phone">${emailPhoneLocked
+                ? `<span style="font-size:13px;color:var(--text);">${esc(l.phone || '—')}</span>`
+                : `<input class="lead-contact-input" placeholder="Phone…" value="${esc(l.phone || '')}"
+                    onchange="updateLeadField('${esc(l._id)}','phone',this.value)" style="min-width:120px;">`}</td>
             <td>${cleanPhone ? `<button class="call-btn" onclick="startBrowserCall('${esc(l._id)}','${esc(l.businessName).replace(/'/g,"\\\\'")}','${cleanPhone}')">📞 Call</button><span class="call-count-badge" id="ccb-${esc(l._id)}" onclick="toggleCallHistory('${esc(l._id)}')" style="display:none">0</span>` : ''}</td>
-            <td class="lead-email"><input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
-                onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;"></td>
+            <td class="lead-email">${emailPhoneLocked
+                ? `<span style="font-size:13px;color:var(--accent);">${esc(l.email || '—')}</span>`
+                : `<input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
+                    onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;">`}</td>
             <td>${l.email ? `<button class="email-send-btn" onclick="openEmailCompose('${esc(l._id)}','${esc(l.email)}','${esc(l.businessName).replace(/'/g,"\\\\'")}')">✉ Email</button><span class="email-count-badge" id="ecb-${esc(l._id)}" onclick="toggleEmailHistory('${esc(l._id)}')" style="display:none">0</span>` : ''}</td>
-            <td class="lead-addr"><input class="lead-contact-input" placeholder="City…" value="${esc(l.city || '')}"
-                onchange="updateLeadField('${esc(l._id)}','city',this.value)" style="font-size:12px;min-width:100px;"></td>
-            <td class="lead-service">
-                <select class="lead-status-select" style="font-size:11px;min-width:120px;" onchange="updateLeadField('${esc(l._id)}','serviceType',this.value)">
-                    ${['Haircut','Barber','Cleaning Service','Massage','Nail Service','Spa Treatment','Personal Training','Dog Walking','Tutoring','Photography','Car Detailing','Laundry Service'].map(st => `<option value="${st}"${l.serviceType===st?' selected':''}>${st}</option>`).join('')}
-                </select>
-            </td>
-            <td>
-                <select class="lead-status-select s-${esc(l.status)}" onchange="updateLeadField('${esc(l._id)}','status',this.value);this.className='lead-status-select s-'+this.value">
+            <td class="lead-addr">${locked
+                ? `<span style="font-size:12px;color:var(--text2);">${esc(l.city || '—')}</span>`
+                : `<input class="lead-contact-input" placeholder="City…" value="${esc(l.city || '')}"
+                    onchange="updateLeadField('${esc(l._id)}','city',this.value);markLiveEdited('${esc(l._id)}')" style="font-size:12px;min-width:100px;">`}</td>
+            <td class="lead-service">${locked
+                ? `<span class="pill purple" style="font-size:11px;">${esc(l.serviceType)}</span>`
+                : `<select class="lead-status-select" style="font-size:11px;min-width:120px;" onchange="updateLeadField('${esc(l._id)}','serviceType',this.value);markLiveEdited('${esc(l._id)}')">
+                    ${LEAD_SERVICE_TYPES.map(st => `<option value="${st}"${l.serviceType===st?' selected':''}>${st}</option>`).join('')}
+                </select>`}</td>
+            <td>${locked
+                ? `<span class="lead-status-select s-live" style="pointer-events:none;">Live</span>`
+                : `<select class="lead-status-select s-${esc(l.status)}" onchange="updateLeadField('${esc(l._id)}','status',this.value);this.className='lead-status-select s-'+this.value">
                     ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
-                </select>
-            </td>
-            <td>
-                <select class="lead-assignee-select" onchange="updateLeadField('${esc(l._id)}','assignee',this.value)">
+                </select>`}</td>
+            <td>${locked
+                ? `<span style="font-size:12px;color:var(--text2);">${esc((staffList.find(s => s._id === assigneeId) || {}).name || 'Unassigned')}</span>`
+                : `<select class="lead-assignee-select" onchange="updateLeadField('${esc(l._id)}','assignee',this.value)">
                     <option value="">Unassigned</option>
                     ${assigneeOptions.replace(`value="${assigneeId}"`, `value="${assigneeId}" selected`)}
-                </select>
-            </td>
-            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.price != null ? l.price : ''}"
-                onchange="updateLeadField('${esc(l._id)}','price',this.value===''?null:Number(this.value))"></td>
-            <td><input class="lead-price-input" type="number" placeholder="0.00" value="${l.discountPrice != null ? l.discountPrice : ''}"
-                onchange="updateLeadField('${esc(l._id)}','discountPrice',this.value===''?null:Number(this.value))" style="color:var(--accent2);"></td>
+                </select>`}</td>
+            <td>${locked
+                ? `<span style="font-size:13px;">${l.price != null ? '$'+l.price : '—'}</span>`
+                : `<input class="lead-price-input" type="number" placeholder="0.00" value="${l.price != null ? l.price : ''}"
+                    onchange="updateLeadField('${esc(l._id)}','price',this.value===''?null:Number(this.value));markLiveEdited('${esc(l._id)}')">`}</td>
+            <td>${locked
+                ? `<span style="font-size:13px;color:var(--accent2);">${l.discountPrice != null ? '$'+l.discountPrice : '—'}</span>`
+                : `<input class="lead-price-input" type="number" placeholder="0.00" value="${l.discountPrice != null ? l.discountPrice : ''}"
+                    onchange="updateLeadField('${esc(l._id)}','discountPrice',this.value===''?null:Number(this.value));markLiveEdited('${esc(l._id)}')" style="color:var(--accent2);">`}</td>
             <td><div class="lead-day-chips" id="daychips-${esc(l._id)}">${dayChips}</div></td>
-            <td><textarea class="lead-notes-input" placeholder="Add description…" rows="2" style="min-width:150px;resize:vertical;"
-                onchange="updateLeadField('${esc(l._id)}','description',this.value)">${esc(l.description || '')}</textarea></td>
+            <td>${locked
+                ? `<span style="font-size:12px;color:var(--text2);max-width:150px;display:block;overflow:hidden;text-overflow:ellipsis;">${esc(l.description || '—')}</span>`
+                : `<textarea class="lead-notes-input" placeholder="Add description…" rows="2" style="min-width:150px;resize:vertical;"
+                    onchange="updateLeadField('${esc(l._id)}','description',this.value);markLiveEdited('${esc(l._id)}')">${esc(l.description || '')}</textarea>`}</td>
             <td>
                 <div class="lead-photos-grid" id="photos-${esc(l._id)}">
-                    ${(l.photos || []).map((p, pi) => `<div class="lead-photo-thumb"><img src="${p}" alt=""><button class="lead-photo-remove" onclick="removeLeadPhoto('${esc(l._id)}',${pi})">✕</button></div>`).join('')}
-                    ${(l.photos || []).length < 6 ? `<label class="lead-photo-add"><input type="file" accept="image/*" multiple hidden onchange="addLeadPhotos('${esc(l._id)}',this.files)">+</label>` : ''}
+                    ${(l.photos || []).map((p, pi) => `<div class="lead-photo-thumb"><img src="${p}" alt="">${!locked ? `<button class="lead-photo-remove" onclick="removeLeadPhoto('${esc(l._id)}',${pi})">✕</button>` : ''}</div>`).join('')}
+                    ${!locked && (l.photos || []).length < 6 ? `<label class="lead-photo-add"><input type="file" accept="image/*" multiple hidden onchange="addLeadPhotos('${esc(l._id)}',this.files)">+</label>` : ''}
                 </div>
                 ${(l.photos || []).length > 0 ? `<span style="font-size:10px;color:var(--text3);margin-top:2px;display:block;">${(l.photos || []).length}/6</span>` : ''}
             </td>
-            <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
-                onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
-            <td>${l.status === 'live'
-                ? '<span class="pill" style="background:#00c853;color:#fff;font-size:11px;">Live</span>'
+            <td>${locked
+                ? `<span style="font-size:12px;color:var(--text2);">${esc(l.notes || '—')}</span>`
+                : `<input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
+                    onchange="updateLeadField('${esc(l._id)}','notes',this.value)">`}</td>
+            <td style="white-space:nowrap;">${isLive
+                ? `<span class="pill" style="background:#00c853;color:#fff;font-size:11px;">Live</span>
+                   ${isEditing
+                       ? `<button class="lead-toggle-btn" style="font-size:11px;margin-left:4px;background:#00c853;color:#fff;border-color:#00c853;" onclick="publishLeadChanges('${esc(l._id)}')">Publish</button>`
+                       : `<button class="lead-toggle-btn" style="font-size:11px;margin-left:4px;" onclick="unlockLiveRow('${esc(l._id)}')">Update</button>`}`
                 : `<button class="lead-toggle-btn" style="font-size:11px;white-space:nowrap;" onclick="createProfile('${esc(l._id)}')">Create Profile</button>`}
             </td>
             <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
@@ -2498,6 +2529,42 @@ async function createProfile(id) {
         loadSavedLeads();
     } catch (err) {
         alert('Error creating profile: ' + err.message);
+    }
+}
+
+// Track which live leads are currently in edit mode
+const liveEditingLeads = new Set();
+
+function unlockLiveRow(id) {
+    liveEditingLeads.add(id);
+    loadSavedLeads();
+}
+
+function markLiveEdited(id) {
+    // Already in editing set — just ensure the Publish button is shown
+    if (!liveEditingLeads.has(id)) {
+        liveEditingLeads.add(id);
+        loadSavedLeads();
+    }
+}
+
+async function publishLeadChanges(id) {
+    if (!confirm('Publish these changes to the live deal?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/${id}/publish`, {
+            method: 'POST',
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(data.message || 'Failed to publish changes.');
+            return;
+        }
+        liveEditingLeads.delete(id);
+        alert('Changes published to live deal!');
+        loadSavedLeads();
+    } catch (err) {
+        alert('Error publishing: ' + err.message);
     }
 }
 

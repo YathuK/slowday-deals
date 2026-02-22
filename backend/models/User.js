@@ -63,6 +63,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['local', 'google', 'facebook'],
         default: 'local'
+    },
+    providerSetupToken: {
+        type: String,
+        default: null
+    },
+    providerSetupExpires: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -97,6 +105,7 @@ userSchema.methods.toJSON = function() {
     delete obj.password;
     delete obj.googleId;
     delete obj.facebookId;
+    delete obj.providerSetupToken;
     return obj;
 };
 

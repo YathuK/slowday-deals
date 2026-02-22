@@ -750,6 +750,7 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 .lead-status-select.s-interested{ border-color: var(--green);  color: var(--green);  }
 .lead-status-select.s-onboarded { border-color: #9d7dff;       color: #9d7dff;       }
 .lead-status-select.s-rejected  { border-color: var(--red);    color: var(--red);    }
+.lead-status-select.s-live      { border-color: #00c853;       color: #00c853;       }
 
 /* LEAD NOTES INPUT */
 .lead-notes-input {
@@ -849,6 +850,24 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
 }
 .lead-delete-btn:hover { color: var(--red); }
 .lead-saved-count { font-size: 13px; color: var(--text2); margin-left: auto; }
+
+/* LEAD PHOTOS */
+.lead-photos-grid { display: flex; gap: 4px; flex-wrap: wrap; min-width: 100px; }
+.lead-photo-thumb { position: relative; width: 40px; height: 40px; border-radius: 4px; overflow: hidden; }
+.lead-photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lead-photo-remove {
+    position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff;
+    border: none; cursor: pointer; font-size: 10px; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center; border-radius: 0 4px 0 4px;
+    opacity: 0; transition: opacity 0.15s;
+}
+.lead-photo-thumb:hover .lead-photo-remove { opacity: 1; }
+.lead-photo-add {
+    width: 40px; height: 40px; border-radius: 4px; border: 2px dashed var(--border);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--text3); font-size: 18px; transition: border-color 0.15s;
+}
+.lead-photo-add:hover { border-color: var(--accent); color: var(--accent); }
 
 /* CALL BUTTON */
 .call-btn {
@@ -1374,11 +1393,14 @@ tbody td.mono { font-family: var(--mono); font-size: 12px; }
                                 <th>Deal Price</th>
                                 <th>Days</th>
                                 <th>Notes</th>
+                                <th>Description</th>
+                                <th>Photos</th>
+                                <th>Profile</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody id="savedLeadsBody">
-                            <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">Click "My Leads" tab to load saved leads.</td></tr>
+                            <tr><td colspan="18" style="text-align:center;padding:40px;color:var(--text3);">Click "My Leads" tab to load saved leads.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -2276,7 +2298,7 @@ async function loadSavedLeads() {
     }
 }
 
-const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected' };
+const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interested: 'Interested', onboarded: 'Onboarded', rejected: 'Rejected', live: 'Live' };
 
 function renderSavedLeads(leads) {
     const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -2299,12 +2321,18 @@ function renderSavedLeads(leads) {
             <td class="lead-name">${esc(l.businessName)}</td>
             <td><input class="lead-contact-input" placeholder="Enter name…" value="${esc(l.contactName)}"
                 onchange="updateLeadField('${esc(l._id)}','contactName',this.value)"></td>
-            <td class="lead-phone">${l.phone ? esc(l.phone) : '<span class="lead-empty">—</span>'}</td>
+            <td class="lead-phone"><input class="lead-contact-input" placeholder="Phone…" value="${esc(l.phone || '')}"
+                onchange="updateLeadField('${esc(l._id)}','phone',this.value)" style="min-width:120px;"></td>
             <td>${cleanPhone ? `<button class="call-btn" onclick="startBrowserCall('${esc(l._id)}','${esc(l.businessName).replace(/'/g,"\\\\'")}','${cleanPhone}')">📞 Call</button><span class="call-count-badge" id="ccb-${esc(l._id)}" onclick="toggleCallHistory('${esc(l._id)}')" style="display:none">0</span>` : ''}</td>
             <td class="lead-email"><input class="lead-contact-input" placeholder="Enter email…" value="${esc(l.email)}"
                 onchange="updateLeadField('${esc(l._id)}','email',this.value)" style="color:var(--accent);min-width:160px;"></td>
-            <td class="lead-addr" style="font-size:12px;color:var(--text2);">${esc(l.city || '')}</td>
-            <td class="lead-service"><span class="pill purple">${esc(l.serviceType)}</span></td>
+            <td class="lead-addr"><input class="lead-contact-input" placeholder="City…" value="${esc(l.city || '')}"
+                onchange="updateLeadField('${esc(l._id)}','city',this.value)" style="font-size:12px;min-width:100px;"></td>
+            <td class="lead-service">
+                <select class="lead-status-select" style="font-size:11px;min-width:120px;" onchange="updateLeadField('${esc(l._id)}','serviceType',this.value)">
+                    ${['Haircut','Barber','Cleaning Service','Massage','Nail Service','Spa Treatment','Personal Training','Dog Walking','Tutoring','Photography','Car Detailing','Laundry Service'].map(st => `<option value="${st}"${l.serviceType===st?' selected':''}>${st}</option>`).join('')}
+                </select>
+            </td>
             <td>
                 <select class="lead-status-select s-${esc(l.status)}" onchange="updateLeadField('${esc(l._id)}','status',this.value);this.className='lead-status-select s-'+this.value">
                     ${Object.entries(STATUS_LABELS).map(([v,lab]) => `<option value="${v}"${l.status===v?' selected':''}>${lab}</option>`).join('')}
@@ -2323,6 +2351,18 @@ function renderSavedLeads(leads) {
             <td><div class="lead-day-chips" id="daychips-${esc(l._id)}">${dayChips}</div></td>
             <td><input class="lead-notes-input" placeholder="Add notes…" value="${esc(l.notes)}"
                 onchange="updateLeadField('${esc(l._id)}','notes',this.value)"></td>
+            <td><textarea class="lead-notes-input" placeholder="Add description…" rows="2" style="min-width:150px;resize:vertical;"
+                onchange="updateLeadField('${esc(l._id)}','description',this.value)">${esc(l.description || '')}</textarea></td>
+            <td>
+                <div class="lead-photos-grid" id="photos-${esc(l._id)}">
+                    ${(l.photos || []).map((p, pi) => `<div class="lead-photo-thumb"><img src="${p}" alt=""><button class="lead-photo-remove" onclick="removeLeadPhoto('${esc(l._id)}',${pi})">✕</button></div>`).join('')}
+                    ${(l.photos || []).length < 6 ? `<label class="lead-photo-add"><input type="file" accept="image/*" multiple hidden onchange="addLeadPhotos('${esc(l._id)}',this.files)">+</label>` : ''}
+                </div>
+            </td>
+            <td>${l.status === 'live'
+                ? '<span class="pill" style="background:#00c853;color:#fff;font-size:11px;">Live</span>'
+                : `<button class="lead-toggle-btn" style="font-size:11px;white-space:nowrap;" onclick="createProfile('${esc(l._id)}')">Create Profile</button>`}
+            </td>
             <td><button class="lead-delete-btn" onclick="deleteLead('${esc(l._id)}',this)" title="Delete lead">✕</button></td>
         </tr>`;
     }).join('');
@@ -2345,6 +2385,68 @@ function toggleLeadDay(id, chip, day) {
     const container = document.getElementById(`daychips-${id}`);
     const days = [...container.querySelectorAll('.lead-day-chip.active')].map(c => c.textContent);
     updateLeadField(id, 'days', days);
+}
+
+async function addLeadPhotos(id, files) {
+    const grid = document.getElementById(`photos-${id}`);
+    const existing = grid.querySelectorAll('.lead-photo-thumb').length;
+    const allowed = Math.min(files.length, 6 - existing);
+    if (allowed <= 0) return;
+
+    const newPhotos = [];
+    for (let i = 0; i < allowed; i++) {
+        const b64 = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > 600) { h = Math.round(h * 600 / w); w = 600; }
+                    if (h > 600) { w = Math.round(w * 600 / h); h = 600; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(files[i]);
+        });
+        newPhotos.push(b64);
+    }
+
+    // Get current photos from DOM
+    const currentPhotos = [...grid.querySelectorAll('.lead-photo-thumb img')].map(img => img.src);
+    const allPhotos = [...currentPhotos, ...newPhotos].slice(0, 6);
+    await updateLeadField(id, 'photos', allPhotos);
+    loadSavedLeads();
+}
+
+async function removeLeadPhoto(id, photoIdx) {
+    const grid = document.getElementById(`photos-${id}`);
+    const currentPhotos = [...grid.querySelectorAll('.lead-photo-thumb img')].map(img => img.src);
+    currentPhotos.splice(photoIdx, 1);
+    await updateLeadField(id, 'photos', currentPhotos);
+    loadSavedLeads();
+}
+
+async function createProfile(id) {
+    if (!confirm('Create a provider profile from this lead? The provider will receive an email to set up their account.')) return;
+    try {
+        const res = await fetch(`${API_BASE}/admin/leads/${id}/create-profile`, {
+            method: 'POST',
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(data.message || 'Failed to create profile.');
+            return;
+        }
+        alert('Provider profile created! Setup email sent.');
+        loadSavedLeads();
+    } catch (err) {
+        alert('Error creating profile: ' + err.message);
+    }
 }
 
 function openAddLeadModal() {
@@ -2519,6 +2621,7 @@ async function startBrowserCall(leadId, leadName, phone) {
     document.getElementById('callNotesArea').classList.remove('show');
     document.getElementById('callNotesInput').value = '';
     document.getElementById('callMuteBtn').classList.remove('active');
+    document.getElementById('callMuteBtn').innerHTML = MIC_SVG;
     document.getElementById('callModalOverlay').classList.add('open');
 
     try {
@@ -2568,6 +2671,9 @@ async function startBrowserCall(leadId, leadName, phone) {
     }
 }
 
+const MIC_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+const MIC_OFF_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2c0 .67-.1 1.32-.27 1.93"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+
 function toggleMute() {
     if (!activeCall) return;
     isMuted = !isMuted;
@@ -2575,6 +2681,7 @@ function toggleMute() {
     const btn = document.getElementById('callMuteBtn');
     btn.classList.toggle('active', isMuted);
     btn.title = isMuted ? 'Unmute' : 'Mute';
+    btn.innerHTML = isMuted ? MIC_OFF_SVG : MIC_SVG;
 }
 
 function hangupCall() {
@@ -2965,8 +3072,8 @@ async function removeStaff(id, name) {
             <div class="call-modal-timer" id="callModalTimer">00:00</div>
         </div>
         <div class="call-controls" id="callControls">
-            <button class="call-control-btn mute" id="callMuteBtn" onclick="toggleMute()" title="Mute">🎤</button>
-            <button class="call-control-btn hangup" id="callHangupBtn" onclick="hangupCall()" title="Hang up">📕</button>
+            <button class="call-control-btn mute" id="callMuteBtn" onclick="toggleMute()" title="Mute"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+            <button class="call-control-btn hangup" id="callHangupBtn" onclick="hangupCall()" title="Hang up"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.96.96 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></button>
         </div>
         <div class="call-notes-area" id="callNotesArea">
             <textarea class="call-notes-textarea" id="callNotesInput" placeholder="Call notes... What was discussed?"></textarea>

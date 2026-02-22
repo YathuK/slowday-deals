@@ -465,4 +465,65 @@ router.post('/facebook', async (req, res) => {
     }
 });
 
+// ── Provider Setup (from admin-created profile) ────────────────────────────
+
+// Verify setup token — called when provider lands on ?setupProvider=TOKEN
+router.get('/verify-setup-token', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
+
+        const user = await User.findOne({
+            providerSetupToken: token,
+            providerSetupExpires: { $gt: new Date() }
+        });
+        if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired setup link.' });
+
+        res.json({ success: true, name: user.name, email: user.email || '' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Complete setup — provider sets password or uses SSO
+router.post('/setup-provider', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
+
+        const user = await User.findOne({
+            providerSetupToken: token,
+            providerSetupExpires: { $gt: new Date() }
+        });
+        if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired setup link.' });
+
+        if (password) {
+            if (password.length < 6) {
+                return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+            }
+            user.password = password;
+        }
+
+        user.providerSetupToken = null;
+        user.providerSetupExpires = null;
+        await user.save();
+
+        const jwtToken = generateToken(user._id);
+        res.json({
+            success: true,
+            token: jwtToken,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                accountType: user.accountType,
+                authProvider: user.authProvider
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 module.exports = router;

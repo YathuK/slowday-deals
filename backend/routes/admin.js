@@ -538,16 +538,26 @@ router.get('/leads/saved', staffAuth, requireRole('admin', 'sales'), async (req,
 // @route PATCH /api/admin/leads/saved/:id
 router.patch('/leads/saved/:id', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
     try {
-        const { status, contactName, email, notes, price, discountPrice, days, assignee } = req.body;
+        const { status, contactName, email, phone, city, serviceType, notes, price, discountPrice, days, assignee, description, photos } = req.body;
         const update = {};
         if (status        !== undefined) update.status        = status;
         if (contactName   !== undefined) update.contactName   = contactName;
         if (email         !== undefined) update.email         = email;
+        if (phone         !== undefined) update.phone         = phone;
+        if (city          !== undefined) update.city          = city;
+        if (serviceType   !== undefined) update.serviceType   = serviceType;
         if (notes         !== undefined) update.notes         = notes;
         if (price         !== undefined) update.price         = price;
         if (discountPrice !== undefined) update.discountPrice = discountPrice;
         if (days          !== undefined) update.days          = days;
         if (assignee      !== undefined) update.assignee      = assignee || null;
+        if (description   !== undefined) update.description   = description;
+        if (photos        !== undefined) {
+            if (!Array.isArray(photos) || photos.length > 6) {
+                return res.status(400).json({ success: false, message: 'Max 6 photos allowed.' });
+            }
+            update.photos = photos;
+        }
         const lead = await Lead.findByIdAndUpdate(req.params.id, update, { new: true }).populate('assignee', 'name email');
         if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
         res.json({ success: true, lead });
@@ -780,6 +790,124 @@ router.post('/support/tickets/:id/reply', staffAuth, requireRole('admin', 'suppo
         const updated = await SupportTicket.findById(req.params.id).populate('assignedTo', 'name email');
         res.json({ success: true, ticket: updated });
     } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ── Create Provider Profile from Lead ────────────────────────────────────────
+
+const SERVICE_TYPE_MAP = {
+    'Cleaning Service': 'Cleaning',
+    'Nail Service': 'Nails',
+    'Spa Treatment': 'Spa'
+};
+
+router.post('/leads/:id/create-profile', staffAuth, requireRole('admin', 'sales'), async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead not found.' });
+
+        // Validate minimum data
+        const missing = [];
+        if (!lead.businessName) missing.push('Business Name');
+        if (!lead.serviceType) missing.push('Service Type');
+        if (!lead.description || lead.description.length < 10) missing.push('Description (min 10 chars)');
+        if (!lead.city) missing.push('City');
+        if (!lead.phone && !lead.email) missing.push('Phone or Email');
+        if (lead.discountPrice == null) missing.push('Deal Price');
+        if (missing.length) {
+            return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(', ')}` });
+        }
+
+        // Check for existing user with same email
+        if (lead.email) {
+            const existing = await User.findOne({ email: lead.email.toLowerCase() });
+            if (existing) {
+                return res.status(400).json({ success: false, message: 'A user with this email already exists.' });
+            }
+        }
+
+        // Create provider user (no password — will be set up via token link)
+        const setupToken = crypto.randomBytes(32).toString('hex');
+        const user = new User({
+            name: lead.contactName || lead.businessName,
+            email: lead.email ? lead.email.toLowerCase() : undefined,
+            phone: lead.phone || undefined,
+            accountType: 'provider',
+            providerSetupToken: setupToken,
+            providerSetupExpires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        });
+        await user.save();
+
+        // Map lead service type to Service enum
+        const mappedType = SERVICE_TYPE_MAP[lead.serviceType] || lead.serviceType;
+        const validTypes = ['Haircut', 'Barber', 'Cleaning', 'Massage', 'Nails', 'Spa',
+            'Personal Training', 'Dog Walking', 'Tutoring', 'Photography',
+            'Car Detailing', 'Laundry Service', 'Other'];
+        const serviceType = validTypes.includes(mappedType) ? mappedType : 'Other';
+
+        // Determine weekday/weekend pricing from lead's days
+        const days = lead.days || [];
+        const hasWeekday = days.some(d => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(d));
+        const hasWeekend = days.some(d => ['Sat', 'Sun'].includes(d));
+        const dealPrice = lead.discountPrice;
+        const normalPrice = lead.price || dealPrice;
+
+        try {
+            const service = new Service({
+                provider: user._id,
+                providerName: lead.businessName,
+                serviceType,
+                description: lead.description,
+                location: lead.city,
+                contact: lead.phone || lead.email,
+                email: lead.email || '',
+                normalPrice,
+                weekdayPrice: hasWeekday ? dealPrice : dealPrice,
+                weekendPrice: hasWeekend ? dealPrice : dealPrice,
+                photos: lead.photos || [],
+                dealActive: false,
+                isActive: true
+            });
+            await service.save();
+        } catch (serviceErr) {
+            // Rollback: delete the user if service creation fails
+            await User.findByIdAndDelete(user._id);
+            throw serviceErr;
+        }
+
+        // Update lead status to 'live'
+        lead.status = 'live';
+        await lead.save();
+
+        // Send setup email
+        const FRONTEND_URL = process.env.FRONTEND_URL || 'https://www.slowdaydeals.com';
+        const setupUrl = `${FRONTEND_URL}?setupProvider=${setupToken}`;
+        if (process.env.SENDGRID_API_KEY && lead.email) {
+            try {
+                await sgMail.send({
+                    to: lead.email,
+                    from: FROM_EMAIL,
+                    subject: 'Your SlowDay Deals profile is ready!',
+                    html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:520px;margin:0 auto;padding:32px;">
+    <h2 style="margin:0 0 16px;">Welcome to SlowDay Deals!</h2>
+    <p>Hi ${lead.contactName || lead.businessName},</p>
+    <p>Your business profile for <strong>${lead.businessName}</strong> has been created on SlowDay Deals.</p>
+    <p>Click the button below to set up your account and manage your deal:</p>
+    <a href="${setupUrl}" style="display:inline-block;background:#6c5ce7;color:#fff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:600;margin:16px 0;">Set Up My Account</a>
+    <p style="color:#999;font-size:13px;margin-top:24px;">This link expires in 30 days. If you didn't expect this email, you can safely ignore it.</p>
+    <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0;">
+    <p style="color:#bbb;font-size:12px;text-align:center;">SlowDay Deals</p>
+</div>`
+                });
+            } catch (emailErr) {
+                console.error('Failed to send provider setup email:', emailErr);
+            }
+        }
+
+        res.json({ success: true, message: 'Provider profile created successfully.' });
+    } catch (err) {
+        console.error('Create profile error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });

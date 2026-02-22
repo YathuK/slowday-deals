@@ -2058,6 +2058,28 @@
                         <button type="submit" class="submit-btn">Reset Password</button>
                     </form>
 
+                    <!-- Provider Setup Form (shown when setupProvider token is in URL) -->
+                    <form id="setupProviderForm" class="auth-form" style="display:none;" onsubmit="setupProviderAccount(event)">
+                        <p id="setupProviderGreeting" style="color:#666;font-size:14px;margin-bottom:20px;">Create a password to access your provider dashboard.</p>
+                        <div class="form-group" style="position:relative;">
+                            <label>Password</label>
+                            <input type="password" id="setupProviderPassword" required minlength="6" placeholder="At least 6 characters" style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                        </div>
+                        <div class="form-group" style="position:relative;">
+                            <label>Confirm Password</label>
+                            <input type="password" id="setupProviderPasswordConfirm" required minlength="6" placeholder="Repeat password" style="padding-right:44px;">
+                            <button type="button" class="pw-eye" onclick="togglePwVis(this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+                        </div>
+                        <div id="setupProviderError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px;margin-bottom:16px;color:#991b1b;font-size:14px;text-align:center;"></div>
+                        <button type="submit" class="submit-btn">Set Up My Account</button>
+                        <div class="social-divider" style="margin:20px 0;display:flex;align-items:center;gap:12px;"><hr style="flex:1;border:none;border-top:1px solid #eee;"><span style="color:#aaa;font-size:13px;">or continue with</span><hr style="flex:1;border:none;border-top:1px solid #eee;"></div>
+                        <div style="display:flex;gap:10px;">
+                            <button type="button" class="submit-btn" onclick="setupProviderWithGoogle()" style="background:#fff;color:#333;border:1px solid #ddd;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.006 24.006 0 0 0 0 21.56l7.98-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google</button>
+                            <button type="button" class="submit-btn" onclick="setupProviderWithFacebook()" style="background:#1877F2;color:#fff;flex:1;display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</button>
+                        </div>
+                    </form>
+
                     <!-- Signup Form -->
                     <form id="signupForm" class="auth-form" style="display: none;" onsubmit="signup(event)">
                         <div class="form-group">
@@ -2247,6 +2269,7 @@
         // ============================================
         window.onload = async function() {
             checkResetToken();
+            checkSetupProviderToken();
             // Restore saved location filter
             try {
                 const savedLoc = localStorage.getItem('locationFilter');
@@ -2417,6 +2440,7 @@
             document.getElementById('signupForm').style.display = 'none';
             document.getElementById('forgotForm').style.display = 'none';
             document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('setupProviderForm').style.display = 'none';
         }
 
         function showSignup() {
@@ -2425,6 +2449,7 @@
             document.getElementById('signupForm').style.display = 'block';
             document.getElementById('forgotForm').style.display = 'none';
             document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('setupProviderForm').style.display = 'none';
         }
 
         function showForgotPassword() {
@@ -2433,6 +2458,7 @@
             document.getElementById('signupForm').style.display = 'none';
             document.getElementById('forgotForm').style.display = 'block';
             document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('setupProviderForm').style.display = 'none';
             document.getElementById('forgotSuccess').style.display = 'none';
         }
 
@@ -2525,6 +2551,121 @@
                 document.getElementById('forgotForm').style.display = 'none';
                 document.getElementById('resetForm').style.display = 'block';
             }
+        }
+
+        async function checkSetupProviderToken() {
+            let token = null;
+            try { token = new URLSearchParams(window.location.search).get('setupProvider'); } catch(e) {}
+            if (!token) {
+                const match = window.location.search.match(/[?&]setupProvider=([^&]+)/);
+                if (match) token = decodeURIComponent(match[1]);
+            }
+            if (!token) {
+                const hashMatch = window.location.hash.match(/setupProvider=([^&]+)/);
+                if (hashMatch) token = decodeURIComponent(hashMatch[1]);
+            }
+            if (!token) return;
+
+            sessionStorage.setItem('pendingSetupToken', token);
+            window.history.replaceState({}, '', window.location.pathname);
+
+            // Verify token with backend
+            try {
+                const res = await fetch(`${API_CONFIG.BASE_URL}/auth/verify-setup-token?token=${encodeURIComponent(token)}`);
+                const data = await res.json();
+                if (!data.success) {
+                    showToast(data.message || 'Invalid or expired setup link.', true);
+                    return;
+                }
+                showAuthModal();
+                document.getElementById('authTitle').textContent = 'Complete Your Account Setup';
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('forgotForm').style.display = 'none';
+                document.getElementById('resetForm').style.display = 'none';
+                document.getElementById('setupProviderForm').style.display = 'block';
+                document.getElementById('setupProviderGreeting').textContent =
+                    `Hi ${data.name}! Create a password to access your provider dashboard, or sign in with Google/Facebook.`;
+            } catch (err) {
+                showToast('Could not verify setup link. Please try again.', true);
+            }
+        }
+
+        async function setupProviderAccount(e) {
+            e.preventDefault();
+            const pw = document.getElementById('setupProviderPassword').value;
+            const pw2 = document.getElementById('setupProviderPasswordConfirm').value;
+            const errEl = document.getElementById('setupProviderError');
+
+            if (pw !== pw2) {
+                errEl.textContent = 'Passwords do not match.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            const token = sessionStorage.getItem('pendingSetupToken');
+            if (!token) {
+                errEl.textContent = 'Setup token not found. Please use the link from your email.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.textContent = 'Setting up...'; }
+
+            try {
+                const res = await fetch(`${API_CONFIG.BASE_URL}/auth/setup-provider`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, password: pw })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+
+                sessionStorage.removeItem('pendingSetupToken');
+                API.setToken(data.token);
+                currentUser = data.user;
+                closeAuthModal();
+                await showAuthenticatedView();
+                showToast('Welcome, ' + currentUser.name + '! Your provider account is ready.');
+            } catch (err) {
+                errEl.textContent = err.message || 'Setup failed. Please try again.';
+                errEl.style.display = 'block';
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Set Up My Account'; }
+            }
+        }
+
+        async function setupProviderWithGoogle() {
+            // Clear the setup token first, then trigger Google SSO
+            // After SSO, the email match will link the accounts
+            const token = sessionStorage.getItem('pendingSetupToken');
+            if (token) {
+                try {
+                    await fetch(`${API_CONFIG.BASE_URL}/auth/setup-provider`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token })
+                    });
+                    sessionStorage.removeItem('pendingSetupToken');
+                } catch(e) {}
+            }
+            triggerGoogleSignIn();
+        }
+
+        async function setupProviderWithFacebook() {
+            const token = sessionStorage.getItem('pendingSetupToken');
+            if (token) {
+                try {
+                    await fetch(`${API_CONFIG.BASE_URL}/auth/setup-provider`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token })
+                    });
+                    sessionStorage.removeItem('pendingSetupToken');
+                } catch(e) {}
+            }
+            handleFacebookSignIn();
         }
 
         async function login(e) {
